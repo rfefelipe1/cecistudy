@@ -19,7 +19,7 @@ import { parseOtaManifest, shouldUpdate, type OtaManifest } from './otaLogic';
  * No web/PWA tudo é no-op (`supported: false`).
  */
 
-const DEFAULT_MANIFEST_URL = 'https://fefelipe-7.github.io/cecistudy/version.json';
+const DEFAULT_MANIFEST_URL = 'https://rfefelipe1.github.io/cecistudy/version.json';
 export const OTA_MANIFEST_URL: string =
   (import.meta.env.VITE_OTA_MANIFEST_URL as string | undefined) || DEFAULT_MANIFEST_URL;
 
