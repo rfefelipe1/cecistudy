@@ -47,7 +47,7 @@ describe('planExamReminders (D4)', () => {
   const exam = { id: 'ex-1', title: 'neuro', date: '2026-11-10' };
 
   it('agenda 7, 1 e 0 dias antes, no horário configurado', () => {
-    const plan = planExamReminders([exam], prefs, '2026-10-01');
+    const plan = planExamReminders([exam], prefs, '2026-10-01', now);
     expect(plan.map((p) => [p.id, p.when.getMonth() + 1, p.when.getDate(), p.when.getHours()])).toEqual([
       [4000, 11, 3, 19],
       [4001, 11, 9, 19],

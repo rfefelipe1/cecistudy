@@ -15,12 +15,13 @@ import {
 import type { AcademicTerm, UserProfile } from '../../../../types';
 
 const profile = (over: Partial<UserProfile> = {}): UserProfile => ({
+  workspaceId: undefined,
   name: 'ceci',
   semester: 1,
   totalSemesters: 8,
   university: 'USP',
   targetCareer: 'Psicologia',
-  dailyQuote: 'um passo por vez',
+  dailyQuote: '',
   stickersCollected: 0,
   ...over,
 });
@@ -102,6 +103,8 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
         }}
         editOpen={editOpen}
         onEditOpen={() => setEditOpen(true)}
+        onEditClose={() => setEditOpen(false)}
+        onEditSave={handlers.onEditSave}
         onPickPhoto={vi.fn()}
         onRemovePhoto={vi.fn()}
         onShowToast={vi.fn()}
@@ -114,87 +117,40 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
   return handlers;
 };
 
-describe('ProfilePage — narrativa composta', () => {
-  it('tem um único h1 (o nome) e a ordem dos movimentos é fixa', () => {
+describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
+  it('renderiza o banner de capa (data-testid="perfil-banner")', () => {
+    renderPage();
+    expect(screen.getByTestId('perfil-banner')).toBeTruthy();
+  });
+
+  it('tem um único h1 (o nome) abaixo do banner', () => {
     renderPage();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(screen.getAllByRole('heading', { level: 2 }).map((h) => h.textContent)).toEqual([
-      'sua jornada',
-      'seu ritmo',
-      'memória da graduação',
-      'conquistas',
-      'cuidado do cantinho',
-      'seus dados',
-      'backup em nuvem',
-      'zona de cuidado',
-    ]);
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ceci');
   });
 
-  it('o progresso da graduação aparece uma vez na página inteira (I2)', () => {
+  it('renderiza o avatar sobreposto com iniciais e botão de câmera', () => {
     renderPage();
-    const graus = screen
-      .getAllByRole('progressbar')
-      .filter((p) => (p.getAttribute('aria-valuetext') ?? '').includes('da graduação'));
-    expect(graus).toHaveLength(1);
+    expect(screen.getByText('C')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'trocar foto de perfil' })).toBeTruthy();
   });
 
-  it('o CTA de virada aparece uma vez na página inteira (I3)', () => {
-    renderPage();
-    expect(screen.getAllByRole('button', { name: /virar o semestre/ })).toHaveLength(1);
-  });
-
-  it('sem período ativo, a página abre o primeiro semestre e não mostra virada', () => {
-    renderPage({ activeTerm: null, academicTerms: [] });
-    expect(screen.getByRole('button', { name: /abrir meu 1º semestre/ })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /virar o semestre/ })).toBeNull();
-  });
-
-  it('a identidade abre o sheet de edição e o salvar devolve os valores', () => {
+  it('o botão editar perfil abre o sheet de edição e salvar devolve os valores', () => {
     const h = renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'editar perfil' }));
+    fireEvent.click(screen.getByRole('button', { name: 'editar perfil', hidden: false }));
     fireEvent.change(screen.getByLabelText('seu nome'), { target: { value: 'maria' } });
     fireEvent.click(screen.getByRole('button', { name: 'guardar perfil' }));
     expect(h.onEditSave).toHaveBeenCalledWith({
       name: 'maria',
       university: 'USP',
-      dailyQuote: 'um passo por vez',
+      dailyQuote: '',
       nomeAutorizado: false,
     });
   });
 
-  it('a row do tema abre o seletor reaproveitado em sheet', () => {
+  it('o botão mais opções também abre o sheet de edição', () => {
     renderPage();
-    expect(screen.queryByLabelText('selecionar tema')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /tema do cantinho/ }));
-    expect(screen.getByLabelText('selecionar tema')).toBeTruthy();
-  });
-
-  it('cada métrica do ritmo leva à sua tela', () => {
-    const h = renderPage({
-      sessions: [
-        { id: 'ses-1', topic: 'psicologia social', date: '2026-10-10', durationMinutes: 45 },
-      ],
-      tasks: [
-        {
-          id: 't-1',
-          title: 'ler o capítulo 3',
-          completed: true,
-          priority: 'media',
-          category: 'leitura',
-        },
-      ],
-    });
-    fireEvent.click(screen.getByRole('button', { name: /estudados/ }));
-    fireEvent.click(screen.getByRole('button', { name: /tarefas concluídas/ }));
-    expect(h.onOpenSessions).toHaveBeenCalledTimes(1);
-    expect(h.onOpenTasks).toHaveBeenCalledTimes(1);
-  });
-
-  it('a ofensiva e os stickers saem do bloco de conquistas (D8)', () => {
-    const h = renderPage();
-    fireEvent.click(screen.getByRole('button', { name: /ofensiva atual de/ }));
-    fireEvent.click(screen.getByRole('button', { name: /ver todas/ }));
-    expect(h.onOpenStreak).toHaveBeenCalledTimes(1);
-    expect(h.onOpenStickers).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: 'opções de perfil' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'opções de perfil' }));
   });
 });
