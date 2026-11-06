@@ -48,7 +48,7 @@ permissions:
 
 env:
   OTA_DIR: ota-site
-  OTA_BASE_URL: https://fefelipe-7.github.io/cecistudy
+  OTA_BASE_URL: https://rfefelipe1.github.io/cecistudy
   KEEP_VERSIONS: '5'
 
 jobs:
