@@ -22,16 +22,17 @@ import type { ReminderSettings } from '../../../context/DataClientProvider';
 import type { ThemeId } from '../../../lib/themes';
 import type { MotionPref } from '../../../lib/motion';
 import type { ProfileEditValues } from './ProfileEditSheet';
-import type { CeciComboboxOption } from '../../ui/ceci/CeciCombobox';
 import ProfileEditSheet from './ProfileEditSheet';
 import ProfileHeader from './ProfileHeader';
+import ProfileStoryColumn from './ProfileStoryColumn';
+import ProfileCareColumn from './ProfileCareColumn';
+import ProfileFooterNote from './ProfileFooterNote';
 import JourneyNow from './JourneyNow';
 import ProgressPulse from './ProgressPulse';
 import JourneyHistory from './JourneyHistory';
 import AchievementsPreview from './AchievementsPreview';
 import ProfilePreferences from './ProfilePreferences';
 import ProfileDataMaintenance from './ProfileDataMaintenance';
-import ProfileFooterNote from './ProfileFooterNote';
 
 /** Card envolvente padrão de cada seção da tela. */
 const CARD = 'rounded-2xl border border-ceci-border-default bg-surface-default p-5 sm:p-6 shadow-sm';
@@ -45,13 +46,11 @@ export interface ProfilePageProps {
   /** Valores atuais de identidade para o rascunho do sheet. */
   editInitial: ProfileEditValues;
   editOpen: boolean;
-  approachOptions: CeciComboboxOption[];
   onEditOpen: () => void;
   onEditClose: () => void;
   onEditSave: (values: ProfileEditValues) => void;
   onPickPhoto: () => void;
-  onPickCover: () => void;
-  onRemoveCover: () => void;
+  onRemovePhoto: () => void;
   onCorrectOrdinal: (termId: string, ordinal: number) => void;
   onSetTotalSemesters: (total: number) => void;
   onOpenSemesterWizard: () => void;
@@ -83,9 +82,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onEditClose,
   onEditSave,
   onPickPhoto,
-  onPickCover,
-  onRemoveCover,
-  approachOptions,
+  onRemovePhoto,
   onCorrectOrdinal,
   onSetTotalSemesters,
   onOpenSemesterWizard,
@@ -105,98 +102,93 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onExport,
   onImport,
   onReset,
-}) => (
-  <div className="w-full min-[1200px]:max-w-[1120px] min-[1200px]:mx-auto pb-1">
-    <div className="grid grid-cols-1 min-[900px]:grid-cols-12 min-[900px]:gap-5 space-y-5 min-[900px]:space-y-0">
-      {/* A história: identidade → jornada → ritmo → memória → conquistas (coluna 7). */}
-      <div className="min-[900px]:col-span-7 space-y-5">
-        {/* Cabeçalho de identidade — SEM card envolvente (banner, avatar, nome, nível, 4 conquistas). */}
-        <ProfileHeader
-          identity={vm.identity}
-          achievements={vm.achievements.visible}
-          onPickCover={onPickCover}
-          onPickPhoto={onPickPhoto}
-          onRemoveCover={onRemoveCover}
-          onEdit={onEditOpen}
-          onMoreOptions={onEditOpen}
-          onOpenStickers={onOpenStickers}
-        />
+}) => {
+  const { identity, achievements } = vm;
 
-        <section className={CARD}>
-          <JourneyNow
-            journey={vm.journey}
-            onCorrectOrdinal={onCorrectOrdinal}
-            onSetTotalSemesters={onSetTotalSemesters}
-            onOpenSemesterWizard={onOpenSemesterWizard}
-            onShowToast={onShowToast}
-          />
-        </section>
-
-        <section className={CARD}>
-          <ProgressPulse
-            pulse={vm.pulse}
-            onOpenSessions={onOpenSessions}
-            onOpenReadings={onOpenReadings}
-            onOpenTasks={onOpenTasks}
-            onOpenExams={onOpenExams}
-          />
-        </section>
-
-        <section className={CARD}>
-          <JourneyHistory journey={vm.journey} onOpenTermHistory={onOpenTermHistory} />
-        </section>
-
-        {/* Conquistas além das 4 já exibidas no cabeçalho de identidade. */}
-        <section className={CARD}>
-          <AchievementsPreview
-            achievements={{
-              ...vm.achievements,
-              visible: vm.achievements.visible.slice(4),
-            }}
+  return (
+    <div className="w-full min-h-screen min-[1200px]:max-w-[1120px] min-[1200px]:mx-auto pb-1">
+      <div className="grid grid-cols-1 min-[900px]:grid-cols-12 min-[900px]:gap-5 space-y-5 min-[900px]:space-y-0">
+        {/* A história: identidade → jornada → ritmo → memória → conquistas (coluna 7). */}
+        <div className="min-[900px]:col-span-7 space-y-5">
+          {/* Cabeçalho de identidade — SEM card envolvente (banner, avatar, nome, nível, 4 conquistas). */}
+          <ProfileHeader
+            identity={identity}
+            achievements={achievements.visible}
+            onPickPhoto={onPickPhoto}
+            onRemovePhoto={onRemovePhoto}
+            onEdit={onEditOpen}
+            onMoreOptions={onEditOpen}
             onOpenStickers={onOpenStickers}
-            onOpenStreak={onOpenStreak}
           />
-        </section>
+
+          <section className={CARD}>
+            <ProfileStoryColumn
+              vm={vm}
+              onCorrectOrdinal={onCorrectOrdinal}
+              onSetTotalSemesters={onSetTotalSemesters}
+              onOpenSemesterWizard={onOpenSemesterWizard}
+              onShowToast={onShowToast}
+              onOpenTermHistory={onOpenTermHistory}
+              onOpenSessions={onOpenSessions}
+              onOpenReadings={onOpenReadings}
+              onOpenTasks={onOpenTasks}
+              onOpenExams={onOpenExams}
+              onOpenStickers={onOpenStickers}
+              onOpenStreak={onOpenStreak}
+            />
+          </section>
+
+          {/* Conquistas além das 4 já exibidas no cabeçalho de identidade. */}
+          <section className={CARD}>
+            <AchievementsPreview
+              achievements={{
+                ...vm.achievements,
+                visible: vm.achievements.visible.slice(4),
+              }}
+              onOpenStickers={onOpenStickers}
+              onOpenStreak={onOpenStreak}
+            />
+          </section>
+        </div>
+
+        {/* O cuidado: preferências e dados (coluna 5). */}
+        <div className="min-[900px]:col-span-5 space-y-5">
+          <section className={CARD}>
+            <ProfilePreferences
+              preferences={vm.preferences}
+              themePref={themePref}
+              motionPref={motionPref}
+              onUpdateReminder={onUpdateReminder}
+              onSetGcalEnabled={onSetGcalEnabled}
+              onThemeSelect={onThemeSelect}
+              onMotionPrefSelect={onMotionPrefSelect}
+            />
+          </section>
+
+          <section className={CARD}>
+            <ProfileDataMaintenance
+              maintenance={vm.maintenance}
+              onOpenSync={onOpenSync}
+              onExport={onExport}
+              onImport={onImport}
+              onReset={onReset}
+            />
+          </section>
+        </div>
       </div>
 
-      {/* O cuidado: preferências e dados (coluna 5). */}
-      <div className="min-[900px]:col-span-5 space-y-5">
-        <section className={CARD}>
-          <ProfilePreferences
-            preferences={vm.preferences}
-            themePref={themePref}
-            motionPref={motionPref}
-            onUpdateReminder={onUpdateReminder}
-            onSetGcalEnabled={onSetGcalEnabled}
-            onThemeSelect={onThemeSelect}
-            onMotionPrefSelect={onMotionPrefSelect}
-          />
-        </section>
+      {/* Rodapé afetivo (§5.2). */}
+      <ProfileFooterNote />
 
-        <section className={CARD}>
-          <ProfileDataMaintenance
-            maintenance={vm.maintenance}
-            onOpenSync={onOpenSync}
-            onExport={onExport}
-            onImport={onImport}
-            onReset={onReset}
-          />
-        </section>
-      </div>
+      {/* Sheet de edição de identidade (D5) — a página é a dona da composição. */}
+      <ProfileEditSheet
+        open={editOpen}
+        onClose={onEditClose}
+        initial={editInitial}
+        onSave={onEditSave}
+      />
     </div>
-
-    {/* Rodapé afetivo (§5.2). */}
-    <ProfileFooterNote />
-
-    {/* Sheet de edição de identidade (D5) — a página é a dona da composição. */}
-    <ProfileEditSheet
-      open={editOpen}
-      onClose={onEditClose}
-      initial={editInitial}
-      onSave={onEditSave}
-      approachOptions={approachOptions}
-    />
-  </div>
-);
+  );
+};
 
 export default ProfilePage;

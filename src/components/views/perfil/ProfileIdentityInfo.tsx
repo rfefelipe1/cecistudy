@@ -1,6 +1,6 @@
 // Perfil — informações de identidade abaixo do banner (fluxo vertical, à esquerda).
 //
-// Nome, subtítulo (abordagem · universidade), nível/título, conquistas em linha
+// Nome, subtítulo (curso · universidade), nível/título, conquistas em linha
 // (4 elementos) e ações (editar / mais opções). Sem card envolvente, sem
 // aninhamento de cards.
 import React from 'react';
@@ -11,8 +11,8 @@ import ProfileAchievementsRow from './ProfileAchievementsRow';
 
 interface ProfileIdentityInfoProps {
   displayName: string;
-  approach: string;
-  university: string;
+  subtitle: string;
+  quote: string;
   level: number;
   title: string;
   achievements: Sticker[];
@@ -23,8 +23,8 @@ interface ProfileIdentityInfoProps {
 
 export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
   displayName,
-  approach,
-  university,
+  subtitle,
+  quote,
   level,
   title,
   achievements,
@@ -33,7 +33,7 @@ export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
   onOpenStickers,
 }) => {
   const hasName = displayName.trim().length > 0;
-  const hasMeta = approach.trim().length > 0 || university.trim().length > 0;
+  const hasMeta = subtitle.trim().length > 0;
 
   // 4 conquistas em linha logo abaixo do nível.
   const featured = achievements.slice(0, 4);
@@ -50,13 +50,7 @@ export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
             {hasName ? displayName : 'como quer ser chamada?'}
           </h1>
           {hasMeta ? (
-            <p className="text-xs text-ceci-secondary">
-              <span>{approach}</span>
-              {approach.trim().length > 0 && university.trim().length > 0 ? (
-                <span aria-hidden="true" className="mx-1">·</span>
-              ) : null}
-              <span>{university}</span>
-            </p>
+            <p className="text-xs text-ceci-secondary">{subtitle}</p>
           ) : (
             <button
               type="button"

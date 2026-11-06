@@ -15,11 +15,13 @@ import {
 import type { AcademicTerm, UserProfile } from '../../../../types';
 
 const profile = (over: Partial<UserProfile> = {}): UserProfile => ({
+  workspaceId: undefined,
   name: 'ceci',
   semester: 1,
   totalSemesters: 8,
   university: 'USP',
   targetCareer: 'Psicologia',
+  dailyQuote: '',
   stickersCollected: 0,
   ...over,
 });
@@ -96,15 +98,15 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
         editInitial={{
           name: rawProfile.name,
           university: rawProfile.university,
-          targetCareer: rawProfile.targetCareer,
+          dailyQuote: rawProfile.dailyQuote,
           nomeAutorizado: false,
         }}
         editOpen={editOpen}
         onEditOpen={() => setEditOpen(true)}
+        onEditClose={() => setEditOpen(false)}
+        onEditSave={handlers.onEditSave}
         onPickPhoto={vi.fn()}
-        onPickCover={vi.fn()}
-        onRemoveCover={vi.fn()}
-        approachOptions={[]}
+        onRemovePhoto={vi.fn()}
         onShowToast={vi.fn()}
         {...handlers}
       />
@@ -116,7 +118,7 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
 };
 
 describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
-  it('renderiza o banner de capa edge-to-edge (data-testid="perfil-banner")', () => {
+  it('renderiza o banner de capa (data-testid="perfil-banner")', () => {
     renderPage();
     expect(screen.getByTestId('perfil-banner')).toBeTruthy();
   });
@@ -141,7 +143,7 @@ describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
     expect(h.onEditSave).toHaveBeenCalledWith({
       name: 'maria',
       university: 'USP',
-      targetCareer: 'Psicologia',
+      dailyQuote: '',
       nomeAutorizado: false,
     });
   });

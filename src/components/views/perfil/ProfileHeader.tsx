@@ -13,9 +13,7 @@ import ProfileIdentityInfo from './ProfileIdentityInfo';
 interface ProfileHeaderProps {
   identity: ProfileIdentity;
   achievements: Sticker[];
-  onPickCover: () => void;
   onPickPhoto: () => void;
-  onRemoveCover: () => void;
   onRemovePhoto?: () => void;
   onEdit: () => void;
   onMoreOptions: () => void;
@@ -25,21 +23,18 @@ interface ProfileHeaderProps {
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   identity,
   achievements,
-  onPickCover,
   onPickPhoto,
-  onRemoveCover,
   onRemovePhoto,
   onEdit,
   onMoreOptions,
   onOpenStickers,
 }) => {
-  const { displayName, approach, university, coverPhotoUrl, photoUrl, initials, level, title } =
-    identity;
+  const { displayName, subtitle, photoUrl, initials, level, title } = identity;
 
   return (
     <div className="relative w-full overflow-visible">
       {/* 1. Banner de capa — largura total, edge-to-edge, 3:1. */}
-      <ProfileBanner coverPhotoUrl={coverPhotoUrl} onClick={onPickCover} />
+      <ProfileBanner onClick={onPickPhoto} />
 
       {/* 2. Avatar sobreposto à borda inferior do banner, à esquerda. */}
       <ProfileAvatarOverlay
@@ -53,8 +48,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* 3. Informações de identidade — fluxo vertical, abaixo do banner. */}
       <ProfileIdentityInfo
         displayName={displayName || 'usuária'}
-        approach={approach}
-        university={university}
+        subtitle={subtitle}
+        quote={identity.quote}
         level={level}
         title={title}
         achievements={achievements}
