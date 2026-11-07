@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { Minus, Plus, Check } from 'lucide-react';
 import { clampPageInput } from '../../lib/contextActions';
+=======
+import { Check } from 'lucide-react';
+import { CeciStepper } from './ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { cn } from '../../lib/utils';
 
 interface ReadingProgressEditorProps {
@@ -12,8 +17,11 @@ interface ReadingProgressEditorProps {
   onCancel: () => void;
 }
 
+<<<<<<< HEAD
 const QUICK_STEPS = [5, 10, 25];
 
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 /**
  * Mini-editor de progresso de leitura (docs/modais-wizards.md §3.4).
  * Stepper −/+ , entrada direta da página e atalhos rápidos. Não abre o wizard
@@ -26,6 +34,7 @@ export const ReadingProgressEditor: React.FC<ReadingProgressEditorProps> = ({
   onSave,
   onCancel,
 }) => {
+<<<<<<< HEAD
   const [draft, setDraft] = useState(String(currentPages));
   const parsed = clampPageInput(currentPages, draft, totalPages);
   const invalid = draft !== '' && parsed === null;
@@ -38,6 +47,11 @@ export const ReadingProgressEditor: React.FC<ReadingProgressEditorProps> = ({
 
   const stepperBtn =
     'w-11 h-11 rounded-2xl border border-ceci-border-default bg-surface-default text-ceci-primary font-bold flex items-center justify-center transition active:scale-90 tap-interactive cursor-pointer disabled:opacity-35 disabled:pointer-events-none';
+=======
+  const [pages, setPages] = useState(currentPages);
+  const invalid = totalPages !== undefined && pages > totalPages;
+  const valid = pages !== currentPages;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   return (
     <div className="space-y-4">
@@ -47,6 +61,7 @@ export const ReadingProgressEditor: React.FC<ReadingProgressEditorProps> = ({
           : 'quantas páginas você já leu? (essa obra não tem total cadastrado)'}
       </p>
 
+<<<<<<< HEAD
       <div className="p-3.5 rounded-2xl bg-surface-muted border border-ceci-border-default space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold text-ceci-tertiary lowercase">páginas lidas</span>
@@ -122,11 +137,40 @@ export const ReadingProgressEditor: React.FC<ReadingProgressEditorProps> = ({
           </div>
         )}
       </div>
+=======
+      <CeciStepper
+        label="páginas lidas"
+        value={pages}
+        onChange={setPages}
+        min={0}
+        max={totalPages}
+        step={1}
+        quickSteps={[5, 10, 25]}
+        unit={totalPages !== undefined ? 'páginas' : 'págs'}
+        error={invalid ? totalPages !== undefined ? `essa obra tem ${totalPages} páginas ♡` : 'a página não pode ser menor do que você já leu' : undefined}
+      />
+
+      {totalPages !== undefined && (
+        <div className="w-full bg-ceci-border-default h-2 rounded-full overflow-hidden">
+          <div
+            className={cn(
+              'h-full rounded-full transition-colors duration-300',
+              pages > 0 ? 'bg-ceci-brand-strong' : '',
+            )}
+            style={{ width: `${Math.round((pages / totalPages) * 100)}%` }}
+          />
+        </div>
+      )}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
       <div className="flex flex-col gap-2">
         <button
           type="button"
+<<<<<<< HEAD
           onClick={() => parsed !== null && onSave(parsed)}
+=======
+          onClick={() => onSave(pages)}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           disabled={!valid}
           className="w-full min-h-[48px] rounded-2xl bg-ceci-brand-strong text-ceci-on-brand text-sm font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98] transition-transform cursor-pointer disabled:opacity-40 disabled:pointer-events-none"
         >

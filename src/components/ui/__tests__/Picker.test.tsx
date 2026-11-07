@@ -65,6 +65,11 @@ describe('Picker', () => {
         onCreate={onCreate}
       />,
     );
+<<<<<<< HEAD
+=======
+    // O empty state agora vive dentro da sheet (CeciPickerSheet): abre primeiro.
+    fireEvent.click(screen.getByRole('button', { name: 'escolher...' }));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.click(screen.getByRole('button', { name: /criar matéria agora/i }));
     expect(onCreate).toHaveBeenCalledTimes(1);
   });

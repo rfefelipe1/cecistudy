@@ -1,13 +1,23 @@
+<<<<<<< HEAD
 // SPEC-024 D3/D5: agenda de 14 dias, mês navegável e painel do dia com `+`.
 // O teste usa o `MobileAppProvider` de verdade (o caminho de produção), como o
 // `TccView.test.tsx`.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { useEffect } from 'react';
+=======
+// Calendário — nova composição (SPEC-redesign-calendario).
+// Testa a tela unificada: header, resumo da semana, cecinho, mês compacto,
+// agenda do dia selecionado, próximos dias e ação de criação.
+import React from 'react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, beforeEach } from 'vitest';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { MobileAppProvider } from '../../../../apps/mobile/src/MobileAppProvider';
 import { useMobileApp } from '../../../context/mobileApp';
 import { useDataClientCourses } from '../../../context/DataClientProvider';
 import { CalendarScreen } from '../CalendarScreen';
+<<<<<<< HEAD
 import CalendarMonth from '../faculdade/CalendarMonth';
 import { addDaysKey, todayKeyLocal } from '../../../lib/dateBR';
 import type { CalendarEntry } from '../../../lib/schedule';
@@ -16,6 +26,16 @@ import type { Task, ThesisChapter, ThesisProject } from '../../../types';
 afterEach(cleanup);
 
 let chaptersSnapshot = '';
+=======
+import { addDaysKey, todayKeyLocal } from '../../../lib/dateBR';
+import type { Task } from '../../../types';
+
+afterEach(() => {
+  cleanup();
+  localStorage.clear();
+  sessionStorage.clear();
+});
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 const task = (id: string, dueDate: string): Task =>
   ({
@@ -27,6 +47,7 @@ const task = (id: string, dueDate: string): Task =>
     dueDate,
   }) as Task;
 
+<<<<<<< HEAD
 const chapter = (id: string, title: string, dueDate: string): ThesisChapter =>
   ({
     id,
@@ -86,12 +107,39 @@ describe('CalendarScreen (SPEC-024 D3/D5)', () => {
   });
 
   it('D5 — o `+` do dia abre as portas que existem, e a reunião só com TCC', () => {
+=======
+function Seed({ chapters = [] }: { chapters?: any[] }) {
+  const { setThesisChapters } = useMobileApp();
+  const { setTasks } = useDataClientCourses();
+  const hoje = todayKeyLocal();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    setTasks([
+      task('t-1', hoje), // hoje, dentro da semana
+      task('t-2', addDaysKey(hoje, 2)), // nos próximos dias
+    ]);
+    setThesisChapters(chapters);
+  }, []);
+  return null;
+}
+
+// eslint-disable-next-line react-hooks/rules-of-hooks
+
+describe('CalendarScreen (nova composição)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
+
+  it('monta com header do calendário, resumo da semana e cecinho', () => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     render(
       <MobileAppProvider>
         <Seed chapters={[]} />
         <CalendarScreen />
       </MobileAppProvider>,
     );
+<<<<<<< HEAD
     fireEvent.click(screen.getByLabelText('adicionar item neste dia'));
     expect(screen.getByText('pendência')).toBeTruthy();
     expect(screen.getByText('prova')).toBeTruthy();
@@ -177,5 +225,105 @@ describe('CalendarMonth (SPEC-024 D6)', () => {
       />,
     );
     expect(screen.getByLabelText('dia 5, tem itens')).toBeTruthy();
+=======
+    expect(screen.getByText('calendário ♡')).toBeTruthy();
+    expect(screen.getByText('sua semana ♡')).toBeTruthy();
+    expect(screen.getByText('recado do cecinho')).toBeTruthy();
+  });
+
+  it('mostra o calendário mensal compacto com o mês atual', () => {
+    const hoje = todayKeyLocal();
+    const mesAtual = hoje.slice(0, 7); // 'YYYY-MM'
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    expect(screen.getAllByText(mesAtual).length).toBeGreaterThan(0);
+  });
+
+  it('mostra a data de hoje selecionada por padrão', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    expect(screen.getAllByText(/hoje/).length).toBeGreaterThan(0);
+  });
+
+  it('agrupa os próximos dias em hoje / amanhã / depois de amanhã', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    expect(screen.getByText('próximos dias')).toBeTruthy();
+    expect(screen.getByText('depois de amanhã')).toBeTruthy();
+  });
+
+  it('oferece botões de adicionar tarefa e prova', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    expect(screen.getByLabelText('adicionar tarefa')).toBeTruthy();
+    expect(screen.getByLabelText('adicionar prova')).toBeTruthy();
+  });
+
+  it('tarefa sem disciplina aparece na agenda', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    expect(screen.getAllByText('tarefa t-1').length).toBeGreaterThan(0);
+  });
+
+  it('selecionar um dia no calendário atualiza a agenda do dia', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    // clica em um dia do mês corrente (não desabilitado) — pode haver múltiplos
+    // elementos com label /dia 10/ (dias de meses adjacentes na grade), então
+    // filtra apenas os habilitados do mês corrente.
+    const dias10 = screen.getAllByLabelText(/dia 10/);
+    const diaCorrente = dias10.find((el) => !el.hasAttribute('disabled')) ?? dias10[0];
+    fireEvent.click(diaCorrente);
+    // após selecionar, deve haver alguma agenda renderizada (dia selecionado ou próximo grupo)
+    expect(screen.getByRole('heading', { name: /próximos dias/ })).toBeTruthy();
+  });
+
+  it('clicar em adicionar tarefa abre o sheet de criação', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    fireEvent.click(screen.getByLabelText('adicionar tarefa'));
+    // o sheet de tarefa deve abrir (modal com título do primeiro passo)
+    expect(screen.getByText('o que fazer?')).toBeTruthy();
+  });
+
+  it('clicar em adicionar prova não lança erro', () => {
+    render(
+      <MobileAppProvider>
+        <Seed chapters={[]} />
+        <CalendarScreen />
+      </MobileAppProvider>,
+    );
+    // apenas verifica que o botão existe e é clicável sem lançar erro
+    expect(screen.getByLabelText('adicionar prova')).toBeTruthy();
+    fireEvent.click(screen.getByLabelText('adicionar prova'));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 });

@@ -2,7 +2,11 @@
 // Extraídos de `BibliotecaView.tsx` para reduzir o monolito:
 // estado de filtro + matchers + coleções filtradas (memoizadas).
 
+<<<<<<< HEAD
 import { useMemo, useState } from 'react';
+=======
+import { useCallback, useMemo, useState } from 'react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   initialContextCollections,
   initialTrendingBooks,
@@ -68,11 +72,22 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
     return book.totalPages !== undefined && progress !== undefined && progress >= book.totalPages;
   };
 
+<<<<<<< HEAD
   const getBookStatus = (book: CollectionBook): BookReadingStatus => {
     if (isBookCompleted(book)) return 'concluido';
     if (isBookReading(book)) return 'lendo';
     return 'para_ler';
   };
+=======
+  const getBookStatus = useCallback(
+    (book: CollectionBook): BookReadingStatus => {
+      if (isBookCompleted(book)) return 'concluido';
+      if (isBookReading(book)) return 'lendo';
+      return 'para_ler';
+    },
+    [readingProgress],
+  );
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const matchesCategory = (col: ContextCollection, allowed: string[]) => {
     if (activeCategory === 'todos') return true;
@@ -296,7 +311,11 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
       if (!map.has(b.id)) map.set(b.id, b);
     });
     return map;
+<<<<<<< HEAD
   }, []);
+=======
+  }, [library.catalogBooks, library.psychotherapyCollections, library.complementaryCollections, library.mixedCollections]);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const savedBooks = useMemo(
     () => [...allBooksById.values()].filter((b) => savedBookIds.has(b.id)),
@@ -325,6 +344,7 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
     [],
   );
 
+<<<<<<< HEAD
   return {
     activeCategory,
     setActiveCategory,
@@ -361,4 +381,82 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
     catalogBooks: library.catalogBooks,
     psychotherapyCollections,
   };
+=======
+  // Objeto de retorno memoizado: identidade só muda quando algum valor derivado
+  // muda, evitando re-render em cadeia nos filhos (ExploreSections, LibraryModals).
+  return useMemo(
+    () => ({
+      activeCategory,
+      setActiveCategory,
+      activeStatus,
+      setActiveStatus,
+      selectedTag,
+      setSelectedTag,
+      searchTerm,
+      setSearchTerm,
+      isFilterModalOpen,
+      setIsFilterModalOpen,
+      openSections,
+      toggleSection,
+      isOpen,
+      hasActiveFilters,
+      resetAllFilters,
+      getBookStatus,
+      filteredCollections,
+      filteredCatalogCollections,
+      filteredComplementaryCollections,
+      filteredTrendingBooks,
+      filteredArticleGroups,
+      totalFilteredArticles,
+      filteredMixedCollections,
+      testCollections,
+      authorCollections,
+      multidisciplinaryCollections,
+      conceptCollections,
+      approachCollections,
+      allBooksById,
+      savedBooks,
+      readingBooks,
+      availableTags,
+      catalogBooks: library.catalogBooks,
+      psychotherapyCollections,
+    }),
+    [
+      activeCategory,
+      setActiveCategory,
+      activeStatus,
+      setActiveStatus,
+      selectedTag,
+      setSelectedTag,
+      searchTerm,
+      setSearchTerm,
+      isFilterModalOpen,
+      setIsFilterModalOpen,
+      openSections,
+      toggleSection,
+      isOpen,
+      hasActiveFilters,
+      resetAllFilters,
+      getBookStatus,
+      filteredCollections,
+      filteredCatalogCollections,
+      filteredComplementaryCollections,
+      filteredTrendingBooks,
+      filteredArticleGroups,
+      totalFilteredArticles,
+      filteredMixedCollections,
+      testCollections,
+      authorCollections,
+      multidisciplinaryCollections,
+      conceptCollections,
+      approachCollections,
+      allBooksById,
+      savedBooks,
+      readingBooks,
+      availableTags,
+      library.catalogBooks,
+      psychotherapyCollections,
+    ],
+  );
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }

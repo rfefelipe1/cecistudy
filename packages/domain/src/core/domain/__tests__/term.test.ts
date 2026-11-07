@@ -4,6 +4,10 @@ import {
   clampTermOrdinal,
   termLabel,
   createAcademicTerm,
+<<<<<<< HEAD
+=======
+  createClosedAcademicTerm,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   closeTerm,
   openTerm,
   reopenTerm,
@@ -78,6 +82,43 @@ describe('core/domain — term: criação', () => {
   });
 });
 
+<<<<<<< HEAD
+=======
+describe('core/domain — term: criação retroativa (encerrado)', () => {
+  it('createClosedAcademicTerm cria encerrado com endedAt informado', () => {
+    const t = createClosedAcademicTerm({
+      ordinal: 1,
+      startedAt: '2026-02-01',
+      endedAt: '2026-06-30',
+    });
+    expect(t.status).toBe('encerrado');
+    expect(t.endedAt).toBe('2026-06-30');
+    expect(t.label).toBe('1º semestre');
+    expect(t.ordinal).toBe(1);
+    expect(t.summary).toBeUndefined();
+    expect(t.id.startsWith('trm-')).toBe(true);
+  });
+
+  it('createClosedAcademicTerm clampa o ordinal em 1..MAX_TERM_ORDINAL', () => {
+    expect(createClosedAcademicTerm({ ordinal: 99, startedAt: '2026-02-01', endedAt: '2026-06-30' }).ordinal).toBe(
+      MAX_TERM_ORDINAL,
+    );
+    expect(createClosedAcademicTerm({ ordinal: 0, startedAt: '2026-02-01', endedAt: '2026-06-30' }).ordinal).toBe(1);
+  });
+
+  it('createClosedAcademicTerm não usa Date.now() — now vem por argumento', () => {
+    const t = createClosedAcademicTerm({
+      ordinal: 2,
+      startedAt: '2026-02-01',
+      endedAt: '2026-06-30',
+      now: '2026-07-01T10:00:00.000Z',
+    });
+    expect(t.createdAt).toBe('2026-07-01T10:00:00.000Z');
+    expect(t.statusTransitionAt).toBe('2026-06-30');
+  });
+});
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 describe('core/domain — term: transições', () => {
   it('closeTerm encerra, data o fim e congela o summary', () => {
     const next = closeTerm([term()], 'trm-1', '2026-06-30', SUMMARY);

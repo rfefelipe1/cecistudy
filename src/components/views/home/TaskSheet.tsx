@@ -1,16 +1,29 @@
 // Sheet pequeno de fundo (position="bottom") para criar uma tarefa na tela de
 // home. Substitui o formulário inline "adicionar sem nada".
+<<<<<<< HEAD
 import React, { useCallback, useEffect, useState } from 'react';
+=======
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { CheckCircle2, ChevronLeft } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import type { Task } from '@/types';
 import { Modal } from '../../ui/Modal';
+<<<<<<< HEAD
 import { TextInput, DeadlineField } from '../../wizards/wizardFields';
+=======
+import { TextInput } from '../../wizards/wizardFields';
+import { CeciDatePicker } from '../../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ChoiceCardGrid } from '../../ui/ChoiceCardGrid';
 import { CourseSelect } from '../../wizards/CourseSelect';
 import { PRIORITIES, TASK_CATEGORIES } from '../../wizards/note/constants';
 import { hapticSuccess } from '@/lib/haptics';
+<<<<<<< HEAD
 import { CELEBRACAO, frase } from '@/lib/voice';
+=======
+import { CELEBRACAO, DICA, frase } from '@/lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface TaskSheetValues {
   taskTitle: string;
@@ -38,17 +51,43 @@ const EMPTY_VALUES: TaskSheetValues = {
 export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate }) => {
   const { courses, handleAddTask, showToast } = useMobileApp();
   const [step, setStep] = useState(0);
+<<<<<<< HEAD
   const [busy, setBusy] = useState(false);
   const [triedNext, setTriedNext] = useState(false);
 
+=======
+  const [triedNext, setTriedNext] = useState(false);
+
+  /**
+   * Uma folha, uma gravação (SPEC-029 D2).
+   *
+   * É um `ref`, não `useState`: durante a animação de saída o `Modal` serve o
+   * render **anterior** — o `AnimatePresence` (`src/components/ui/Modal.tsx:197`)
+   * segura o filho antigo enquanto ele sai. Nesse render o bloqueio de estado
+   * ainda valia `false`, e o toque seguinte gravava uma segunda tarefa. O `ref`
+   * é lido em tempo de chamada, então o toque repetido não passa, mesmo pelo
+   * handler antigo.
+   */
+  const gravouRef = useRef(false);
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const [values, setValues] = useState<TaskSheetValues>(EMPTY_VALUES);
 
   // Reabrir começa do zero — sem o passo e o título do registro anterior. O dia
   // do `+` do calendário (SPEC-024 D20) entra como prazo inicial. Não limpar no
   // fechamento: o conteúdo precisa ficar visível durante a animação de saída.
+<<<<<<< HEAD
   useEffect(() => {
     if (!open) return;
     setStep(0);
+=======
+  // O bloqueio de toque repetido (SPEC-029 D2) também é solto aqui: ele segura
+  // o botão até a folha abrir de novo.
+  useEffect(() => {
+    if (!open) return;
+    setStep(0);
+    gravouRef.current = false;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     setTriedNext(false);
     setValues({ ...EMPTY_VALUES, taskDueDate: defaultDate ?? '' });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -71,8 +110,13 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
   ];
 
   const handleSave = useCallback(() => {
+<<<<<<< HEAD
     if (busy || !taskTitle.trim()) return;
     setBusy(true);
+=======
+    if (gravouRef.current || !taskTitle.trim()) return;
+    gravouRef.current = true;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     handleAddTask({
       id: 't-' + Date.now(),
       title: taskTitle.trim(),
@@ -83,12 +127,22 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
       priority: taskPriority,
     });
     hapticSuccess();
+<<<<<<< HEAD
     showToast(frase(CELEBRACAO, 'tarefaSalva'));
     onClose();
     setBusy(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     busy,
+=======
+    // Fecha **antes** do aviso (SPEC-029 D1): `frase()` lança em chave ausente
+    // e, com o aviso na frente, uma frase quebrada derrubava o fechamento —
+    // a tarefa ficava gravada, a folha aberta e um toque a mais criava outra.
+    onClose();
+    showToast(frase(CELEBRACAO, 'tarefaGuardadaPlano'));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     taskTitle,
     courseId,
     taskCategory,
@@ -191,9 +245,15 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
                 onChange={(v) => patch({ courseId: v })}
                 placeholder="sem disciplina — tarefa avulsa"
               />
+<<<<<<< HEAD
               <DeadlineField
                 label="data limite (prazo)"
                 value={taskDueDate}
+=======
+              <CeciDatePicker
+                label="data limite (prazo)"
+                value={taskDueDate ?? null}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 onChange={(v) => patch({ taskDueDate: v })}
               />
             </div>
@@ -220,7 +280,11 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
             onClick={isLast ? handleSave : next}
             className="bg-ceci-brand hover:bg-ceci-brand-strong text-ceci-on-brand px-5 py-2.5 rounded-[14px] text-xs font-medium shadow-2xs transition-transform active:scale-95 min-h-[44px] cursor-pointer shrink-0"
           >
+<<<<<<< HEAD
             {isLast ? 'guardar tarefa ♡' : 'continuar'}
+=======
+            {isLast ? frase(DICA, 'guardarTarefa') : 'continuar'}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </button>
         </div>
       </div>

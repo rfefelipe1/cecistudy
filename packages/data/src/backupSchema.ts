@@ -25,7 +25,10 @@ const userProfileSchema = passthrough({
   totalSemesters: z.number(),
   university: z.string(),
   targetCareer: z.string(),
+<<<<<<< HEAD
   dailyQuote: z.string(),
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   stickersCollected: z.number(),
 });
 

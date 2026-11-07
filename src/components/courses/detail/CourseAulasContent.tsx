@@ -17,6 +17,10 @@ import RecordEditSheet from '../RecordEditSheet';
 import { useMobileApp } from '@/context/mobileApp';
 import { formatShortDate } from '../../../lib/schedule';
 import { sortAttendanceRecords } from '../../../lib/attendance';
+<<<<<<< HEAD
+=======
+import { frase, VAZIO, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import type { AttendanceRecord, AttendanceStatus, ClassNote, Course, Exam } from '../../../types';
 
 interface CourseAulasContentProps {
@@ -36,7 +40,11 @@ function examPillLabel(exam: Exam): string {
   const days = daysUntil(exam.date);
   if (days < 0) return formatShortDate(exam.date);
   if (days === 0) return `hoje ${formatShortDate(exam.date)}`;
+<<<<<<< HEAD
   if (days === 1) return `amanhã ${formatShortDate(exam.date)}`;
+=======
+  if (days === 1) return frase(DICA, 'provaAmanhaData', { data: formatShortDate(exam.date) });
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   if (days <= 7) return `${days} dias · ${formatShortDate(exam.date)}`;
   return formatShortDate(exam.date);
 }
@@ -344,7 +352,11 @@ export const CourseAulasContent: React.FC<CourseAulasContentProps> = ({ course }
         ) : (
           <div className="py-6 text-center space-y-2">
             <Mascote expression="empty-invite" className="w-14 h-14 mx-auto" decorative />
+<<<<<<< HEAD
             <p className="text-xs font-semibold text-ceci-primary">ainda não tem aula registrada</p>
+=======
+            <p className="text-xs font-semibold text-ceci-primary">{frase(VAZIO, 'semAulaRegistrada')}</p>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             <div className="flex flex-wrap items-center justify-center gap-2">
               <button
                 onClick={() => openCompose(course.id)}

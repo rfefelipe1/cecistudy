@@ -32,6 +32,11 @@ import { useActiveTerm } from '../../lib/termScope';
 import { StickersView } from './StickersView';
 import ProfilePage from './perfil/ProfilePage';
 import type { ProfileEditValues } from './perfil/ProfileEditSheet';
+<<<<<<< HEAD
+=======
+import type { CeciComboboxOption } from '../ui/ceci/CeciCombobox';
+import approachRegistry from '../../data/temple/approachRegistry.json';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export type PerfilViewMode = 'profile' | 'stickers';
 
@@ -108,6 +113,19 @@ const PerfilProfileRoute: React.FC = () => {
     native: isNativePlatform,
   });
 
+<<<<<<< HEAD
+=======
+  // Filtro de abordagens: só as entradas do sistema "editorial" são escolhas de
+  // abordagem válidas para o perfil. As entradas "taxonomic" são áreas
+  // metodológicas/contextuais e não entram na lista de escolha.
+  const approachOptions: CeciComboboxOption[] = (approachRegistry as { entries: Array<{ id: string; name: string; system: string }> }).entries
+    .filter((a) => a.system === 'editorial')
+    .map((a) => ({
+      value: a.id,
+      label: a.name,
+    }));
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // Identidade — SPEC-006 D6: `semester` não entra em nenhuma escrita de perfil;
   // quem manda é o `AcademicTerm` ativo. Reescrever o legado aqui fazia a
   // migração 18 → 19 recriar o período com o número antigo na importação.
@@ -115,7 +133,11 @@ const PerfilProfileRoute: React.FC = () => {
     handleUpdateProfile({
       name: values.name,
       university: values.university,
+<<<<<<< HEAD
       dailyQuote: values.dailyQuote,
+=======
+      targetCareer: values.targetCareer,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       photoUrl: profile.photoUrl,
       // `SPEC-C-014 D8`: a autorização viaja com o perfil. Opcional no tipo, então
       // não exige backfill — quem nunca mexeu continua com "você".
@@ -136,8 +158,25 @@ const PerfilProfileRoute: React.FC = () => {
     }
   };
 
+<<<<<<< HEAD
   const handleRemovePhoto = () => {
     handleUpdateProfile({ photoUrl: '' });
+=======
+  const handlePickCover = async () => {
+    try {
+      const dataUrl = await pickProfilePhoto();
+      if (dataUrl) {
+        handleUpdateProfile({ coverPhotoUrl: dataUrl });
+        showToast(frase(CELEBRACAO, 'fotoAtualizada'));
+      }
+    } catch {
+      // usuário cancelou ou erro — nada muda
+    }
+  };
+
+  const handleRemoveCover = () => {
+    handleUpdateProfile({ coverPhotoUrl: '' });
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     showToast(frase(CELEBRACAO, 'fotoRemovida'));
   };
 
@@ -149,7 +188,11 @@ const PerfilProfileRoute: React.FC = () => {
       editInitial={{
         name: profile.name,
         university: profile.university,
+<<<<<<< HEAD
         dailyQuote: profile.dailyQuote,
+=======
+        targetCareer: profile.targetCareer,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         nomeAutorizado: profile.nomeAutorizado === true,
       }}
       editOpen={editOpen}
@@ -157,7 +200,12 @@ const PerfilProfileRoute: React.FC = () => {
       onEditClose={() => setEditOpen(false)}
       onEditSave={handleEditSave}
       onPickPhoto={handlePickPhoto}
+<<<<<<< HEAD
       onRemovePhoto={handleRemovePhoto}
+=======
+      onPickCover={handlePickCover}
+      onRemoveCover={handleRemoveCover}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       onCorrectOrdinal={correctTermOrdinal}
       onSetTotalSemesters={setTotalSemesters}
       onOpenSemesterWizard={() => openWizard('semester')}
@@ -173,9 +221,16 @@ const PerfilProfileRoute: React.FC = () => {
       onSetGcalEnabled={(enabled) => void setGcalEnabled(enabled)}
       onThemeSelect={setThemePref}
       onMotionPrefSelect={setMotionPref}
+<<<<<<< HEAD
       onOpenSync={openSyncScreen}
       onExport={() => exportData()}
       onImport={(json) => importData(json)}
+=======
+      approachOptions={approachOptions}
+      onOpenSync={openSyncScreen}
+      onExport={() => exportData()}
+      onImport={async (json) => await importData(json)}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       onReset={resetApp}
     />
   );

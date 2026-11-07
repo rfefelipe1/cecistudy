@@ -327,6 +327,11 @@ export const NoteTransformWizard: React.FC = () => {
 
   return (
     <WizardScaffold
+<<<<<<< HEAD
+=======
+      tone="narrative"
+      progress="linear"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title="transformar nota"
       icon={<Wand2 className="w-3.5 h-3.5" />}
       iconClass="bg-surface-rose border-ceci-border-brand text-ceci-brand-strong"
@@ -340,7 +345,11 @@ export const NoteTransformWizard: React.FC = () => {
       onClose={closeAllNoteScreens}
       saveLabel={
         target
+<<<<<<< HEAD
           ? `transformar em ${TARGETS.find((t) => t.type === target)?.label ?? ''} ♡`
+=======
+          ? frase(CELEBRACAO, 'transformarEm', { label: TARGETS.find((t) => t.type === target)?.label ?? '' })
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           : 'guardar ♡'
       }
     />

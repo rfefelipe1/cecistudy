@@ -1,8 +1,16 @@
 import React from 'react';
+<<<<<<< HEAD
+=======
+import { motion } from '../../lib/motion';
+import { BASE_D, EASE } from '../../lib/motion';
+
+export type StepProgressVariant = 'linear' | 'labeled' | 'none';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface StepProgressProps {
   steps: string[];
   current: number;
+<<<<<<< HEAD
 }
 
 /**
@@ -22,6 +30,27 @@ interface StepProgressProps {
  */
 export const StepProgress: React.FC<StepProgressProps> = ({ steps, current }) => {
   const ratio = (current / Math.max(steps.length - 1, 1)) * 100;
+=======
+  /** Qual indicador renderizar. `none` não renderiza nada (o header fica sozinho). */
+  variant?: StepProgressVariant;
+  /** Mostra o nome do passo atual ao lado da barra (modo rotulado). */
+  showLabel?: boolean;
+}
+
+export const StepProgress: React.FC<StepProgressProps> = ({
+  steps,
+  current,
+  variant = 'linear',
+  showLabel = true,
+}) => {
+  if (variant === 'none' || steps.length === 0) return null;
+
+  const last = steps.length - 1;
+  // sem divisão por zero em fluxo de etapa única
+  const ratio = last === 0 ? 100 : (current / last) * 100;
+  const step = steps[current] ?? '';
+  const currentStep = Math.min(Math.max(current, 0), last);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   return (
     <div
@@ -29,6 +58,7 @@ export const StepProgress: React.FC<StepProgressProps> = ({ steps, current }) =>
       role="progressbar"
       aria-valuemin={1}
       aria-valuemax={steps.length}
+<<<<<<< HEAD
       aria-valuenow={current + 1}
       aria-label={`passo ${current + 1} de ${steps.length}: ${steps[current]}`}
     >
@@ -42,6 +72,28 @@ export const StepProgress: React.FC<StepProgressProps> = ({ steps, current }) =>
         <span className="shrink-0 rounded-full bg-surface-rose border border-ceci-border-brand px-2.5 py-1 text-[11px] font-semibold text-ceci-brand-strong">
           {steps[current]}
         </span>
+=======
+      aria-valuenow={currentStep + 1}
+      aria-label={`passo ${currentStep + 1} de ${steps.length}: ${step}`}
+    >
+      <div className="flex items-center gap-3">
+        <div className="relative h-[3px] flex-1 rounded-full bg-ceci-border-subtle overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-ceci-brand"
+            initial={false}
+            animate={{ width: `${ratio}%` }}
+            // duração de passo (não de rede), vinda dos tokens de movimento
+            transition={{ duration: BASE_D.step, ease: EASE.standard }}
+          />
+        </div>
+        {showLabel && step && (
+          <span
+            className="shrink-0 rounded-full bg-surface-rose border border-ceci-border-brand px-2.5 py-1 text-[11px] font-semibold text-ceci-brand-strong"
+          >
+            {step}
+          </span>
+        )}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </div>
     </div>
   );

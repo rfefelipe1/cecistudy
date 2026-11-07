@@ -58,7 +58,10 @@ const staticLibrary: LibraryDataset = {
 };
 import { InlineCollectionBlock } from '../library/InlineCollectionBlock';
 import { Mascote } from '../ui/Mascote';
+<<<<<<< HEAD
 import { TagChip } from '../ui/TagChip';
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { BookDetailModal } from '../library/BookDetailModal';
 import { LibraryFilterModal } from '../library/LibraryFilterModal';
 import { TempleLoading } from '../library/temple/TempleShared';

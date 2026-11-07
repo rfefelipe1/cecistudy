@@ -3,6 +3,10 @@ import { Plus, Trash2, Clock } from 'lucide-react';
 import type { CourseScheduleSlot } from '../../types';
 import { WEEKDAY_LABELS } from '../../data/constants';
 import { TimeInput } from '../wizards/wizardFields';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface SchedulePickerProps {
   value: CourseScheduleSlot[];
@@ -38,7 +42,11 @@ export const SchedulePicker: React.FC<SchedulePickerProps> = ({ value, onChange 
                 type="button"
                 onClick={() => remove(idx)}
                 className="w-7 h-7 rounded-lg bg-surface-default border border-ceci-border-default flex items-center justify-center text-ceci-brand-strong hover:bg-ceci-border-brand/40 cursor-pointer"
+<<<<<<< HEAD
                 aria-label="remover horário"
+=======
+                aria-label={frase(DICA, 'removerHorario')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>

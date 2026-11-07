@@ -8,7 +8,13 @@
  * CSS) e o `meta[name="theme-color"]`. A status bar nativa fica em `native.ts`
  * (estes módulos são puros DOM — seguros em vitest/jsdom e no boot web).
  */
+<<<<<<< HEAD
 import { storage } from './storage';
+=======
+import { useContext } from 'react';
+import { storage } from './storage';
+import { useMobileApp } from '@/context/mobileApp';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export type ThemeId =
   | 'rosa-claro'
@@ -25,6 +31,10 @@ export interface ThemeTokens {
   canvas: string;
   'surface-default': string;
   'surface-subtle': string;
+<<<<<<< HEAD
+=======
+  'surface-header': string;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   'surface-muted': string;
   'surface-rose': string;
   'surface-blue': string;
@@ -92,6 +102,10 @@ export const TOKEN_KEYS = [
   'canvas',
   'surface-default',
   'surface-subtle',
+<<<<<<< HEAD
+=======
+  'surface-header',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   'surface-muted',
   'surface-rose',
   'surface-blue',
@@ -153,6 +167,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#FFF9F0',
       'surface-default': '#FFFDF8',
       'surface-subtle': '#FFF3E7',
+<<<<<<< HEAD
+=======
+      'surface-header': '#FFF3E7',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#F7F1EA',
       'surface-rose': '#FFEFF3',
       'surface-blue': '#F1F7FA',
@@ -214,6 +232,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#EDF2E4',
       'surface-default': '#F8FBF2',
       'surface-subtle': '#E7EEDC',
+<<<<<<< HEAD
+=======
+      'surface-header': '#E7EEDC',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#DFE8D2',
       'surface-rose': '#F6EAE6',
       'surface-blue': '#E4EEF4',
@@ -272,6 +294,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#F7FAFB',
       'surface-default': '#FFFFFF',
       'surface-subtle': '#F2F7F9',
+<<<<<<< HEAD
+=======
+      'surface-header': '#F2F7F9',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#F0F4F6',
       'surface-rose': '#EBF4F8',
       'surface-blue': '#E3F0F6',
@@ -330,6 +356,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#FFFAF5',
       'surface-default': '#FFFFFF',
       'surface-subtle': '#FFF7EE',
+<<<<<<< HEAD
+=======
+      'surface-header': '#FFF7EE',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#FAF5ED',
       'surface-rose': '#FFEDE3',
       'surface-blue': '#F2F7FB',
@@ -388,6 +418,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#161214',
       'surface-default': '#221E20',
       'surface-subtle': '#2A2628',
+<<<<<<< HEAD
+=======
+      'surface-header': '#2A2628',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#1E1B1C',
       'surface-rose': '#2B2024',
       'surface-blue': '#1F262C',
@@ -446,6 +480,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#10161B',
       'surface-default': '#1A242B',
       'surface-subtle': '#212E36',
+<<<<<<< HEAD
+=======
+      'surface-header': '#212E36',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#161F25',
       'surface-rose': '#1C2B31',
       'surface-blue': '#1E2A33',
@@ -504,6 +542,10 @@ export const THEMES: Record<ThemeId, Theme> = {
       canvas: '#0F0F12',
       'surface-default': '#1A1A20',
       'surface-subtle': '#22222B',
+<<<<<<< HEAD
+=======
+      'surface-header': '#22222B',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       'surface-muted': '#16161C',
       'surface-rose': '#241B24',
       'surface-blue': '#1C2230',
@@ -713,3 +755,47 @@ export function firstWcagFail(theme: Theme): { label: string; ratio: number } | 
   }
   return null;
 }
+<<<<<<< HEAD
+=======
+
+/** Contrato do hook de tema. */
+export interface UseThemeReturn {
+  /** Id do tema ativo (ex.: 'rosa-claro', 'noturno'). */
+  currentTheme: ThemeId;
+  /** True se o tema ativo é escuro. */
+  isDark: boolean;
+  /** Seleciona um tema: aplica imediatamente + persiste. */
+  selectTheme: (id: ThemeId) => void;
+  /** Todos os temas disponíveis, na ordem do picker. */
+  themes: readonly Theme[];
+}
+
+/**
+ * Hook de tema (TEM-001 D3 da SPEC-M-029).
+ *
+ * Consome `themePref`/`setThemePref` do `MobileAppContext` (via `useMobileApp`)
+ * e expõe uma API conveniente para views e componentes:
+ *  - `currentTheme` — id do tema ativo
+ *  - `isDark` — modo claro/escuro do tema ativo
+ *  - `selectTheme(id)` — aplica o tema imediatamente via `applyTheme` e persiste
+ *  - `themes` — lista de todos os temas (para o picker)
+ *
+ * Lança erro claro se usado fora de um `MobileAppProvider`.
+ */
+export function useTheme(): UseThemeReturn {
+  const app = useMobileApp();
+  const theme = getThemeById(app.themePref);
+
+  const selectTheme = (id: ThemeId): void => {
+    app.setThemePref(id);
+    applyTheme(getThemeById(id), { transition: true });
+  };
+
+  return {
+    currentTheme: app.themePref,
+    isDark: theme.isDark,
+    selectTheme,
+    themes: THEME_ORDER.map((id) => getThemeById(id)),
+  };
+}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

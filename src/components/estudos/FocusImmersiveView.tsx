@@ -2,6 +2,10 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { Picker } from '../ui/Picker';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export const FOCUS_PRESETS = [25, 45, 15];
 /** Opções do timer customizável: 5 a 120 min, de 5 em 5. */
@@ -142,7 +146,11 @@ export const FocusImmersiveView: React.FC<FocusImmersiveViewProps> = ({
             type="button"
             className="focus-reset"
             onClick={onReset}
+<<<<<<< HEAD
             aria-label="reiniciar sessão"
+=======
+            aria-label={frase(DICA, 'reiniciarSessao')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           >
             <RotateCcw className="w-4 h-4" />
           </button>

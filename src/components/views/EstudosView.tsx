@@ -21,7 +21,11 @@ import { useNavValue, useStudyActions } from '@/context/shellNavContexts';
 import { isCardDue, nextDueLabel } from '../../lib/fsrs';
 import { toDateKey } from '../../lib/streak';
 import { WEEK_CELL_STYLE } from '../../lib/homeMeta';
+<<<<<<< HEAD
 import { dica } from '../../lib/voice';
+=======
+import { dica, frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Mascote } from '../ui/Mascote';
 import { Ambient } from '../motion/Ambient';
 import { SectionTitle } from '../ui/SectionTitle';
@@ -60,7 +64,11 @@ export const EstudosView: React.FC = () => {
   const daySummary = [
     todayFocusMinutes > 0 ? `${todayFocusMinutes} min de foco` : null,
     dueCards.length > 0
+<<<<<<< HEAD
       ? `${dueCards.length} ${dueCards.length === 1 ? 'cartão' : 'cartões'} pra revisar`
+=======
+      ? frase(DICA, 'cartoesPraRevisar', { n: dueCards.length })
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       : null,
   ].filter(Boolean);
 
@@ -195,7 +203,11 @@ export const EstudosView: React.FC = () => {
                     <p className="text-[11px] text-ceci-secondary mt-0.5 truncate">
                       {readingInProgress
                         ? `${readingInProgress.author} · ${readingInProgress.readPages || 0} de ${readingInProgress.totalPages} páginas`
+<<<<<<< HEAD
                         : 'que tal começar um livro ou artigo?'}
+=======
+                        : frase(DICA, 'queTalLivro')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                     </p>
                   </div>
                 </div>

@@ -135,7 +135,11 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
   return (
     <section
       aria-labelledby="perfil-preferencias-titulo"
+<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-3"
+=======
+      className="space-y-4"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div className="flex items-center gap-2">
         <Settings className="w-4 h-4 text-ceci-brand-strong" aria-hidden="true" />

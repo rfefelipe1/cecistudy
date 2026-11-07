@@ -15,6 +15,10 @@ import {
   UserRound,
   Wrench,
 } from 'lucide-react';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { COMPARISON_AXES } from '../../../types';
 import type { TempleAuthor, TempleComparison, TempleEntityReference } from '../../../types';
 import {
@@ -293,8 +297,13 @@ export const ComparisonDetailScreen: React.FC<{
     <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-5 pb-1 relative">
       <TempleBackButton
         onClick={onBack}
+<<<<<<< HEAD
         label="voltar às comparações"
         ariaLabel="voltar para a lista de comparações"
+=======
+        label={frase(DICA, 'voltarComparacoes')}
+        ariaLabel={frase(DICA, 'voltarListaComparacoes')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       />
 
       <header className="bg-surface-default rounded-2xl p-5 border border-ceci-border-default shadow-2xs space-y-4">

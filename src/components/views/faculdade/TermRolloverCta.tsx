@@ -11,6 +11,10 @@ import React from 'react';
 import { Archive, Sparkles } from 'lucide-react';
 import type { AcademicTerm } from '../../../types';
 import { semestersLeft, degreeProgress } from '../../../lib/termScope';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface TermRolloverCtaProps {
   term: AcademicTerm | null;
@@ -64,10 +68,17 @@ const TermRolloverCta: React.FC<TermRolloverCtaProps> = ({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-ceci-primary">
             {!nudge
+<<<<<<< HEAD
               ? `seu ${term.label} tá guardando tudo que você anota`
               : lastSemester
                 ? `seu ${term.label} é o último da graduação`
                 : `seu ${term.label} tá chegando no fim`}
+=======
+              ? frase(DICA, 'termGuardandoTudo', { label: term.label })
+              : lastSemester
+                ? frase(DICA, 'termUltimoGraduacao', { label: term.label })
+                : frase(DICA, 'termChegandoFim', { label: term.label })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </p>
           <p className="text-xs text-ceci-secondary mt-0.5">
             {degreeProgress(term.ordinal, totalSemesters)}% do caminho
@@ -84,7 +95,11 @@ const TermRolloverCta: React.FC<TermRolloverCtaProps> = ({
           onClick={onOpenWizard}
           className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold transition-colors ${
             nudge
+<<<<<<< HEAD
               ? 'bg-ceci-brand-strong text-white hover:bg-ceci-brand'
+=======
+              ? 'bg-ceci-brand-strong text-ceci-on-brand hover:bg-ceci-brand'
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               : 'border border-ceci-border-default bg-surface-default text-ceci-secondary hover:bg-surface-muted'
           }`}
         >

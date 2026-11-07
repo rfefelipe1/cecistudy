@@ -3,6 +3,10 @@ import { Sparkles, Wrench } from 'lucide-react';
 import type { TempleTechnique, TempleTechniqueCategory } from '../../../types';
 import { getTempleTechniqueCategories, getTempleTechniques } from '../../../lib/templeData';
 import { MarkdownBlock } from './MarkdownBlock';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   TempleAccordionHeader,
   TempleBackButton,
@@ -89,8 +93,13 @@ export const TechniquesScreen: React.FC = () => {
       <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-4 pb-1 relative">
         <TempleBackButton
           onClick={() => setSelected(null)}
+<<<<<<< HEAD
           label="voltar às técnicas"
           ariaLabel="voltar para a lista de técnicas"
+=======
+          label={frase(DICA, 'voltarTecnicas')}
+          ariaLabel={frase(DICA, 'voltarListaTecnicas')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         />
 
         <div className="bg-surface-default rounded-2xl p-5 border border-ceci-border-default space-y-3 shadow-2xs">

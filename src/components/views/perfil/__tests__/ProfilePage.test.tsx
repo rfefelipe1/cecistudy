@@ -15,13 +15,19 @@ import {
 import type { AcademicTerm, UserProfile } from '../../../../types';
 
 const profile = (over: Partial<UserProfile> = {}): UserProfile => ({
+<<<<<<< HEAD
   workspaceId: undefined,
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   name: 'ceci',
   semester: 1,
   totalSemesters: 8,
   university: 'USP',
   targetCareer: 'Psicologia',
+<<<<<<< HEAD
   dailyQuote: '',
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   stickersCollected: 0,
   ...over,
 });
@@ -98,15 +104,26 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
         editInitial={{
           name: rawProfile.name,
           university: rawProfile.university,
+<<<<<<< HEAD
           dailyQuote: rawProfile.dailyQuote,
+=======
+          targetCareer: rawProfile.targetCareer,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           nomeAutorizado: false,
         }}
         editOpen={editOpen}
         onEditOpen={() => setEditOpen(true)}
+<<<<<<< HEAD
         onEditClose={() => setEditOpen(false)}
         onEditSave={handlers.onEditSave}
         onPickPhoto={vi.fn()}
         onRemovePhoto={vi.fn()}
+=======
+        onPickPhoto={vi.fn()}
+        onPickCover={vi.fn()}
+        onRemoveCover={vi.fn()}
+        approachOptions={[]}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         onShowToast={vi.fn()}
         {...handlers}
       />
@@ -118,7 +135,11 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
 };
 
 describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
+<<<<<<< HEAD
   it('renderiza o banner de capa (data-testid="perfil-banner")', () => {
+=======
+  it('renderiza o banner de capa edge-to-edge (data-testid="perfil-banner")', () => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     renderPage();
     expect(screen.getByTestId('perfil-banner')).toBeTruthy();
   });
@@ -143,7 +164,11 @@ describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
     expect(h.onEditSave).toHaveBeenCalledWith({
       name: 'maria',
       university: 'USP',
+<<<<<<< HEAD
       dailyQuote: '',
+=======
+      targetCareer: 'Psicologia',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       nomeAutorizado: false,
     });
   });

@@ -22,17 +22,27 @@ import type { ReminderSettings } from '../../../context/DataClientProvider';
 import type { ThemeId } from '../../../lib/themes';
 import type { MotionPref } from '../../../lib/motion';
 import type { ProfileEditValues } from './ProfileEditSheet';
+<<<<<<< HEAD
 import ProfileEditSheet from './ProfileEditSheet';
 import ProfileHeader from './ProfileHeader';
 import ProfileStoryColumn from './ProfileStoryColumn';
 import ProfileCareColumn from './ProfileCareColumn';
 import ProfileFooterNote from './ProfileFooterNote';
+=======
+import type { CeciComboboxOption } from '../../ui/ceci/CeciCombobox';
+import ProfileEditSheet from './ProfileEditSheet';
+import ProfileHeader from './ProfileHeader';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import JourneyNow from './JourneyNow';
 import ProgressPulse from './ProgressPulse';
 import JourneyHistory from './JourneyHistory';
 import AchievementsPreview from './AchievementsPreview';
 import ProfilePreferences from './ProfilePreferences';
 import ProfileDataMaintenance from './ProfileDataMaintenance';
+<<<<<<< HEAD
+=======
+import ProfileFooterNote from './ProfileFooterNote';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Card envolvente padrão de cada seção da tela. */
 const CARD = 'rounded-2xl border border-ceci-border-default bg-surface-default p-5 sm:p-6 shadow-sm';
@@ -46,11 +56,20 @@ export interface ProfilePageProps {
   /** Valores atuais de identidade para o rascunho do sheet. */
   editInitial: ProfileEditValues;
   editOpen: boolean;
+<<<<<<< HEAD
+=======
+  approachOptions: CeciComboboxOption[];
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   onEditOpen: () => void;
   onEditClose: () => void;
   onEditSave: (values: ProfileEditValues) => void;
   onPickPhoto: () => void;
+<<<<<<< HEAD
   onRemovePhoto: () => void;
+=======
+  onPickCover: () => void;
+  onRemoveCover: () => void;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   onCorrectOrdinal: (termId: string, ordinal: number) => void;
   onSetTotalSemesters: (total: number) => void;
   onOpenSemesterWizard: () => void;
@@ -68,8 +87,13 @@ export interface ProfilePageProps {
   onMotionPrefSelect: (pref: MotionPref) => void;
   onOpenSync: () => void;
   onExport: () => void;
+<<<<<<< HEAD
   onImport: (json: string) => void;
   onReset: () => void;
+=======
+  onImport: (json: string) => Promise<void>;
+  onReset: () => Promise<void>;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({
@@ -82,7 +106,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onEditClose,
   onEditSave,
   onPickPhoto,
+<<<<<<< HEAD
   onRemovePhoto,
+=======
+  onPickCover,
+  onRemoveCover,
+  approachOptions,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   onCorrectOrdinal,
   onSetTotalSemesters,
   onOpenSemesterWizard,
@@ -102,6 +132,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onExport,
   onImport,
   onReset,
+<<<<<<< HEAD
 }) => {
   const { identity, achievements } = vm;
 
@@ -190,5 +221,100 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
     </div>
   );
 };
+=======
+}) => (
+  <div className="w-full min-[1200px]:max-w-[1120px] min-[1200px]:mx-auto pb-1">
+    <div className="grid grid-cols-1 min-[900px]:grid-cols-12 min-[900px]:gap-5 space-y-5 min-[900px]:space-y-0">
+      {/* A história: identidade → jornada → ritmo → memória → conquistas (coluna 7). */}
+      <div className="min-[900px]:col-span-7 space-y-5">
+        {/* Cabeçalho de identidade — SEM card envolvente (banner, avatar, nome, nível, 4 conquistas). */}
+        <ProfileHeader
+          identity={vm.identity}
+          achievements={vm.achievements.visible}
+          onPickCover={onPickCover}
+          onPickPhoto={onPickPhoto}
+          onRemoveCover={onRemoveCover}
+          onEdit={onEditOpen}
+          onMoreOptions={onEditOpen}
+          onOpenStickers={onOpenStickers}
+        />
+
+        <section className={CARD}>
+          <JourneyNow
+            journey={vm.journey}
+            onCorrectOrdinal={onCorrectOrdinal}
+            onSetTotalSemesters={onSetTotalSemesters}
+            onOpenSemesterWizard={onOpenSemesterWizard}
+            onShowToast={onShowToast}
+          />
+        </section>
+
+        <section className={CARD}>
+          <ProgressPulse
+            pulse={vm.pulse}
+            onOpenSessions={onOpenSessions}
+            onOpenReadings={onOpenReadings}
+            onOpenTasks={onOpenTasks}
+            onOpenExams={onOpenExams}
+          />
+        </section>
+
+        <section className={CARD}>
+          <JourneyHistory journey={vm.journey} onOpenTermHistory={onOpenTermHistory} />
+        </section>
+
+        {/* Conquistas além das 4 já exibidas no cabeçalho de identidade. */}
+        <section className={CARD}>
+          <AchievementsPreview
+            achievements={{
+              ...vm.achievements,
+              visible: vm.achievements.visible.slice(4),
+            }}
+            onOpenStickers={onOpenStickers}
+            onOpenStreak={onOpenStreak}
+          />
+        </section>
+      </div>
+
+      {/* O cuidado: preferências e dados (coluna 5). */}
+      <div className="min-[900px]:col-span-5 space-y-5">
+        <section className={CARD}>
+          <ProfilePreferences
+            preferences={vm.preferences}
+            themePref={themePref}
+            motionPref={motionPref}
+            onUpdateReminder={onUpdateReminder}
+            onSetGcalEnabled={onSetGcalEnabled}
+            onThemeSelect={onThemeSelect}
+            onMotionPrefSelect={onMotionPrefSelect}
+          />
+        </section>
+
+        <section className={CARD}>
+          <ProfileDataMaintenance
+            maintenance={vm.maintenance}
+            onOpenSync={onOpenSync}
+            onExport={onExport}
+            onImport={onImport}
+            onReset={onReset}
+          />
+        </section>
+      </div>
+    </div>
+
+    {/* Rodapé afetivo (§5.2). */}
+    <ProfileFooterNote />
+
+    {/* Sheet de edição de identidade (D5) — a página é a dona da composição. */}
+    <ProfileEditSheet
+      open={editOpen}
+      onClose={onEditClose}
+      initial={editInitial}
+      onSave={onEditSave}
+      approachOptions={approachOptions}
+    />
+  </div>
+);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export default ProfilePage;

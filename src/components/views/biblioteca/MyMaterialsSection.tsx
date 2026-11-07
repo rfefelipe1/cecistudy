@@ -2,18 +2,30 @@
 // Extraída de `BibliotecaView.tsx`: nota seletora de "suas notas" + prateleiras
 // "continuar lendo" e "salvos pra depois".
 
+<<<<<<< HEAD
 import React from 'react';
+=======
+import React, { memo } from 'react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { BookOpen, Bookmark, FileText, ChevronRight } from 'lucide-react';
 import { CollectionBook } from '../../../data/libraryData';
 import { ManageSurface } from '../../ui/ManageSurface';
 import { Reveal } from '@/lib/motion';
 
 /** Card compacto de livro para as prateleiras de "meus materiais". */
+<<<<<<< HEAD
 const MiniBookCard: React.FC<{
   book: CollectionBook;
   progressPct?: number;
   onSelect: () => void;
 }> = ({ book, progressPct, onSelect }) => (
+=======
+const MiniBookCard = React.memo<{
+  book: CollectionBook;
+  progressPct?: number;
+  onSelect: () => void;
+}>(({ book, progressPct, onSelect }) => (
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   <ManageSurface kind="catalogBook" id={book.id} onTap={onSelect} className="shrink-0">
     <button
       aria-label={`abrir ${book.title}`}
@@ -41,7 +53,11 @@ const MiniBookCard: React.FC<{
       )}
     </button>
   </ManageSurface>
+<<<<<<< HEAD
 );
+=======
+));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface MyMaterialsSectionProps {
   looseNotesCount: number;
@@ -52,7 +68,11 @@ interface MyMaterialsSectionProps {
   onSelectBook: (book: CollectionBook) => void;
 }
 
+<<<<<<< HEAD
 export const MyMaterialsSection: React.FC<MyMaterialsSectionProps> = ({
+=======
+const MyMaterialsSectionComponent: React.FC<MyMaterialsSectionProps> = ({
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   looseNotesCount,
   readingBooks,
   savedBooks,
@@ -146,3 +166,8 @@ export const MyMaterialsSection: React.FC<MyMaterialsSectionProps> = ({
     )}
   </section>
 );
+<<<<<<< HEAD
+=======
+
+export const MyMaterialsSection = memo(MyMaterialsSectionComponent);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

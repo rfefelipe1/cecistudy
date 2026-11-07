@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useMemo } from 'react';
+=======
+import React, { useMemo, useState } from 'react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   HeartHandshake,
   Stethoscope,
@@ -12,11 +16,20 @@ import { useMobileApp } from '@/context/mobileApp';
 import type { InternshipLog, InternshipLogType, ManagedItem } from '../../types';
 import type { InternshipWizardSeed } from '../../types/internshipSeed';
 import { hapticSuccess } from '../../lib/haptics';
+<<<<<<< HEAD
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
 import { FieldLabel, ReviewCard, TextArea, TextInput, DateInput } from './wizardFields';
 import { TagField } from '../ui/TagField';
 import { PillGroup } from '../ui/PillGroup';
+=======
+import { useFormGuard } from '../../lib/useFormGuard';
+import { DescartarConfirmacao } from '../form/DescartarConfirmacao';
+import { RestaurarOuNovo } from '../form/RestaurarOuNovo';
+import { WizardScaffold, type WizardStep } from './WizardScaffold';
+import { FieldLabel, ReviewCard, TextArea, TextInput } from './wizardFields';
+import { TagField } from '../ui/TagField';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ToggleRow } from '../ui/ToggleRow';
 import { formatDateBR, formatDateShortBR } from '../../lib/dateBR';
 import { pluralPt } from '../../lib/pluralPt';
@@ -36,7 +49,19 @@ import {
   CAMPO_REFERENCIA_LABEL,
   CAMPO_REFERENCIA_DESCRICAO,
   type CampoPendencia,
+<<<<<<< HEAD
 } from '../../lib/internshipCases';
+=======
+  type DerivedCase,
+} from '../../lib/internshipCases';
+import { ChoiceStep } from './internship/ChoiceStep';
+import { EssentialStep } from './internship/EssentialStep';
+import { CamposStep } from './internship/CamposStep';
+import { ReflectionStep } from './internship/ReflectionStep';
+import { AttendanceRow } from './internship/AttendanceRow';
+import { DiscussedStep } from './internship/DiscussedStep';
+import { PacienteField } from './internship/PacienteField';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /**
  * Wizard de estágio — v4 (`SPEC-009 §9.9`).
@@ -58,6 +83,7 @@ import {
  *   vírgula.
  */
 
+<<<<<<< HEAD
 const KINDS: {
   value: InternshipLogType;
   label: string;
@@ -86,6 +112,8 @@ const KINDS: {
   { value: 'outro', label: 'outro', caption: 'registro avulso de campo', Icon: Sparkles },
 ];
 
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 const KIND_META: Record<InternshipLogType, { title: string; icon: React.ReactNode }> = {
   estagio: { title: 'novo registro de estágio', icon: <HeartHandshake className="w-3.5 h-3.5" /> },
   atendimento_clinico: {
@@ -158,10 +186,30 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   // rascunho precisa ficar intacto para voltar quando abrir sem seed.
   const useDraft = !seedTarget && !wizardSeed;
 
+<<<<<<< HEAD
   const { values, patch, step, setStep, clearDraft, isDirty } = useWizardForm<InternshipDraft>({
     draftKey: useDraft ? 'internship' : undefined,
     initialStep: 0,
     initial: {
+=======
+  const [step, setStep] = useState(0);
+  const {
+    valores,
+    patch,
+    sujo,
+    confirmando,
+    setConfirmando,
+    requestClose,
+    restaurarOuNovo,
+    limpar,
+    continuarRegistro,
+    comecarNovo,
+    descartar,
+    carregou,
+  } = useFormGuard<InternshipDraft>({
+    chave: useDraft ? 'internship' : undefined,
+    inicial: {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       kind: seedTarget?.type ?? wizardSeed?.kind ?? null,
       activity: seedTarget?.activity ?? '',
       hours: seedTarget ? String(seedTarget.hours) : '',
@@ -198,11 +246,15 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
           }
         : undefined,
     },
+<<<<<<< HEAD
     editing: !!seedTarget,
     // `isDirty` passou a considerar **qualquer campo de conteúdo**: o v3 só olhava
     // título e reflexão, então um registro salvo com tema e sem reflexão era
     // descartado sem avisar.
     isDirty: (v) =>
+=======
+    estaSujo: (v) =>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       !seedTarget &&
       [
         v.activity,
@@ -216,8 +268,26 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
         v.orientations,
         v.supervisor,
       ].some((s) => !!s?.trim()),
+<<<<<<< HEAD
   });
 
+=======
+    aoContinuarRegistro: () => {
+      // O rascunho já foi carregado no `valores` pelo `useFormGuard`.
+    },
+    aoComecarNovo: () => {
+      // O `useFormGuard` já resetou para o `inicial` e limpou o rascunho.
+    },
+    labelRegistro: (v) => {
+      const data = v.date ? formatDateBR(v.date) : todayKey;
+      const horas = v.hours ? `${Math.min(24, Math.max(0, parseHours(v.hours)))} h` : '';
+      return `registro de ${data}${horas ? ` às ${horas}` : ''}`;
+    },
+  });
+
+  // Desestrutura os valores para uso no restante do componente (mantém nomes
+  // antigos para não reescrever todo o corpo do wizard).
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const {
     kind,
     activity,
@@ -241,7 +311,11 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
     afterNotes,
     selfAssessment,
     declinedFields,
+<<<<<<< HEAD
   } = values;
+=======
+  } = valores;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const confidence = selfAssessment?.confidence ?? '';
   const limits = selfAssessment?.limits ?? '';
   const themes = selfAssessment?.themes ?? '';
@@ -272,7 +346,11 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   });
 
   const finish = () => {
+<<<<<<< HEAD
     clearDraft();
+=======
+    limpar();
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     closeWizard();
   };
 
@@ -340,6 +418,7 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   // Passos
   // ==========================================================================
 
+<<<<<<< HEAD
   const choiceStep: WizardStep = {
     id: 'tipo',
     title: 'tipo',
@@ -375,6 +454,14 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
       </div>
     ),
   };
+=======
+  const choiceStep = ChoiceStep({
+    onSelect: (k) => {
+      setKind(k);
+      setStep(0);
+    },
+  });
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const hoursField = (
     <div>
@@ -412,6 +499,7 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   ) : null;
 
   /** Passo essencial, com variantes por tipo (`D9`: só clínico exige iniciais). */
+<<<<<<< HEAD
   const essentialStep = (extra?: React.ReactNode): WizardStep => ({
     id: 'essencial',
     title: 'essencial',
@@ -637,6 +725,82 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
     essentialStep(),
     camposStep(),
     reflectionStep(),
+=======
+  const essentialStep = EssentialStep({
+    kind,
+    activity,
+    hours,
+    date,
+    missingInitials,
+    titleHint,
+    hoursTooHigh,
+    isFuture,
+    onPatch: (p) => patch(p),
+    futureNotice,
+  });
+
+  const reflectionStep = ReflectionStep({
+    reflections,
+    isFuture,
+    extra: kind === 'atendimento_clinico' ? (
+      <div>
+        <label
+          htmlFor="internship-observacoes-input"
+          className="block text-xs font-medium text-ceci-secondary mb-1"
+        >
+          impressões clínicas / observações
+        </label>
+        <TextArea
+          id="internship-observacoes-input"
+          rows={4}
+          value={observations}
+          onChange={(e) => patch({ observations: e.target.value })}
+          placeholder="como foi o vínculo, o estado emocional, algo que chamou atenção..."
+        />
+      </div>
+    ) : undefined,
+    onPatch: (r) => patch({ reflections: r }),
+  });
+
+  /** `SPEC-011 D10/D11`: só os switches — a escolha de campos persiste no log. */
+  const camposStep = CamposStep({
+    kind,
+    declinedFields,
+    onToggle: (c) =>
+      patch({
+        declinedFields: (declinedFields ?? []).includes(c)
+          ? declinedFields.filter((k) => k !== c)
+          : [...(declinedFields ?? []), c],
+      }),
+  });
+
+  const pacienteField = (
+    <PacienteField
+      patient={patient}
+      onPatientChange={(v) => patch({ patient: v })}
+      onPatientSelect={(alvo) => {
+        const caso = alvo.case as DerivedCase | undefined;
+        patch({
+          patient: alvo.label,
+          sessionNumber: sessionNumber.trim()
+            ? sessionNumber
+            : String(nextSessionNumber(caso)),
+          patientAge: patientAge.trim() ? patientAge : (caso?.latestAge ?? ''),
+          approach: approach.trim() ? approach : (caso?.latestApproach ?? ''),
+        });
+      }}
+      existingPatients={existingPatients}
+      typedKey={typedKey}
+      duplicateCase={duplicateCase}
+      looksFullName={looksFullName}
+    />
+  );
+
+  const estagioSteps: WizardStep[] = [
+    essentialStep,
+    camposStep,
+    reflectionStep,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     {
       id: 'revisar',
       title: 'revisar',
@@ -658,8 +822,25 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   ];
 
   const atendimentoSteps: WizardStep[] = [
+<<<<<<< HEAD
     essentialStep(pacienteField),
     camposStep(),
+=======
+    EssentialStep({
+      kind,
+      activity,
+      hours,
+      date,
+      missingInitials,
+      titleHint,
+      hoursTooHigh,
+      isFuture,
+      onPatch: (p) => patch(p),
+      futureNotice,
+      extra: pacienteField,
+    }),
+    camposStep,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     {
       id: 'contexto',
       title: 'contexto',
@@ -715,6 +896,7 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
         </div>
       ),
     },
+<<<<<<< HEAD
     reflectionStep(
       <div>
         <FieldLabel>impressões clínicas / observações</FieldLabel>
@@ -726,6 +908,30 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
         />
       </div>,
     ),
+=======
+    ReflectionStep({
+      reflections,
+      isFuture,
+      extra: (
+        <div>
+          <label
+            htmlFor="internship-observacoes-input"
+            className="block text-xs font-medium text-ceci-secondary mb-1"
+          >
+            impressões clínicas / observações
+          </label>
+          <TextArea
+            id="internship-observacoes-input"
+            rows={4}
+            value={observations}
+            onChange={(e) => patch({ observations: e.target.value })}
+            placeholder="como foi o vínculo, o estado emocional, algo que chamou atenção..."
+          />
+        </div>
+      ),
+      onPatch: (r) => patch({ reflections: r }),
+    }),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     {
       id: 'revisar',
       title: 'revisar',
@@ -754,8 +960,13 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
   ];
 
   const supervisionSteps: WizardStep[] = [
+<<<<<<< HEAD
     essentialStep(),
     ...(kind === 'intervisao' ? [camposStep()] : []),
+=======
+    essentialStep,
+    ...(kind === 'intervisao' ? [camposStep] : []),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     {
       id: 'preparo',
       title: 'preparo',
@@ -801,7 +1012,18 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
         </div>
       ),
     },
+<<<<<<< HEAD
     discussedStep,
+=======
+    DiscussedStep({
+      kind,
+      discussedLogIds,
+      internshipLogs,
+      todayKey,
+      seedTarget,
+      onToggle: toggleDiscussed,
+    }),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     {
       id: 'revisar',
       title: 'revisar',
@@ -1021,8 +1243,13 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
     else if (kind === 'supervisao' || kind === 'intervisao')
       showToast(
         discusses
+<<<<<<< HEAD
           ? `supervisão guardada · ${pluralPt(discusses, 'sessão ligada', 'sessões ligadas')} ♡`
           : 'supervisão guardada ♡',
+=======
+          ? frase(CELEBRACAO, 'supervisaoGuardada', { ligadas: pluralPt(discusses, 'sessão ligada', 'sessões ligadas') })
+          : frase(CELEBRACAO, 'registroGuardado'),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       );
     else showToast(frase(CELEBRACAO, 'registroGuardado'));
   };
@@ -1040,6 +1267,7 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
     ? KIND_META[kind]
     : { title: 'novo registro de estágio', icon: <Sparkles className="w-3.5 h-3.5" /> };
 
+<<<<<<< HEAD
   return (
     <WizardScaffold
       title={meta.title}
@@ -1054,5 +1282,55 @@ export const InternshipWizard: React.FC<{ editing?: ManagedItem | null }> = ({ e
       onClose={finish}
       isDirty={isDirty}
     />
+=======
+  // Quando há rascunho salvo e o usuário ainda não decidiu continuar ou começar
+  // novo, mostra a pergunta antes de renderizar o wizard.
+  if (carregou && !restaurarOuNovo()) {
+    const data = valores.date ? formatDateBR(valores.date) : todayKey;
+    const horas = valores.hours ? `${Math.min(24, Math.max(0, parseHours(valores.hours)))} h` : '';
+    const label = `registro de ${data}${horas ? ` às ${horas}` : ''}`;
+    return (
+      <RestaurarOuNovo
+        aberta
+        labelRegistro={label}
+        aoContinuarRegistro={() => continuarRegistro()}
+        aoComecarNovo={() => comecarNovo()}
+        aoCancelar={() => {
+          finish();
+        }}
+      />
+    );
+  }
+
+  return (
+    <>
+      <WizardScaffold
+        tone="narrative"
+        progress="linear"
+        title={meta.title}
+        icon={meta.icon}
+        step={step}
+        subtitle={kind ? `campo, supervisão e entregas ♡` : 'registro do estágio'}
+        steps={steps}
+        onStepChange={setStep}
+        canNext={canAdvance}
+        invalidFieldId={missingInitials ? 'internship-paciente-input' : undefined}
+        onSave={doSave}
+        onSaveMinimal={step >= 1 && canAdvance ? onSaveMinimal : undefined}
+        onClose={() => requestClose(finish)}
+        isDirty={sujo}
+      />
+      {confirmando && (
+        <DescartarConfirmacao
+          aberta
+          aoCancelar={() => setConfirmando(false)}
+          aoDescartar={() => {
+            descartar();
+            finish();
+          }}
+        />
+      )}
+    </>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   );
 };

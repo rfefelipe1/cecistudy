@@ -244,11 +244,20 @@ describe('TccView — shell (SPEC-012 F3 / SPEC-010 D1-D3)', () => {
     expect(screen.getByText('Worden, J. W. (2018). Tratamento do luto.')).toBeInTheDocument();
     expect(screen.getAllByText(/WINNICOTT/).length).toBeGreaterThan(0);
 
+<<<<<<< HEAD
     fireEvent.click(screen.getByRole('button', { name: 'candidatas' }));
     expect(screen.queryAllByText('Worden, J. W. (2018). Tratamento do luto.')).toHaveLength(0);
     expect(screen.getAllByText(/WINNICOTT/).length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: 'citadas' }));
+=======
+    // Os chips de estado são CeciFilterChip (role="checkbox", não button) — SPEC-030 D3.
+    fireEvent.click(screen.getByRole('checkbox', { name: 'candidatas' }));
+    expect(screen.queryAllByText('Worden, J. W. (2018). Tratamento do luto.')).toHaveLength(0);
+    expect(screen.getAllByText(/WINNICOTT/).length).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'citadas' }));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.getByText('Worden, J. W. (2018). Tratamento do luto.')).toBeInTheDocument();
     expect(screen.queryAllByText(/WINNICOTT/)).toHaveLength(0);
   });
@@ -322,7 +331,17 @@ describe('TccView — marcar capítulo (SPEC-012 F0.1)', () => {
 
   it('toque na linha abre a sheet do capítulo (F4.1 — o toggle é só no círculo)', () => {
     renderTcc(capitulos(), { tab: 'capitulos' });
+<<<<<<< HEAD
     fireEvent.click(screen.getByText('revisão de literatura'));
+=======
+    // `getAllByText` porque o título pode aparecer em mais de um nó (lista +
+    // possíveis clones de animação do Reveal/MorphSource). O alvo real é o
+    // `<p>` do item da lista, cujo container tem o `onClick` que abre a sheet.
+    const alvo = screen.getAllByText('revisão de literatura').find(
+      el => el.tagName === 'P'
+    ) ?? screen.getAllByText('revisão de literatura')[0];
+    fireEvent.click(alvo);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
     // A sheet abre com o capítulo vivo (D5), não com cópia congelada.
     expect(screen.getByText('editar capítulo')).toBeInTheDocument();
@@ -416,23 +435,38 @@ describe('TccWizard — concluir com capítulo pendente (SPEC-012 F0.3 / D4)', (
     const bancaKey = addDaysKey(hoje, 40);
     const entregaKey = addDaysKey(hoje, 54);
     const semPrazo = capitulos().map((c) => ({ ...c, stage: 'pronto' as const, dueDate: undefined }));
+<<<<<<< HEAD
     renderWizard(tccBase(), semPrazo);
 
     // passo 2 (prazos & metas)
     avancarPassos(1);
     fireEvent.change(screen.getByLabelText('entrega final'), { target: { value: entregaKey } });
     fireEvent.change(screen.getByLabelText('banca'), { target: { value: bancaKey } });
+=======
+    // Pré-preenche entrega e banca no tcc (o `renderWizard` grava no storage
+    // antes de montar; o `CeciDatePicker` não aceita `fireEvent.change`, então
+    // as datas vêm do estado inicial, não da edição no wizard).
+    const tccComPrazos = { ...tccBase(), deliveryDate: entregaKey, defenseDate: bancaKey };
+    renderWizard(tccComPrazos, semPrazo);
+
+    // passo 2 (prazos & metas): só edita as metas (NumberInput responde a change).
+    avancarPassos(1);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.change(screen.getByLabelText('meta total de palavras'), { target: { value: '20000' } });
     fireEvent.change(screen.getByLabelText('meta semanal'), { target: { value: '500' } });
     avancarPassos(2);
     fireEvent.click(screen.getByRole('button', { name: 'guardar tcc ♡' }));
 
+<<<<<<< HEAD
     expect(
       screen.getByText(`próximo: ${formatDateShortBR(bancaKey)} · em 40 dias`)
     ).toBeInTheDocument();
 
     // E o singleton persistiu os dois marcos e as duas metas. O liga/desliga
     // dos lembretes saiu do wizard e mora no Perfil (SPEC-M-025 D12).
+=======
+    // O singleton persistiu os dois marcos (pré-preenchidos) e as duas metas (editadas).
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     await waitFor(() => {
       const stored = JSON.parse(localStorage.getItem('cecistudy_user_tcc') ?? '{}');
       expect(stored.deliveryDate).toBe(entregaKey);
@@ -493,7 +527,11 @@ describe('ChapterSheet — CRUD com uma escrita por ação (SPEC-012 F4.3/D5)', 
     fireEvent.click(screen.getByText('em revisão'));
     fireEvent.click(screen.getByRole('button', { name: /guardar/ }));
 
+<<<<<<< HEAD
     expect(screen.getByText('introdução revisada')).toBeInTheDocument();
+=======
+    expect(screen.getAllByText('introdução revisada').length).toBeGreaterThan(0);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     // `em revisão` existe na linha (StatusChip) — e a sheet em saída animada
     // ainda pode ter o botão do SegmentedControl: usa `getAllByText`.
     expect(screen.getAllByText('em revisão').length).toBeGreaterThan(0);
@@ -565,7 +603,14 @@ describe('TccView — aba escrita (SPEC-012 F5)', () => {
     renderTcc(capitulos(), { tab: 'escrita' });
 
     fireEvent.click(screen.getAllByRole('button', { name: 'registrar escrita' })[0]);
+<<<<<<< HEAD
     fireEvent.change(screen.getByLabelText('capítulo'), { target: { value: 'thc-1' } });
+=======
+    // O capítulo é um CeciSelect (botão que abre sheet de opções), não um
+    // <select> nativo: clica no botão e escolhe a opção na sheet (SPEC-030 D2).
+    fireEvent.click(screen.getByLabelText('capítulo'));
+    fireEvent.click(screen.getByRole('option', { name: 'introdução' }));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.change(screen.getByLabelText('palavras escritas'), { target: { value: '250' } });
     fireEvent.change(screen.getByLabelText('minutos'), { target: { value: '30' } });
     fireEvent.click(screen.getByRole('button', { name: /guardar/ }));
@@ -843,7 +888,12 @@ describe('TccView — filtro por capítulo e sumário (SPEC-024 D10/D12)', () =>
     expect(screen.getAllByText(/WINNICOTT/).length).toBeGreaterThan(0);
 
     // thc-2 não tem referência: a interseção dos dois filtros esvazia a lista.
+<<<<<<< HEAD
     fireEvent.click(screen.getByRole('button', { name: 'revisão de literatura' }));
+=======
+    // O chip de capítulo é um CeciFilterChip (role="checkbox", não button) — SPEC-030 D3.
+    fireEvent.click(screen.getByRole('checkbox', { name: 'revisão de literatura' }));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.queryAllByText(/WINNICOTT/)).toHaveLength(0);
 
     // O atalho do estado vazio volta os **dois** filtros ao início.

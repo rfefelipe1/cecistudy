@@ -7,13 +7,24 @@
 // está preenchido. Fechar com alterações pendentes pede confirmação (estado sujo).
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../../ui/Modal';
+<<<<<<< HEAD
 import { Toggle } from '../../ui/Toggle';
+=======
+import { CeciCombobox } from '../../ui/ceci/CeciCombobox';
+import type { CeciComboboxOption } from '../../ui/ceci/CeciCombobox';
+import { Switch as MaterialDesign3Switch } from '../../ui/material-design-3-switch';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ONBOARDING, frase } from '../../../lib/voice';
 
 export interface ProfileEditValues {
   name: string;
+<<<<<<< HEAD
   university: string;
   dailyQuote: string;
+=======
+  targetCareer: string;
+  university: string;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   /**
    * Autorização do tratamento por nome (`SPEC-C-014` D8). Viaja junto da edição
    * de identidade porque é decisão **dela**, feita onde ela escreve o nome.
@@ -21,21 +32,38 @@ export interface ProfileEditValues {
   nomeAutorizado: boolean;
 }
 
+<<<<<<< HEAD
 interface ProfileEditSheetProps {
+=======
+export interface ProfileEditSheetProps {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   open: boolean;
   onClose: () => void;
   /** Valores atuais do perfil; o rascunho reinicia a cada abertura. */
   initial: ProfileEditValues;
   onSave: (values: ProfileEditValues) => void;
+<<<<<<< HEAD
+=======
+  /** Catálogo de abordagens para o combobox de "como quer seguir na psicologia". */
+  approachOptions: CeciComboboxOption[];
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 const hasChanges = (a: ProfileEditValues, b: ProfileEditValues): boolean =>
   a.name !== b.name ||
+<<<<<<< HEAD
   a.university !== b.university ||
   a.dailyQuote !== b.dailyQuote ||
   a.nomeAutorizado !== b.nomeAutorizado;
 
 const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, initial, onSave }) => {
+=======
+  a.targetCareer !== b.targetCareer ||
+  a.university !== b.university ||
+  a.nomeAutorizado !== b.nomeAutorizado;
+
+const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, initial, onSave, approachOptions }) => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const [draft, setDraft] = useState<ProfileEditValues>(initial);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
 
@@ -65,8 +93,13 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
     if (nameError) return;
     onSave({
       name: draft.name.trim(),
+<<<<<<< HEAD
       university: draft.university.trim(),
       dailyQuote: draft.dailyQuote.trim(),
+=======
+      targetCareer: draft.targetCareer.trim(),
+      university: draft.university.trim(),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       // Sem nome não há tratamento: ligar o interruptor com o campo vazio é a
       // ordem invertida, e a voz falaria "de " com espaço a mais.
       nomeAutorizado: draft.name.trim().length > 0 && draft.nomeAutorizado,
@@ -128,6 +161,7 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
 
         <div>
           <label
+<<<<<<< HEAD
             htmlFor="perfil-edit-frase"
             className="block text-xs font-medium text-ceci-secondary mb-1"
           >
@@ -139,6 +173,21 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
             value={draft.dailyQuote}
             onChange={(e) => setDraft((d) => ({ ...d, dailyQuote: e.target.value }))}
             className="w-full bg-surface-muted border border-ceci-border-default focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand rounded-xl px-3.5 py-2.5 text-xs text-ceci-primary"
+=======
+            htmlFor="perfil-edit-abordagem"
+            className="block text-xs font-medium text-ceci-secondary mb-1"
+          >
+            como você quer seguir na psicologia?
+          </label>
+          <CeciCombobox
+            label="como você quer seguir na psicologia?"
+            value={draft.targetCareer || null}
+            onChange={(value) => setDraft((d) => ({ ...d, targetCareer: value }))}
+            options={approachOptions}
+            placeholder="escolher uma abordagem..."
+            sheetTitle="abordagem que quero seguir"
+            optional
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           />
         </div>
 
@@ -157,10 +206,20 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
               {frase(ONBOARDING, 'nomeAutorizadoDescricao', { nome: draft.name.trim() || 'você' })}
             </p>
           </div>
+<<<<<<< HEAD
           <Toggle
             checked={draft.nomeAutorizado}
             onChange={() => setDraft((d) => ({ ...d, nomeAutorizado: !d.nomeAutorizado }))}
             label={frase(ONBOARDING, 'nomeAutorizadoTitulo')}
+=======
+          <MaterialDesign3Switch
+            checked={draft.nomeAutorizado}
+            onCheckedChange={(value) =>
+              setDraft((d) => ({ ...d, nomeAutorizado: value }))
+            }
+            haptic="light"
+            aria-label={frase(ONBOARDING, 'nomeAutorizadoTitulo')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           />
         </div>
 

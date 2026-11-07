@@ -10,7 +10,11 @@ import { Modal } from '../../ui/Modal';
 import PreferenceRow from './PreferenceRow';
 
 interface DangerZoneProps {
+<<<<<<< HEAD
   onReset: () => void;
+=======
+  onReset: () => Promise<void>;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 const DangerZone: React.FC<DangerZoneProps> = ({ onReset }) => {
@@ -58,8 +62,13 @@ const DangerZone: React.FC<DangerZoneProps> = ({ onReset }) => {
             </button>
             <button
               type="button"
+<<<<<<< HEAD
               onClick={() => {
                 onReset();
+=======
+              onClick={async () => {
+                await onReset();
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 setPendingReset(false);
               }}
               className="flex-1 py-3 rounded-2xl text-sm font-semibold text-status-danger-on bg-status-danger hover:bg-status-danger-strong cursor-pointer active:scale-95 transition-transform"

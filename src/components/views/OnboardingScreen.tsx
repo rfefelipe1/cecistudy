@@ -17,7 +17,11 @@ import {
 import { useMobileApp } from '@/context/mobileApp';
 import { DEFAULT_TOTAL_SEMESTERS } from '@/data/schema';
 import { cn } from '../../lib/utils';
+<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
+=======
+import { CeciChoicePill } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ToggleRow } from '../ui/ToggleRow';
 import { pickProfilePhoto } from '../../lib/photo';
 import { ONBOARDING, frase } from '../../lib/voice';
@@ -86,14 +90,22 @@ export const OnboardingScreen: React.FC = () => {
     }
   };
 
+<<<<<<< HEAD
   const finish = () => {
     completeOnboarding({
+=======
+  const finish = async () => {
+    await completeOnboarding({
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       name: name.trim(),
       semester,
       totalSemesters,
       university: university.trim(),
       targetCareer: targetCareer.trim() || 'Psicóloga Clínica',
+<<<<<<< HEAD
       dailyQuote: 'compreender o ser humano é a forma mais bonita de cuidado.',
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       stickersCollected: 0,
       photoUrl: photoUrl || '',
     });
@@ -229,24 +241,52 @@ export const OnboardingScreen: React.FC = () => {
                 <p className="text-xs font-semibold text-ceci-secondary mb-2">
                   {frase(ONBOARDING, 'semestreAtual')}
                 </p>
+<<<<<<< HEAD
                 <PillGroup
                   variant="primary"
                   options={SEMESTER_OPTIONS.map((s) => ({ value: String(s), label: `${s}º` }))}
                   value={String(semester)}
                   onChange={(v) => setSemester(Number(v))}
                 />
+=======
+                <div className="flex flex-wrap gap-1.5">
+                  {SEMESTER_OPTIONS.map((s) => (
+                    <CeciChoicePill
+                      key={s}
+                      value={String(s)}
+                      label={`${s}º`}
+                      selected={String(semester) === String(s)}
+                      onChange={(v) => setSemester(Number(v))}
+                    />
+                  ))}
+                </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               </div>
 
               <div>
                 <p className="text-xs font-semibold text-ceci-secondary mb-2">
                   {frase(ONBOARDING, 'totalDoCurso')}
                 </p>
+<<<<<<< HEAD
                 <PillGroup
                   variant="academic"
                   options={SEMESTER_OPTIONS.map((s) => ({ value: String(s), label: `${s}º` }))}
                   value={String(totalSemesters)}
                   onChange={(v) => setTotalSemesters(Number(v))}
                 />
+=======
+                <div className="flex flex-wrap gap-1.5">
+                  {SEMESTER_OPTIONS.map((s) => (
+                    <CeciChoicePill
+                      key={s}
+                      value={String(s)}
+                      label={`${s}º`}
+                      selected={String(totalSemesters) === String(s)}
+                      onChange={(v) => setTotalSemesters(Number(v))}
+                    />
+                  ))}
+                </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               </div>
 
               <div className="flex gap-2 pt-2">

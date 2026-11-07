@@ -1,5 +1,9 @@
 import React from 'react';
+<<<<<<< HEAD
 import { VAZIO, CELEBRACAO, frase } from '@/lib/voice';
+=======
+import { VAZIO, CELEBRACAO, DICA, frase } from '@/lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useMobileApp } from '@/context/mobileApp';
 import { Picker } from '../ui/Picker';
 
@@ -46,7 +50,11 @@ export const CourseSelect: React.FC<CourseSelectProps> = ({
       options={courses.map((c) => ({ value: c.id, label: c.name }))}
       placeholder={placeholder}
       emptyMessage={emptyMessage}
+<<<<<<< HEAD
       createLabel="criar matéria agora"
+=======
+      createLabel={frase(DICA, 'criarMateriaAgora')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       onCreate={createCourseInline}
       clearable={clearable ? true : undefined}
     />

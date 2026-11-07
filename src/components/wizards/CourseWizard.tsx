@@ -1,16 +1,29 @@
 import React, { useMemo, useState } from 'react';
+<<<<<<< HEAD
 import { VAZIO, CELEBRACAO, frase } from '../../lib/voice';
+=======
+import { VAZIO, CELEBRACAO, DICA, frase } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { BookOpen } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import type { Course, CourseScheduleSlot } from '../../types';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
+<<<<<<< HEAD
 import { FieldHint, FieldLabel, ReviewCard, TextInput } from './wizardFields';
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
 import { ColorSwatchPicker } from '../ui/ColorSwatchPicker';
 import { SchedulePicker } from '../ui/SchedulePicker';
 import { CourseIconPicker } from '../ui/CourseIconPicker';
 import { EmailSlider } from '../ui/EmailSlider';
+=======
+import { Field, FieldHint, FieldLabel, ReviewCard, TextInput } from './wizardFields';
+import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
+import { ColorSwatchPicker } from '../ui/ColorSwatchPicker';
+import { CeciSchedulePicker } from '../ui/ceci';
+import { CourseIconPicker } from '../ui/CourseIconPicker';
+import { CeciRangeField } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { formatCourseSchedule } from '../../lib/schedule';
 import {
   buildAttendanceFromHours,
@@ -90,6 +103,7 @@ export const CourseWizard: React.FC = () => {
         subtitle: 'começa pelo nome — código e semestre ajudam a organizar depois.',
         content: (
           <div className="space-y-4">
+<<<<<<< HEAD
             <TextInput
               value={name}
               onChange={(e) => patch({ name: e.target.value })}
@@ -114,6 +128,56 @@ export const CourseWizard: React.FC = () => {
                   placeholder="ex: 6º sem"
                 />
                 <FieldHint>em qual período ela está.</FieldHint>
+=======
+            <Field
+              label="nome"
+              htmlFor="curso-nome-input"
+              required
+              description={frase(VAZIO, 'cursoDescricaoNomeCodigo')}
+              error={!name.trim() && 'dê um nome para a matéria'}
+              importance="primary"
+            >
+              <TextInput
+                id="curso-nome-input"
+                value={name}
+                onChange={(e) => patch({ name: e.target.value })}
+                placeholder="ex: psicopatologia ii"
+                autoFocus
+              />
+            </Field>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Field
+                  label="código"
+                  htmlFor="curso-codigo-input"
+                  optional
+                  description={frase(VAZIO, 'cursoExemploCodigo')}
+                  importance="secondary"
+                >
+                  <TextInput
+                    id="curso-codigo-input"
+                    value={code}
+                    onChange={(e) => patch({ code: e.target.value })}
+                    placeholder="ex: PSI-202"
+                  />
+                </Field>
+              </div>
+              <div>
+                <Field
+                  label="semestre"
+                  htmlFor="curso-semestre-input"
+                  optional
+                  description={frase(VAZIO, 'cursoPerguntaPeriodo')}
+                  importance="secondary"
+                >
+                  <TextInput
+                    id="curso-semestre-input"
+                    value={semester}
+                    onChange={(e) => patch({ semester: e.target.value })}
+                    placeholder="ex: 6º sem"
+                  />
+                </Field>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               </div>
             </div>
           </div>
@@ -133,7 +197,11 @@ export const CourseWizard: React.FC = () => {
             />
             <div>
               <FieldLabel>dias e horários</FieldLabel>
+<<<<<<< HEAD
               <SchedulePicker value={schedule} onChange={(v) => patch({ schedule: v })} />
+=======
+              <CeciSchedulePicker value={schedule} onChange={(v) => patch({ schedule: v })} />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               <FieldHint>marcar os dias de aula ajuda a montar sua agenda da semana.</FieldHint>
             </div>
             <TextInput
@@ -151,15 +219,25 @@ export const CourseWizard: React.FC = () => {
         subtitle: 'em horas mesmo — eu converto para aulas pelo seu horário. tudo opcional ♡',
         content: (
           <div className="space-y-5">
+<<<<<<< HEAD
             <EmailSlider
+=======
+            <CeciRangeField
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               label="carga horária total (h)"
               value={values.totalHours}
               onChange={(v) => patch({ totalHours: v })}
               min={1}
               max={360}
               step={1}
+<<<<<<< HEAD
             />
             <EmailSlider
+=======
+              unit="h"
+            />
+            <CeciRangeField
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               label="horas já feitas (h)"
               value={values.hoursDone}
               onChange={(v) =>
@@ -170,6 +248,10 @@ export const CourseWizard: React.FC = () => {
               min={0}
               max={Math.max(values.totalHours ?? 1, 1)}
               step={1}
+<<<<<<< HEAD
+=======
+              unit="h"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             />
             <div className="rounded-2xl bg-surface-rose border border-ceci-border-brand px-4 py-3 text-xs text-ceci-brand-strong font-semibold">
               {classPreview ? (
@@ -183,12 +265,20 @@ export const CourseWizard: React.FC = () => {
             </div>
             <div>
               <FieldLabel>frequência mínima (%)</FieldLabel>
+<<<<<<< HEAD
               <EmailSlider
+=======
+              <CeciRangeField
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 value={values.minPct}
                 onChange={(v) => patch({ minPct: v })}
                 min={0}
                 max={100}
                 step={5}
+<<<<<<< HEAD
+=======
+                unit="%"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               />
               <FieldHint>
                 define quantas aulas você precisa estar presente — o padrão é 75%.
@@ -202,12 +292,20 @@ export const CourseWizard: React.FC = () => {
             />
             <div>
               <FieldLabel>média mínima (0–10)</FieldLabel>
+<<<<<<< HEAD
               <EmailSlider
+=======
+              <CeciRangeField
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 value={values.minGrade}
                 onChange={(v) => patch({ minGrade: v })}
                 min={0}
                 max={10}
                 step={0.5}
+<<<<<<< HEAD
+=======
+                unit=""
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               />
               <FieldHint>para passar — se não lembrar agora, deixe vazio ♡</FieldHint>
             </div>
@@ -320,7 +418,11 @@ export const CourseWizard: React.FC = () => {
         id: 'curso-revisar',
         title: 'revisar',
         headline: 'confere e salva a matéria no seu cantinho ♡',
+<<<<<<< HEAD
         subtitle: 'confere os dados antes de guardar — se algo faltar, é só voltar.',
+=======
+        subtitle: frase(DICA, 'confereDados'),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         content: (
           <ReviewCard
             rows={[
@@ -421,6 +523,11 @@ export const CourseWizard: React.FC = () => {
 
   return (
     <WizardScaffold
+<<<<<<< HEAD
+=======
+      tone="content"
+      progress="linear"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title="nova matéria"
       subtitle="organize sua faculdade no estilo do app"
       icon={<BookOpen className="w-3.5 h-3.5" />}
@@ -430,9 +537,16 @@ export const CourseWizard: React.FC = () => {
       onStepChange={setStep}
       canNext={canNext}
       blockedReason="dê um nome para a matéria"
+<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeWizard}
       saveLabel="guardar matéria ♡"
+=======
+      invalidFieldId={name.trim().length > 0 ? undefined : 'curso-nome-input'}
+      onSave={handleSave}
+      onClose={closeWizard}
+      saveLabel={frase(CELEBRACAO, 'guardarMateria')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

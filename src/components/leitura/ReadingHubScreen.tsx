@@ -1,9 +1,16 @@
 import React, { useMemo, useRef, useState } from 'react';
 import { BookOpen, ChevronRight, Link2, Plus } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
+<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
 import { ManageSurface } from '../ui/ManageSurface';
 import { UnderlineTabBar, type UnderlineTab } from '../ui/UnderlineTabBar';
+=======
+import { CELEBRACAO, DICA, frase } from '../../lib/voice';
+import { ManageSurface } from '../ui/ManageSurface';
+import { UnderlineTabBar, type UnderlineTab } from '../ui/UnderlineTabBar';
+import { VirtualizedList } from '../ui/VirtualizedList';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { SwipeableTabPanel, useTabPager } from '../ui/SwipeableTabPanel';
 import { EmptyState } from '../ui/EmptyState';
 import { ProgressBar } from '../ui/ProgressBar';
@@ -207,7 +214,11 @@ export const ReadingHubScreen: React.FC = () => {
 
         <p className="text-[11px] text-ceci-secondary leading-relaxed mt-3 max-w-[80%]">
           {counts.lendo > 0
+<<<<<<< HEAD
             ? 'cada página conta — sem pressa, com carinho ♡'
+=======
+            ? frase(DICA, 'cadaPaginaConta')
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             : 'abre uma leitura e o cantinho acompanha por você ♡'}
         </p>
 
@@ -268,6 +279,7 @@ export const ReadingHubScreen: React.FC = () => {
             onAction={() => openWizard('reading')}
           />
         ) : (
+<<<<<<< HEAD
           <div className="space-y-2.5">
             {filtered.map((r) => {
               const pct = percentOf(r);
@@ -317,6 +329,62 @@ export const ReadingHubScreen: React.FC = () => {
               );
             })}
           </div>
+=======
+          <VirtualizedList
+            items={filtered}
+            estimateSize={130}
+            containerClassName="overflow-y-auto max-h-[calc(100dvh-220px)] sm:max-h-[calc(100vh-220px)]"
+            renderItem={({ item, style }) => {
+              const pct = percentOf(item);
+              const meta = STATUS_META[item.status];
+              return (
+                <div style={style}>
+                  <ManageSurface
+                    key={item.id}
+                    kind="reading"
+                    id={item.id}
+                    onTap={() => setTrackingId(item.id)}
+                    className="rounded-2xl bg-surface-default border border-ceci-border-subtle shadow-2xs p-4 cursor-pointer active:scale-[0.99] transition-transform"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="font-display font-bold text-sm text-ceci-primary truncate">
+                          {item.title}
+                        </p>
+                        <p className="text-[11px] text-ceci-secondary truncate mt-0.5">
+                          {item.author || 'autor não informado'} · {courseName(item.courseId)}
+                        </p>
+                      </div>
+                      <span
+                        className={`shrink-0 text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border ${meta.className}`}
+                      >
+                        {meta.label}
+                      </span>
+                    </div>
+
+                    {pct !== null && (
+                      <div className="mt-3 space-y-1.5">
+                        <ProgressBar value={pct} />
+                        <p className="text-[10px] text-ceci-tertiary">
+                          {item.readPages ?? 0} de {item.totalPages} páginas · {pct}%
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="mt-2.5 flex items-center justify-between">
+                      <span className="text-[10px] text-ceci-tertiary">
+                        {item.lastReadAt
+                          ? `em ${formatDateShortBR(item.lastReadAt.slice(0, 10))}`
+                          : 'ainda não abri'}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-ceci-tertiary" />
+                    </div>
+                  </ManageSurface>
+                </div>
+              );
+            }}
+          />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         )}
 
         <button

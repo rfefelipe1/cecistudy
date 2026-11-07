@@ -52,10 +52,22 @@ import {
 
 export interface ProfileIdentity {
   displayName: string;
+<<<<<<< HEAD
   /** `curso · universidade`, sem separador solto quando um dos dois falta. */
   subtitle: string;
   quote: string;
   photoUrl?: string;
+=======
+  /** `abordagem · universidade`, sem separador solto quando um dos dois falta. */
+  subtitle: string;
+  /** Abordagem que a pessoa quer seguir (espelha `profile.targetCareer`). */
+  approach: string;
+  /** Universidade (espelha `profile.university`). */
+  university: string;
+  photoUrl?: string;
+  /** Foto de fundo / capa do perfil de identidade. */
+  coverPhotoUrl?: string;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   initials: string;
   level: number;
   title: string;
@@ -258,8 +270,15 @@ export function deriveProfileViewModel(input: ProfileViewModelInput): ProfileVie
     identity: {
       displayName: profile.name,
       subtitle: subtitleOf(profile.targetCareer, profile.university),
+<<<<<<< HEAD
       quote: profile.dailyQuote,
       photoUrl: profile.photoUrl,
+=======
+      approach: profile.targetCareer,
+      university: profile.university,
+      photoUrl: profile.photoUrl,
+      coverPhotoUrl: profile.coverPhotoUrl,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       initials: initialsOf(profile.name),
       level,
       title,

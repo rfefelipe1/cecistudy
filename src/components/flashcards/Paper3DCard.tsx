@@ -74,7 +74,11 @@ export const Paper3DCard: React.FC<Paper3DCardProps> = ({
     >
       <div
         className={cn(
+<<<<<<< HEAD
           'w-full max-w-[15.5rem] rounded-3xl bg-canvas/90 backdrop-blur-md border border-white/40 shadow-lg p-5 text-center',
+=======
+          'w-full max-w-[15.5rem] rounded-3xl bg-canvas/90 backdrop-blur-md border border-ceci-border-default shadow-lg p-5 text-center',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           frontClassName,
         )}
       >
@@ -92,7 +96,11 @@ export const Paper3DCard: React.FC<Paper3DCardProps> = ({
     >
       <div
         className={cn(
+<<<<<<< HEAD
           'w-full max-w-[15.5rem] rounded-3xl bg-canvas/90 backdrop-blur-md border border-white/40 shadow-lg p-5 text-center',
+=======
+          'w-full max-w-[15.5rem] rounded-3xl bg-canvas/90 backdrop-blur-md border border-ceci-border-default shadow-lg p-5 text-center',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           backClassName,
         )}
       >

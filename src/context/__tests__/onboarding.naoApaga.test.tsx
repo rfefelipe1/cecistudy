@@ -13,7 +13,11 @@ import { useMobileApp } from '@/context/mobileApp';
  * que apaga tudo é `resetApp`.
  */
 describe('completeOnboarding não apaga dado existente (SPEC-M-026 I9)', () => {
+<<<<<<< HEAD
   it('preserva as tarefas já gravadas', () => {
+=======
+  it('preserva as tarefas já gravadas', async () => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     const { result } = renderHook(() => useMobileApp(), { wrapper: MobileAppProvider });
 
     act(() => {
@@ -27,7 +31,11 @@ describe('completeOnboarding não apaga dado existente (SPEC-M-026 I9)', () => {
     });
     expect(result.current.tasks).toHaveLength(1);
 
+<<<<<<< HEAD
     act(() => {
+=======
+    await act(async () => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       result.current.completeOnboarding({ name: 'Fê' });
     });
 

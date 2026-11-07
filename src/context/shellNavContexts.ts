@@ -14,6 +14,10 @@ import type { DataActionGroups } from './dataActions';
 import type { NavigationValue } from './navigationEngine';
 import type { StreakStats, WeekDayCell } from '../lib/streak';
 import type { ReminderSettings } from './DataClientProvider';
+<<<<<<< HEAD
+=======
+import type { ManagedItemKind } from '../types';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export type CoursesBundle = DataActionGroups['courses'] & {
   toggleBookmarkCourse: (courseId: string) => void;
@@ -54,6 +58,25 @@ export const AppActionsContext = createContext<AppBundle | undefined>(undefined)
 export const TermActionsContext = createContext<TermBundle | undefined>(undefined);
 export const NavValueContext = createContext<NavigationValue | undefined>(undefined);
 
+<<<<<<< HEAD
+=======
+/** Contexto dedicado e estável apenas para o menu de gerenciamento (long-press).
+ * Assim `ManageSurface` não precisa assinar o `AppContextValue` inteiro (~200 campos)
+ * e não re-renderiza quando `activeTab` ou qualquer outro dado do app muda. */
+export const ManageItemContext = createContext<{
+  openManageItem: (kind: ManagedItemKind, id: string) => void;
+  closeManageItem: () => void;
+} | undefined>(undefined);
+
+export function useManageItem() {
+  const ctx = useContext(ManageItemContext);
+  if (!ctx) {
+    throw new Error('useManageItem must be used within a ManageItemContext provider');
+  }
+  return ctx;
+}
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 export function useCoursesActions(): CoursesBundle {
   const ctx = useContext(CoursesActionsContext);
   if (!ctx)

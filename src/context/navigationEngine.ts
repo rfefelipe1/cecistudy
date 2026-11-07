@@ -38,6 +38,10 @@ import {
   setMotionIntent,
   type NavIntent,
 } from '../lib/motion';
+<<<<<<< HEAD
+=======
+import { applyTheme, getThemeById } from '../lib/themes';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { overlayKeyOf, slideBaseKeyOf, slideLayerChanged, slideTopOf } from './slideKeys';
 import { closeTopOverlay } from '../lib/overlayStack';
 import { parseRoute, routeToStack, stackToHash } from '../lib/routing';
@@ -295,6 +299,14 @@ export interface NavigationValue {
   isTermHistoryOpen: boolean;
   focusedTermId: string | undefined;
   openTermHistory: (termId?: string) => void;
+<<<<<<< HEAD
+=======
+  /** Memórias de um semestre (SPEC-028). */
+  isSemesterMemoriesOpen: boolean;
+  focusedSemesterMemoriesTermId: string | undefined;
+  openSemesterMemories: (termId: string) => void;
+  closeSemesterMemories: () => void;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   // menu universal de editar/excluir (long-press / clique direito)
   managedItem: ManagedItem | null;
@@ -368,6 +380,10 @@ export function useNavigationEngine(
     setQuestions,
     tcc,
     showToast,
+<<<<<<< HEAD
+=======
+    themePref,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   } = data;
   const { toggleBookmarkCourse } = shared;
 
@@ -579,6 +595,12 @@ export function useNavigationEngine(
   // `goBack` cai no passo 1 do wizard e depois no perfil.
   const isTermHistoryOpen = currentScreen.kind === 'termHistory';
   const focusedTermId = currentScreen.kind === 'termHistory' ? currentScreen.termId : undefined;
+<<<<<<< HEAD
+=======
+  const isSemesterMemoriesOpen = currentScreen.kind === 'semesterMemories';
+  const focusedSemesterMemoriesTermId =
+    currentScreen.kind === 'semesterMemories' ? currentScreen.termId : undefined;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const isQuizCategoryOpen = currentScreen.kind === 'quiz-category';
   const isQuizGroupDetailOpen = currentScreen.kind === 'quiz-group-detail';
   const currentQuizGroup = currentScreen.kind === 'quiz-group-detail' ? currentScreen.group : null;
@@ -789,6 +811,13 @@ export function useNavigationEngine(
 
   const goBack = useCallback(() => {
     if (navigationStack.length <= 1) return;
+<<<<<<< HEAD
+=======
+    // SPEC-028 D9: aplicar o tema do usuário **sincronicamente** antes de
+    // `setStack`, para que a tela que remonte venha já com as CSS vars do
+    // tema escolhido — sem flash do tema default ("cantinho").
+    applyTheme(getThemeById(themePref));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     const next = navigationStack.slice(0, -1);
     setStack(next);
     setTargetId(undefined);
@@ -1588,6 +1617,25 @@ export function useNavigationEngine(
     [navigationStack, setStack, syncHash],
   );
 
+<<<<<<< HEAD
+=======
+  const openSemesterMemories = useCallback(
+    (termId: string) => {
+      const top = navigationStack[navigationStack.length - 1];
+      if (top.kind === 'semesterMemories' && top.termId === termId) return;
+      const next: NavScreen[] = [...navigationStack, { kind: 'semesterMemories', termId }];
+      setStack(next);
+      syncHash(next);
+      scrollToTop();
+    },
+    [navigationStack, setStack, syncHash],
+  );
+
+  const closeSemesterMemories = useCallback(() => {
+    goBack();
+  }, [goBack]);
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // ---- menu universal de editar/excluir (long-press / clique direito) ----
   const openManageItem = useCallback((kind: ManagedItemKind, id: string) => {
     setManagedItem({ kind, id });
@@ -1928,6 +1976,13 @@ export function useNavigationEngine(
       isTermHistoryOpen,
       focusedTermId,
       openTermHistory,
+<<<<<<< HEAD
+=======
+      isSemesterMemoriesOpen,
+      focusedSemesterMemoriesTermId,
+      openSemesterMemories,
+      closeSemesterMemories,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       isQuizCategoryOpen,
       openQuizCategory,
       closeQuizCategory,
@@ -2097,6 +2152,10 @@ export function useNavigationEngine(
       closeCalendar,
       isTempleScreenOpen,
       isTermHistoryOpen,
+<<<<<<< HEAD
+=======
+      isSemesterMemoriesOpen,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       isWizardOpen,
       managedItem,
       navDirection,

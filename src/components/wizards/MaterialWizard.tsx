@@ -6,7 +6,11 @@ import type { MaterialItem, ManagedItem } from '../../types';
 import { hapticSuccess } from '../../lib/haptics';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
+<<<<<<< HEAD
 import { ReviewCard, TextInput } from './wizardFields';
+=======
+import { Field, ReviewCard, TextInput } from './wizardFields';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
 import { TagField } from '../ui/TagField';
 import { CourseSelect } from './CourseSelect';
@@ -57,23 +61,59 @@ export const MaterialWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edi
       subtitle: 'título, tipo e autor(a) — o essencial para achar o material depois.',
       content: (
         <div className="space-y-4">
+<<<<<<< HEAD
           <TextInput
             value={title}
             onChange={(e) => patch({ title: e.target.value })}
             placeholder="título do material — ex: manual diagnóstico e estatístico"
             autoFocus
           />
+=======
+          <Field
+            label="título"
+            htmlFor="material-titulo-input"
+            required
+            description={frase(VAZIO, 'materialDescricaoTituloTipoAutor')}
+            error={!title.trim() && 'dê um título para o material'}
+            importance="primary"
+          >
+            <TextInput
+              id="material-titulo-input"
+              value={title}
+              onChange={(e) => patch({ title: e.target.value })}
+              placeholder="título do material — ex: manual diagnóstico e estatístico"
+              autoFocus
+            />
+          </Field>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           <ChoiceCardGrid
             label="tipo"
             options={MATERIAL_TYPES}
             value={type}
             onChange={(v) => patch({ type: v })}
           />
+<<<<<<< HEAD
           <TextInput
             value={author}
             onChange={(e) => patch({ author: e.target.value })}
             placeholder="autor(a)"
           />
+=======
+          <Field
+            label="autor(a)"
+            htmlFor="material-autor-input"
+            optional
+            description={frase(VAZIO, 'materialAutorOpcional')}
+            importance="secondary"
+          >
+            <TextInput
+              id="material-autor-input"
+              value={author}
+              onChange={(e) => patch({ author: e.target.value })}
+              placeholder="autor(a)"
+            />
+          </Field>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </div>
       ),
     },
@@ -148,6 +188,11 @@ export const MaterialWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edi
 
   return (
     <WizardScaffold
+<<<<<<< HEAD
+=======
+      tone="compact"
+      progress="linear"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title={editing ? 'editar material' : 'novo material'}
       icon={<BookOpen className="w-3.5 h-3.5" />}
       iconClass="bg-surface-muted border-ceci-border-default text-ceci-secondary"
@@ -156,9 +201,16 @@ export const MaterialWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edi
       onStepChange={setStep}
       canNext={title.trim().length > 0}
       blockedReason="dê um título para o material"
+<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeWizard}
       saveLabel={editing ? 'guardar alterações ♡' : 'guardar material ♡'}
+=======
+      invalidFieldId={title.trim().length > 0 ? undefined : 'material-titulo-input'}
+      onSave={handleSave}
+      onClose={closeWizard}
+      saveLabel={editing ? frase(CELEBRACAO, 'guardarAlteracoes') : 'guardar material ♡'}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

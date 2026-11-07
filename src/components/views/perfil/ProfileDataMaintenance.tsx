@@ -16,14 +16,23 @@ import type { ProfileMaintenance } from '../../../lib/profileViewModel';
 import DangerZone from './DangerZone';
 import PreferenceRow from './PreferenceRow';
 import { CloudBackupToggle } from '../../views/CloudBackupToggle';
+<<<<<<< HEAD
 import { erro, VAZIO, frase } from '../../../lib/voice';
+=======
+import { erro, VAZIO, CELEBRACAO, frase } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface ProfileDataMaintenanceProps {
   maintenance: ProfileMaintenance;
   onOpenSync: () => void;
   onExport: () => void;
+<<<<<<< HEAD
   onImport: (json: string) => void;
   onReset: () => void;
+=======
+  onImport: (json: string) => Promise<void>;
+  onReset: () => Promise<void>;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 interface PendingImport {
@@ -57,7 +66,11 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
       : ota.status === 'downloading'
         ? `baixando atualização (${ota.progress}%)…`
         : ota.status === 'ready'
+<<<<<<< HEAD
           ? `a versão ${ota.availableVersion} está pronta ♡`
+=======
+          ? frase(CELEBRACAO, 'versaoPronta', { versao: ota.availableVersion })
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           : ota.status === 'error'
             ? 'não consegui verificar agora — tenta de novo.'
             : ota.availableVersion && ota.availableVersion !== ota.currentVersion
@@ -66,7 +79,11 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
 
   const handleFileChosen = (file: File) => {
     const reader = new FileReader();
+<<<<<<< HEAD
     reader.onload = () => {
+=======
+    reader.onload = async () => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       const json = String(reader.result);
       try {
         const parsed = JSON.parse(json);
@@ -83,7 +100,11 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
           },
         });
       } catch {
+<<<<<<< HEAD
         onImport(json);
+=======
+        await onImport(json);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       }
     };
     reader.readAsText(file);
@@ -92,7 +113,11 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
   return (
     <section
       aria-labelledby="perfil-dados-titulo"
+<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-3"
+=======
+      className="space-y-4"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div className="flex items-center gap-2">
         <Database className="w-4 h-4 text-ceci-academic-strong" aria-hidden="true" />
@@ -240,9 +265,15 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
                 </button>
                 <button
                   type="button"
+<<<<<<< HEAD
                   onClick={() => {
                     if (pendingImport) {
                       onImport(pendingImport.json);
+=======
+                  onClick={async () => {
+                    if (pendingImport) {
+                      await onImport(pendingImport.json);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       setPendingImport(null);
                     }
                   }}
@@ -301,7 +332,11 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
                 try {
                   const { decryptBackup } = await import('../../../lib/backupCrypto');
                   const plain = await decryptBackup(pendingDecrypt.encrypted, importPassword);
+<<<<<<< HEAD
                   onImport(plain);
+=======
+                  await onImport(plain);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                   setPendingDecrypt(null);
                   setImportPassword('');
                   setErroDescriptografar(null);

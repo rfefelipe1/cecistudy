@@ -46,7 +46,11 @@ const DisciplinasGrid: React.FC<DisciplinasGridProps> = ({
         <button
           type="button"
           onClick={onNewCourse}
+<<<<<<< HEAD
           className="inline-flex items-center gap-1.5 rounded-full bg-ceci-brand-strong px-4 py-2 text-xs font-semibold text-white hover:bg-ceci-brand transition-colors"
+=======
+          className="inline-flex items-center gap-1.5 rounded-full bg-ceci-brand-strong px-4 py-2 text-xs font-semibold text-ceci-on-brand hover:bg-ceci-brand transition-colors"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         >
           <Plus className="w-3.5 h-3.5" /> criar a primeira matéria
         </button>

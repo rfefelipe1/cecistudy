@@ -73,8 +73,14 @@ describe('PreferenceRow — interruptor', () => {
         toggle={{ checked: false, onChange, disabled: true }}
       />,
     );
+<<<<<<< HEAD
     const switchEl = screen.getByRole('switch', { name: 'agenda do google' }) as HTMLButtonElement;
     expect(switchEl.disabled).toBe(true);
+=======
+    const switchEl = screen.getByRole('switch', { name: 'agenda do google' }) as HTMLElement;
+    expect(switchEl.getAttribute('aria-disabled')).toBe('true');
+    expect(switchEl.getAttribute('tabindex')).toBe('-1');
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     await user.tab();
     expect(switchEl).not.toHaveFocus();
   });

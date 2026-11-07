@@ -55,7 +55,11 @@ const FloatingActionMenu = ({ options, className, onLongPress }: FloatingActionM
   }, [isOpen]);
 
   return (
+<<<<<<< HEAD
     <div className={cn('fixed bottom-8 right-8 z-50', className)}>
+=======
+    <div className={cn('relative z-50', className)}>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       <Button
         {...handlers}
         data-phase={phase}

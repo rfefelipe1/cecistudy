@@ -14,6 +14,7 @@ interface ProfileAvatarProps {
   /** Primeira letra (ou `C`) — já derivada no view model. */
   initials: string;
   onPickPhoto: () => void;
+<<<<<<< HEAD
   onRemovePhoto: () => void;
   size?: 'md' | 'lg';
 }
@@ -22,6 +23,27 @@ interface ProfileAvatarProps {
 const FRAME_SIZE: Record<NonNullable<ProfileAvatarProps['size']>, string> = {
   md: 'w-14 h-14 rounded-2xl text-2xl',
   lg: 'w-16 h-16 rounded-3xl text-3xl',
+=======
+  onRemovePhoto?: () => void;
+  /** Quando true, remove a borda ao redor do avatar (SPEC-032 D8). */
+  borderless?: boolean;
+  size?: 'md' | 'lg' | 'hero';
+  shape?: 'rounded' | 'circle';
+}
+
+/** Tamanho do quadro do avatar. */
+const FRAME_SIZE: Record<NonNullable<ProfileAvatarProps['size']>, string> = {
+  md: 'w-14 h-14 text-2xl',
+  lg: 'w-16 h-16 text-3xl',
+  // hero: 96 px mobile / 128 px desktop (Shape aplicado via `shape` abaixo.)
+  hero: 'w-24 h-24 md:w-32 md:h-32 text-4xl md:text-5xl',
+};
+
+/** Arredondamento do quadro. `circle` é usado no header de identidade. */
+const FRAME_SHAPE: Record<NonNullable<ProfileAvatarProps['shape']>, string> = {
+  rounded: 'rounded-2xl md:rounded-3xl',
+  circle: 'rounded-full',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 };
 
 const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
@@ -30,13 +52,26 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   initials,
   onPickPhoto,
   onRemovePhoto,
+<<<<<<< HEAD
   size = 'lg',
+=======
+  borderless = false,
+  size = 'lg',
+  shape = 'rounded',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }) => (
   <div className="relative shrink-0">
     <div
       className={cn(
+<<<<<<< HEAD
         'bg-surface-rose border-2 border-ceci-border-brand flex items-center justify-center font-display font-bold text-ceci-primary shadow-2xs overflow-hidden',
         FRAME_SIZE[size],
+=======
+        'bg-surface-rose flex items-center justify-center font-display font-bold text-ceci-primary shadow-2xs overflow-hidden',
+        !borderless ? 'border-2 border-ceci-border-brand' : '',
+        FRAME_SIZE[size],
+        FRAME_SHAPE[shape],
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       )}
     >
       {photoUrl ? (
@@ -61,7 +96,11 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       </span>
     </button>
 
+<<<<<<< HEAD
     {photoUrl ? (
+=======
+    {photoUrl && onRemovePhoto ? (
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       <button
         type="button"
         onClick={onRemovePhoto}

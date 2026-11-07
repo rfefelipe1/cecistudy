@@ -11,6 +11,10 @@ import {
 import { mark, recordEvent, flushDevMetrics } from '../../lib/performance/perfMarks';
 import { prefersReducedMotion } from '../../lib/motion';
 import { BASE_D } from '../../lib/motion/tokens';
+<<<<<<< HEAD
+=======
+import { useOtaStatus } from '../../lib/ota';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 const MIN_DISPLAY_MS = 1600;
 const MAX_DISPLAY_MS = 7000;
@@ -62,6 +66,10 @@ export const BootSplash: React.FC = () => {
   const bootStateRef = useRef<BootState | null>(null);
   const startedAtRef = useRef(Date.now());
   const reducedMotion = useRef(prefersReducedMotion());
+<<<<<<< HEAD
+=======
+  const ota = useOtaStatus();
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   // Boot progressivo em background — deduplicado (StrictMode reutiliza a
   // mesma pipeline); o provider reaproveita as promises memoizadas.
@@ -160,6 +168,27 @@ export const BootSplash: React.FC = () => {
       <div className="mt-4 w-48">
         <ProgressBar value={fraction * 100} />
       </div>
+<<<<<<< HEAD
+=======
+
+      {/*
+        Linha discreta de atualização OTA — aparece apenas quando há algo para
+        comunicar, nunca atrasa a liberação da splash (o OTA roda no grupo
+        deferred do boot). Texto lowercase, tom do cantinho.
+      */}
+      {(ota.status === 'checking' || ota.status === 'downloading') && (
+        <p className="mt-3 px-8 text-center text-xs text-ceci-muted">
+          {ota.status === 'downloading'
+            ? `baixando atualização ${ota.progress}%`
+            : 'verificando atualização…'}
+        </p>
+      )}
+      {ota.status === 'ready' && (
+        <p className="mt-3 px-8 text-center text-xs text-ceci-brand-strong">
+          atualização pronta ♡
+        </p>
+      )}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     </div>
   );
 };

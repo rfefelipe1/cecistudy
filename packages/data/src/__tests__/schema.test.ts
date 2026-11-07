@@ -78,8 +78,13 @@ describe('schema — migração 11 → 12 (escopo de workspace)', () => {
     },
   };
 
+<<<<<<< HEAD
   it('SCHEMA_VERSION é 22', () => {
     expect(SCHEMA_VERSION).toBe(22);
+=======
+  it('SCHEMA_VERSION é 23', () => {
+    expect(SCHEMA_VERSION).toBe(23);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 
   it('nenhum Date dentro da MIGRATIONS[22] (F15: determinismo, nunca "agora")', () => {

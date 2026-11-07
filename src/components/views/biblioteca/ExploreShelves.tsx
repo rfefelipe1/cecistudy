@@ -2,7 +2,11 @@
 // Extraídas de `ExploreSections.tsx`: repertório, psicoterapias, mistas,
 // testes, autores, conceitos, abordagens, multidisciplinar e artigos.
 
+<<<<<<< HEAD
 import React from 'react';
+=======
+import React, { memo } from 'react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   TrendingUp,
   Bookmark,
@@ -32,7 +36,11 @@ interface ExploreShelvesProps {
   openApproach: (id: string) => void;
 }
 
+<<<<<<< HEAD
 export const ExploreShelves: React.FC<ExploreShelvesProps> = ({
+=======
+const ExploreShelvesComponent: React.FC<ExploreShelvesProps> = ({
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   filter,
   savedBookIds,
   readingProgress,
@@ -405,3 +413,8 @@ export const ExploreShelves: React.FC<ExploreShelvesProps> = ({
     </>
   );
 };
+<<<<<<< HEAD
+=======
+
+export const ExploreShelves = memo(ExploreShelvesComponent);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

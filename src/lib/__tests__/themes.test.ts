@@ -153,6 +153,24 @@ describe('contraste WCAG (E.1)', () => {
     }
   });
 
+<<<<<<< HEAD
+=======
+  it('os 7 temas passam contraste AA nos pares on-fill de marca e acadêmico (≥ 4.5:1)', () => {
+    for (const theme of Object.values(THEMES)) {
+      const t = theme.tokens;
+      // on-primary sobre primary
+      const r1 = contrastRatio(t['ceci-on-primary'], t['ceci-primary']);
+      expect(r1, `${theme.id}: on-primary/primary = ${r1.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+      // on-brand sobre brand-strong
+      const r2 = contrastRatio(t['ceci-on-brand'], t['ceci-brand-strong']);
+      expect(r2, `${theme.id}: on-brand/brand-strong = ${r2.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+      // on-academic sobre academic-strong
+      const r3 = contrastRatio(t['ceci-on-academic'], t['ceci-academic-strong']);
+      expect(r3, `${theme.id}: on-academic/academic-strong = ${r3.toFixed(2)}`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   it('wcagPairs expõe os pares de corpo + status', () => {
     const labels = wcagPairs(THEMES['rosa-claro']).map((p) => p.label);
     expect(labels).toContain('on-primary/on-primary-fill');

@@ -3,6 +3,10 @@ import { Network, Search, ChevronRight, Landmark } from 'lucide-react';
 import { PSICOTERAPIA_FAMILIES } from '../../data/psicoterapiaFamilies';
 import { useMobileApp } from '@/context/mobileApp';
 import { Mascote } from '../ui/Mascote';
+<<<<<<< HEAD
+=======
+import { frase, VAZIO } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { MorphSource, MorphTarget, Reveal, sharedFamilyId, sharedTempleId } from '@/lib/motion';
 
 export const FamiliesView: React.FC = () => {
@@ -52,7 +56,11 @@ export const FamiliesView: React.FC = () => {
         {families.length === 0 && (
           <div className="text-center py-8 space-y-2">
             <Mascote expression="no-results" className="w-14 h-14 mx-auto" decorative />
+<<<<<<< HEAD
             <p className="text-sm text-ceci-secondary">nada por aqui com esse nome ♡</p>
+=======
+            <p className="text-sm text-ceci-secondary">{frase(VAZIO, 'nadaPorAquiNome')}</p>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </div>
         )}
         {families.map((family, i) => (

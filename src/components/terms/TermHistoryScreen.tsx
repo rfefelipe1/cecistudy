@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { BookOpen, Sparkles } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import { CELEBRACAO, frase } from '../../lib/voice';
@@ -6,11 +7,26 @@ import { useTermActions } from '@/context/shellNavContexts';
 import { sortedTerms, degreeProgress, useActiveTerm } from '@/lib/termScope';
 import type { AcademicTerm } from '@/types';
 import { cn } from '@/lib/utils';
+=======
+import { Sparkles } from 'lucide-react';
+import { useMobileApp } from '@/context/mobileApp';
+import { CELEBRACAO, frase, VAZIO } from '../../lib/voice';
+import { useTermActions } from '@/context/shellNavContexts';
+import { sortedTerms, degreeProgress, useActiveTerm } from '@/lib/termScope';
+import { memoriesByTerm, type SemesterMemory } from '../../lib/semesterMemory';
+import type { AcademicTerm } from '@/types';
+import { cn } from '@/lib/utils';
+import { CeciTermHistoryHeader } from './CeciTermHistoryHeader';
+import { CeciTermTimeline } from './CeciTermTimeline';
+import { CeciCreatePastTerm } from './CeciCreatePastTerm';
+import { EmptyState } from '../ui/EmptyState';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /**
  * Histórico de períodos letivos (SPEC-005) — o índice dos semestres.
  *
  * Fica empilhado sobre o **Perfil** (ou sobre o assistente, se foi de lá que a
+<<<<<<< HEAD
  * usuária veio) e é **irmão** do wizard, não filho (SPEC-008 D5). O `/semestre`
  * na URL é o namespace do período, não uma tela-pai.
  *
@@ -35,6 +51,47 @@ export const TermHistoryScreen: React.FC = () => {
   // `focusedTermId` só abre o card certo no deep-link; a partir daí quem decide
   // o que está aberto é a usuária, sem mexer na pilha (SPEC-008 D5).
   const [expandedId, setExpandedId] = useState<string | undefined>(focusedTermId);
+=======
+ * usuária veio) e é **irmão** do wizard, não filho (SPEC-008 D5). Expandir um
+ * período é estado **local** desta tela.
+ *
+ * Redesenho (SPEC-SEMESTRES-PASSADOS-MEMORIAS-REDESIGN): header de jornada,
+ * timeline vertical editorial, cards com ações separadas (arquivo / resumo /
+ * memórias / reabrir) e contador de memórias por semestre.
+ */
+export const TermHistoryScreen: React.FC = () => {
+  const { academicTerms, profile, semesterMemories, focusedTermId, openSemesterMemories } =
+    useMobileApp();
+  const { reopenTermById, showToast } = useTermActions();
+  const allTerms = sortedTerms(academicTerms);
+  const activeTerm = useActiveTerm(academicTerms);
+
+  const terms = activeTerm
+    ? allTerms.filter((t) => t.status === 'encerrado' && t.ordinal < activeTerm.ordinal)
+    : allTerms.filter((t) => t.status === 'encerrado');
+
+  const memoryCountByTerm: Record<string, number> = {};
+  for (const term of terms) {
+    memoryCountByTerm[term.id] = memoriesByTerm(semesterMemories, term.id).length;
+  }
+
+  const [expandedId, setExpandedId] = useState<string | undefined>(focusedTermId);
+  const [showCreatePast, setShowCreatePast] = useState(false);
+  const completedTerms = terms.length;
+  const totalSemesters = profile.totalSemesters ?? 0;
+  const activeOrdinal = activeTerm?.ordinal ?? null;
+
+  const handleOpenCreatePast = () => setShowCreatePast(true);
+  const handleCreatePastFinish = () => setShowCreatePast(false);
+
+  const handleOpenArchive = (term: AcademicTerm) => {
+    openSemesterMemories(term.id);
+  };
+
+  const handleOpenMemories = (term: AcademicTerm) => {
+    openSemesterMemories(term.id);
+  };
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const handleReopen = (term: AcademicTerm) => {
     reopenTermById(term.id);
@@ -44,14 +101,27 @@ export const TermHistoryScreen: React.FC = () => {
   if (terms.length === 0) {
     return (
       <div className="px-4 pt-6 pb-10 text-center">
+<<<<<<< HEAD
         <p className="text-sm text-ceci-secondary">
           seu histórico de semestres começa no primeiro período que você abrir ♡
+=======
+        <EmptyState
+          title={frase(VAZIO, 'historicoVazioTitulo')}
+          description={frase(VAZIO, 'historicoVazioDescricao')}
+          actionLabel=""
+          onAction={() => {}}
+          mascote="listening-hello"
+        />
+        <p className="mt-4 text-sm text-ceci-secondary">
+          semestres encerrados aparecem aqui no seu arquivo acadêmico ♡
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </p>
       </div>
     );
   }
 
   return (
+<<<<<<< HEAD
     <div className="px-4 pt-6 pb-10 space-y-4">
       <p className="text-xs text-ceci-secondary">
         {degreeProgress(activeTerm?.ordinal ?? profile.semester, profile.totalSemesters)}% do curso
@@ -179,6 +249,48 @@ const TermCard: React.FC<{
         >
           era este semestre mesmo — reabrir como atual
         </button>
+=======
+    <div className="px-4 pt-6 pb-10 space-y-5">
+      <CeciTermHistoryHeader
+        completedTerms={completedTerms}
+        totalSemesters={totalSemesters}
+        activeOrdinal={activeOrdinal}
+      />
+
+      <button
+        type="button"
+        onClick={handleOpenCreatePast}
+        className="inline-flex items-center gap-1.5 rounded-full border border-ceci-border-default bg-surface-default px-3.5 py-1.5 text-xs font-semibold text-ceci-secondary hover:bg-surface-muted cursor-pointer"
+      >
+        <span className="text-[12px]">+</span> criar semestre passado
+      </button>
+
+      <CeciTermTimeline
+        terms={terms}
+        totalSemesters={totalSemesters}
+        memoryCountByTerm={memoryCountByTerm}
+        expandedId={expandedId}
+        onExpand={(termId) => setExpandedId(expandedId === termId ? undefined : termId)}
+        onOpenArchive={(termId) => {
+          const term = academicTerms.find((t) => t.id === termId);
+          if (term) handleOpenArchive(term);
+        }}
+        onOpenMemories={(termId) => {
+          const term = academicTerms.find((t) => t.id === termId);
+          if (term) handleOpenMemories(term);
+        }}
+        onReopen={(termId) => {
+          const term = academicTerms.find((t) => t.id === termId);
+          if (term) handleReopen(term);
+        }}
+      />
+
+      {showCreatePast && (
+        <CeciCreatePastTerm
+          onSaved={handleCreatePastFinish}
+          onClose={handleCreatePastFinish}
+        />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       )}
     </div>
   );

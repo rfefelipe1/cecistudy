@@ -42,6 +42,7 @@ const JourneyRail: React.FC<JourneyRailProps> = ({ slots }) => {
 
   return (
     <div className="rounded-2xl bg-surface-muted border border-ceci-border-subtle px-3 py-4">
+<<<<<<< HEAD
       <ol className="flex items-center" aria-label={`trilho da formação: ${summary}`}>
         {slots.map((slot, index) => (
           <Reveal key={slot.ordinal} index={index}>
@@ -49,6 +50,15 @@ const JourneyRail: React.FC<JourneyRailProps> = ({ slots }) => {
             key={slot.ordinal}
             aria-current={slot.status === 'current' ? 'step' : undefined}
             className="flex flex-1 flex-col items-center gap-1 min-w-0"
+=======
+      <ol className="flex items-center gap-x-3" aria-label={`trilho da formação: ${summary}`}>
+        {slots.map((slot, index) => (
+          <Reveal key={slot.ordinal} index={index} className="flex-1">
+          <li
+            key={slot.ordinal}
+            aria-current={slot.status === 'current' ? 'step' : undefined}
+            className="flex flex-col items-center gap-1 min-w-0"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           >
             <span className="flex items-center w-full" aria-hidden="true">
               <span

@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
 import { ChevronDown, Link2, Tags } from 'lucide-react';
 import { cn } from '@/lib/utils';
+<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
 import { Picker } from '../ui/Picker';
+=======
+import { Picker } from '../ui/Picker';
+import { CeciChoicePill } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { LOOSE_CATEGORIES, type ComposeMode } from '@/lib/composeLogic';
 import type { LooseNote } from '@/types/entity';
 
@@ -66,6 +71,7 @@ export const ComposeConfigAccordion: React.FC<ComposeConfigAccordionProps> = ({
 
       {open && (
         <div className="px-3.5 pb-3 pt-1 space-y-3 border-t border-ceci-border-subtle">
+<<<<<<< HEAD
           <PillGroup
             variant="rose"
             size="sm"
@@ -76,6 +82,19 @@ export const ComposeConfigAccordion: React.FC<ComposeConfigAccordionProps> = ({
             value={category}
             onChange={(v) => onCategoryChange(v)}
           />
+=======
+          <div className="flex flex-wrap gap-1.5">
+            {LOOSE_CATEGORIES.map((cat) => (
+              <CeciChoicePill
+                key={cat}
+                value={cat}
+                label={`${CATEGORY_EMOJI[cat]} ${cat}`}
+                selected={category === cat}
+                onChange={(v) => onCategoryChange(v)}
+              />
+            ))}
+          </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
           {mode === 'avulsa' && courses.length > 0 && (
             <div className="space-y-1.5">

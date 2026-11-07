@@ -84,6 +84,24 @@ novo) — as três com ruleset que recusa push direto. Fluxo: `dev → staging �
 ## Code Conventions
 - **Design tokens:** use semantic tokens from `src/index.css` `@theme` (`text-ceci-primary`, `bg-surface-rose`, `border-ceci-border-brand`); never raw hex in classNames (hex only as data values via `style={{}}`). See `.context/design-system.md`.
 - **Copy:** pt-BR, lowercase, warm ("guardar", "bora estudar?", "prontinho ♡"). Never refer to the user as "Ceci". **A voz do cecinho mora em `src/lib/voice.ts`** (`SPEC-M-018`/`SPEC-C-014`): frase de camada 1 (erro, empty state, dica, confirmação, celebração, notificação) nunca é escrita inline em componente — o `check-boundaries.mjs` (regra 4) reprova. Erro tem **duas frases**: o que houve, em 1ª pessoa, e o que ela pode fazer. Nome da usuária só com `nomeAutorizado`. O "porquê" da voz está em `.context/copy-and-voice.md`; a frase, no código.
+<<<<<<< HEAD
+=======
+
+### Copy de tela e voz do cecinho (instrução de escrita)
+
+Todo texto que a usuária lê numa tela e que é voz do cecinho (erro, vazio, dica, confirmação, celebração, notificação, onboarding) segue estas regras:
+
+1. **Nunca escreva frase inline em componente.** Peça a chave de `src/lib/voice.ts` (`frase(VAZIO, 'chave')`, `erro('codigo')`, etc.). O gate de voz (regra 4 do `check-boundaries.mjs`) reprova texto de camada 1 escrito inline.
+2. **Tom:** primeira pessoa do cecinho ("não consegui", "guardei", "te mostro"). Nunca voz de sistema ("o app não conseguiu", "não foi possível").
+3. **Minúsculas.** Frases começam com letra minúscula, exceto quando o nome da usuária abre a frase.
+4. **"ceço" só em afeto próximo:** celebração de marco, encerramento de ciclo, despedida de sessão de foco, primeiro contato. Nunca em erro, validação, notificação de rotina ou rótulo.
+5. **"cantinho" é metáfora do mobile**, nunca nome de produto. O nome do produto é `cecistudy ♡`.
+6. **Erro tem duas frases:** o que aconteceu (1ª pessoa, sem jargão) e o que ela pode fazer agora. Detalhe técnico vai na expansão, nunca no primeiro nível.
+7. **Nome da usuária só com `nomeAutorizado`**; sem autorização, a voz diz "você". Nunca chame a usuária de "Ceci".
+8. **Todo texto novo de camada 1 precisa de chave em `voice.ts` e consumidor em produção.** Chave sem consumidor é dívida (reprova o teste D12).
+9. **Após criar ou editar um componente de tela, rode o inventário de copy** (`node scripts/inventario-de-copy.mjs` ou o passo equivalente do gate) e confira que nenhum texto novo de camada 1 ficou sem chave.
+10. **Avalie textos existentes** contra a `SPEC-C-014`: se violar alguma regra acima, precisa de revisão (marque no inventário como `precisaRevisao: true`).
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 - **Schema changes:** o valor atual de `SCHEMA_VERSION` mora **no código** — leia
   `packages/data/src/schema.ts` (re-exportado em `src/data/schema.ts`); número em
   documento envelhece e mente (foi o débito C3). Bump apenas em
@@ -104,6 +122,11 @@ novo) — as três com ruleset que recusa push direto. Fluxo: `dev → staging �
 - **Estágio (SPEC-010, entregue 2026-10-07):** toda superfície de Estágio abre com **um** `HeroCard` (`src/components/ui/HeroCard.tsx`) acima dos controles — o conteúdo muda com a aba/tela, a identidade (eyebrow "estágio", serifa, mascote, `rounded-[26px]`) é fixa. Não criar cabeçalho compacto próprio por aba, nem segunda ação primária fora do hero (o botão de ação fica no hero; a barra inferior só leva secundárias). Cartão de paciente tem tile de iniciais à esquerda (D5). Filtro único por tela = `PillGroup` (D7). Spec: `docs/specs/SPEC-010-padrao-hero-e-qualidade-de-ui-do-estagio.md` · tasks: `tasks/todo-hero-estagio.md`.
 - **Hero da Home (SPEC-023, revertida em 2026-10-22):** a Home abre com o **card clássico** de saudação — `HeroSection.tsx` com gradiente `surface-default → surface-rose`, a arte do turno do dia à direita (`home/heroMascote.ts`: duas por turno, alternando por dia — as oito artes aparecem) e a frase do dia embaixo. O card fino com vídeo em loop e o véu escuro foram **tentados e revertidos** (a arte do vídeo não ficou boa em tela pequena); o céu azul acima do card também saiu — **não existe `hero-ceu`**. O que ficou daquela rodada: o tema **`campinho`** (`src/lib/themes.ts`), que faz do verde do campo a identidade do app inteiro. A frase do dia continua curta **na voz** (`src/lib/voice.ts`, família `resumo`) — nunca no componente. Spec: `docs/specs/SPEC-023-hero-da-home-com-video-de-fundo.md`.
 
+<<<<<<< HEAD
+=======
+- **Componentes de UI (reuso antes de criar):** antes de criar qualquer componente novo em `src/components/ui/`, verifique se já existe um que atenda à necessidade. Não duplique componentes de interruptor/toggle — use o existente e, se necessário, estenda-o. O `Toggle` (`src/components/ui/Toggle.tsx`) delega ao `material-design-3-switch.tsx` por baixo, então todos os toggles do app (via `Toggle` e `ToggleRow`) usam o Material Design 3 Switch por padrão. Componentes de switch/toggle hoje: `toggle-switch-glass.tsx` (mantido, não mais usado pelo `Toggle`), `Toggle.tsx`, `ToggleRow.tsx`, `PreferenceRow.tsx` e `material-design-3-switch.tsx`. Quando houver dúvida, procure na pasta `src/components/ui/` antes de escrever um novo arquivo.
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 - **Editing files (MANDATORY):** ALWAYS edit via the `edit` tool. **Never** bulk-rewrite source files with PowerShell `Get-Content`/`Set-Content` (or any encoding-naive write) — it silently corrupts UTF‑8/non‑ASCII and turns pt‑BR accents (á/ã/ç/ê/õ…) into the U+FFFD replacement char, which is lossy and unrecoverable. Mechanical renames across many files must be done with the `edit` tool per file, or a script that reads **and** writes explicitly as UTF‑8 — and must be verified with `npm run lint` + a check for the replacement character (`\x{FFFD}`). (Incidente 2026‑08: migração em lote via PowerShell corrompeu 9 arquivos de views; recuperados de backup e refeitos com o `edit` tool.)
 
 ## Persistence & Native

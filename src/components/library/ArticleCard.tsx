@@ -11,7 +11,11 @@ interface ArticleCardProps {
 }
 
 /** Card de artigo no padrão dos livros, mas em formato de "folha de papel" colorida. */
+<<<<<<< HEAD
 export const ArticleCard: React.FC<ArticleCardProps> = ({ article, isSaved, onSelect }) => {
+=======
+export const ArticleCard = React.memo<ArticleCardProps>(({ article, isSaved, onSelect }) => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const familia = PSYCHOTHERAPY_FAMILIES[article.familia];
   const color = familia?.color ?? '#F3EEE8';
   const accent = familia?.accent ?? '#6D6366';
@@ -63,4 +67,8 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article, isSaved, onSe
     </button>
     </MorphSource>
   );
+<<<<<<< HEAD
 };
+=======
+});
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

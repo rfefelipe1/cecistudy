@@ -1,11 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Copy, Trash2, ExternalLink, Plus } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
+<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
 import { Modal } from '../ui/Modal';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { StatusChip } from '../ui/StatusChip';
 import { TagChip } from '../ui/TagChip';
+=======
+import { CELEBRACAO, DICA, frase } from '../../lib/voice';
+import { Modal } from '../ui/Modal';
+import { SegmentedControl } from '../ui/SegmentedControl';
+import { CeciSelect } from '../ui/ceci';
+import { StatusChip } from '../ui/StatusChip';
+import { CeciTag } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { hapticSuccess, hapticTap } from '../../lib/haptics';
 import { copyToClipboard } from '../../lib/utils';
 import {
@@ -332,9 +341,18 @@ export const ReferenceSheet: React.FC<ReferenceSheetProps> = ({ open, referenceI
                     <span className="text-[11px] text-ceci-secondary truncate">
                       {r.author || 'sem autor'}
                     </span>
+<<<<<<< HEAD
                     <TagChip size="sm" variant="neutral" className="shrink-0">
                       {TYPE_TO_REF[r.type]}
                     </TagChip>
+=======
+                    <CeciTag
+                      variant="neutral"
+                      className="shrink-0"
+                      value={r.type}
+                      label={TYPE_TO_REF[r.type]}
+                    />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                   </div>
                 </button>
               ))
@@ -413,6 +431,7 @@ export const ReferenceSheet: React.FC<ReferenceSheetProps> = ({ open, referenceI
             <label htmlFor="ref-tipo" className={labelClass}>
               tipo abnt
             </label>
+<<<<<<< HEAD
             <select
               id="ref-tipo"
               value={refType}
@@ -425,6 +444,15 @@ export const ReferenceSheet: React.FC<ReferenceSheetProps> = ({ open, referenceI
                 </option>
               ))}
             </select>
+=======
+            <CeciSelect
+              htmlFor="ref-tipo"
+              label="tipo abnt"
+              value={refType ?? null}
+              onChange={(v) => setRefType(v as RefType)}
+              options={REF_TYPE_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+            />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </div>
           <div>
             <label htmlFor="ref-ano" className={labelClass}>
@@ -652,7 +680,11 @@ export const ReferenceSheet: React.FC<ReferenceSheetProps> = ({ open, referenceI
           <button
             type="button"
             onClick={() => setConfirmingRemove(true)}
+<<<<<<< HEAD
             aria-label="remover referência"
+=======
+            aria-label={frase(DICA, 'removerReferencia')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs text-status-danger-strong hover:bg-surface-muted transition-colors min-h-[44px] cursor-pointer"
           >
             <Trash2 className="w-3.5 h-3.5" /> remover

@@ -355,7 +355,11 @@ function textoDe(frase: unknown): string {
  * espalhado em regex solto.
  */
 const VERBO_DE_ACAO =
+<<<<<<< HEAD
   /(tenta|volta|confere|abre|espera|recarrega|sincroniza|começa|desfaz|deixa|coloca|escreve|escolhe|diz|guarda|anota|registra|afrouxa|cria|cola)/;
+=======
+  /(tenta|volta|confere|abre|espera|recarrega|sincroniza|começa|desfaz|deixa|coloca|escreve|escolhe|diz|guarda|anota|registra|afrouxa|cria|cola|preenche)/;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 describe('D5 · o erro tem duas frases, nesta ordem', () => {
   const codigos = Object.keys(ERRO);
@@ -524,3 +528,79 @@ describe('D12 · toda chave de voz tem consumidor em produção', () => {
     );
   });
 });
+<<<<<<< HEAD
+=======
+
+// ---------------------------------------------------------------------------
+// D4 (SPEC-029) · chave pedida e inexistente
+// ---------------------------------------------------------------------------
+
+describe('D4 · toda chave de voz pedida existe no catálogo', () => {
+  const raiz = path.resolve(__dirname, '../..');
+
+  /**
+   * Arquivos de produção que podem pedir voz. A varredura cobre `src/` inteiro
+   * (o D12 cobre só as camadas de apresentação): a voz também é pedida em
+   * `context/` e `lib/`, e foi no `context/` que o defeito da Home apareceu.
+   */
+  const producao = (() => {
+    const arquivos: string[] = [];
+    const andar = (dir: string) => {
+      for (const entrada of fs.readdirSync(dir, { withFileTypes: true })) {
+        const cheio = path.join(dir, entrada.name);
+        if (entrada.isDirectory()) andar(cheio);
+        else if (/\.tsx?$/.test(entrada.name) && !/\.test\.tsx?$/.test(entrada.name)) {
+          arquivos.push(cheio);
+        }
+      }
+    };
+    andar(raiz);
+    return arquivos
+      .filter((a) => path.basename(a) !== 'voice.ts')
+      .map((a) => ({ arquivo: path.relative(raiz, a), texto: fs.readFileSync(a, 'utf-8') }));
+  })();
+
+  /**
+   * `frase(CATÁLOGO, 'chave')` com chave **literal**.
+   *
+   * Limitação declarada: chave resolvida por variável fica fora do alcance — o
+   * mapa de tom do recado do Calendário
+   * (`src/components/calendar/CecinhoCalendarNote.tsx:13-19`) é um deles. É o
+   * mesmo limite que o walker do D12 já tinha.
+   */
+  const pedidos = (texto: string): { catalogo: Categoria; chave: string }[] =>
+    [
+      ...texto.matchAll(
+        /frase\(\s*(VAZIO|DICA|CONFIRMACAO|CELEBRACAO|NOTIFICACAO|ONBOARDING)\s*,\s*'([^']+)'/g,
+      ),
+    ].map((m) => ({ catalogo: m[1] as Categoria, chave: m[2] }));
+
+  it('o detector acha a chave pedida (o gate não passa no vazio)', () => {
+    expect(pedidos("showToast(frase(CELEBRACAO, 'chaveQueNaoExiste'));")).toEqual([
+      { catalogo: 'CELEBRACAO', chave: 'chaveQueNaoExiste' },
+    ]);
+  });
+
+  it('a varredura real encontra pedidos de voz', () => {
+    const total = producao.reduce((n, p) => n + pedidos(p.texto).length, 0);
+    expect(total).toBeGreaterThan(0);
+  });
+
+  it('toda chave literal pedida existe no catálogo', () => {
+    // `frase()` **lança** em chave ausente (`src/lib/voice.ts:1117-1125`): a
+    // tela quebra no clique, não no build. Este gate é o que fecha essa classe.
+    const inexistentes: string[] = [];
+    for (const { arquivo, texto } of producao) {
+      for (const { catalogo, chave } of pedidos(texto)) {
+        if (CATALOGOS[catalogo][chave] === undefined) {
+          inexistentes.push(`${arquivo}: ${catalogo}.${chave}`);
+        }
+      }
+    }
+    expect(
+      inexistentes,
+      'chave de voz pedida e inexistente — `frase()` lança e quebra a tela',
+    ).toEqual([]);
+  });
+});
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

@@ -1,6 +1,11 @@
 import React from 'react';
+<<<<<<< HEAD
 import { describe, expect, it, vi, beforeEach, type Mock } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
+=======
+import { describe, expect, it, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import { render, screen, fireEvent, within, act } from '@testing-library/react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { GlobalSearchModal } from '../GlobalSearchModal';
 import type {
   Course,
@@ -149,11 +154,23 @@ function renderModal(
 describe('GlobalSearchModal', () => {
   beforeEach(() => {
     localStorage.clear();
+<<<<<<< HEAD
+=======
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 
   it('filtra e agrupa por seção com contador', () => {
     renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'beck' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.getByText('autores · 1')).toBeTruthy();
     expect(screen.getAllByRole('option')).toHaveLength(1);
   });
@@ -161,12 +178,20 @@ describe('GlobalSearchModal', () => {
   it('é acento-insensível', () => {
     renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'analise' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.getByText('notas avulsas · 1')).toBeTruthy();
   });
 
   it('setas + enter navegam e gravam o recente', () => {
     const h = renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'beck' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.keyDown(screen.getByRole('combobox'), { key: 'ArrowDown' });
     fireEvent.keyDown(screen.getByRole('combobox'), { key: 'Enter' });
     expect(h.onClose).toHaveBeenCalledOnce();
@@ -180,6 +205,10 @@ describe('GlobalSearchModal', () => {
   it('nota avulsa abre o detalhe da nota', () => {
     const h = renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'análise' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.click(screen.getAllByRole('option')[0]);
     expect(h.onOpenNoteDetail).toHaveBeenCalledWith('n-1');
   });
@@ -187,6 +216,10 @@ describe('GlobalSearchModal', () => {
   it('tarefa abre o detalhe da disciplina', () => {
     const h = renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'capítulo' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.click(screen.getAllByRole('option')[0]);
     expect(h.onOpenCourseDetail).toHaveBeenCalledWith('c1');
   });
@@ -194,6 +227,10 @@ describe('GlobalSearchModal', () => {
   it('pendência do tcc abre a tela do tcc na aba orientação', () => {
     const h = renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'orientadora' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.getByText('tcc · 1')).toBeTruthy();
     fireEvent.click(screen.getAllByRole('option')[0]);
     expect(h.onOpenTccScreen).toHaveBeenCalledWith('orientacao', 'tt-1');
@@ -202,6 +239,10 @@ describe('GlobalSearchModal', () => {
   it('capítulo do tcc abre a tela do tcc na aba capítulos', () => {
     const h = renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'literatura' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.click(screen.getAllByRole('option')[0]);
     expect(h.onOpenTccScreen).toHaveBeenCalledWith('capitulos', 'ch-1');
   });
@@ -209,6 +250,10 @@ describe('GlobalSearchModal', () => {
   it('zero resultados mostra o cecinho + sugestão clicável', () => {
     renderModal();
     fireEvent.change(screen.getByRole('combobox'), { target: { value: 'zzz nada' } });
+<<<<<<< HEAD
+=======
+    act(() => vi.advanceTimersByTime(300));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(screen.getByText(/nada por aqui/)).toBeTruthy();
     const dialog = screen.getByRole('dialog');
     fireEvent.click(within(dialog).getByText(/aaron beck/));

@@ -171,7 +171,11 @@ export const FaculdadeView: React.FC<FaculdadeViewProps> = ({ course }) => {
       <section className="w-full rounded-3xl p-5 bg-surface-rose border border-ceci-border-brand shadow-sm relative overflow-hidden">
         <button
           onClick={() => openInternshipDiary()}
+<<<<<<< HEAD
           aria-label="abrir diário de estágio"
+=======
+          aria-label={frase(DICA, 'abrirDiarioEstagio')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           className="w-full text-left cursor-pointer group pr-16"
         >
           <div className="flex items-center gap-4">

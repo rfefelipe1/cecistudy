@@ -107,7 +107,11 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </div>
 
         <FloatingActionMenu
+<<<<<<< HEAD
           className="relative bottom-0 right-0 z-50 shrink-0"
+=======
+          className="shrink-0"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           options={menuOptions}
           onLongPress={onOpenSearch}
         />

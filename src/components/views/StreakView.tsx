@@ -6,6 +6,10 @@ import { AnimatedNumber } from '../ui/AnimatedNumber';
 import { Mascote } from '../ui/Mascote';
 import { addDays, getRecentWeeks, toDateKey } from '../../lib/streak';
 import { Reveal } from '@/lib/motion';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 const fmtShort = (key: string): string => {
   const d = new Date(`${key}T00:00:00`);
@@ -14,7 +18,11 @@ const fmtShort = (key: string): string => {
 
 const WHAT_COUNTS = [
   'concluir uma tarefa',
+<<<<<<< HEAD
   'registrar uma sessão de estudo',
+=======
+  frase(DICA, 'registrarSessaoEstudo'),
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   'revisar flashcards',
   'avançar em uma leitura',
   'anotar uma aula',

@@ -228,6 +228,45 @@ export const chromeFade: Variants = {
   exit: { opacity: 0, transition: { duration: BASE_D.navBar, ease: EASE.exit } },
 };
 
+<<<<<<< HEAD
+=======
+/** Micro-animação do ícone da bottom-nav ao ser selecionado.
+   Sem `initial`: o ícone já está montado; só entra em cena quando vira ativo.
+   Sob `prefers-reduced-motion` o consumidor deve passar `transition={{ duration: 0 }}`. */
+export const iconFxVariants: Record<string, Variants> = {
+  pop: {
+    idle: {},
+    active: {
+      scale: [0.72, 1.2, 1.08],
+      transition: { duration: BASE_D.micro, ease: EASE.standard },
+    },
+  },
+  glow: {
+    idle: {},
+    active: {
+      y: [-4, 0, -1],
+      scale: [1, 1.06, 1.04],
+      transition: { duration: BASE_D.micro, ease: EASE.standard },
+    },
+  },
+  wave: {
+    idle: {},
+    active: {
+      rotate: [-12, 10, -6, 3],
+      y: [0, -2, -1],
+      transition: { duration: BASE_D.micro * 1.5, ease: EASE.standard },
+    },
+  },
+  none: {
+    idle: {},
+    active: {},
+  },
+};
+
+/** Nome dos efeitos suportados pelo ícone da bottom-nav. */
+export type IconFx = keyof typeof iconFxVariants;
+
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 /** Toast — fade + slide curto, entra por baixo e sai por cima. */
 export const toastVariants: Variants = {
   initial: { opacity: 0, y: 8 },

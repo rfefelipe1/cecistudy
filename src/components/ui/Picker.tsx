@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 import React, { useMemo, useState } from 'react';
 import { ChevronDown, Check, Search, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from './Modal';
 import { Mascote } from './Mascote';
+=======
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { CeciSelect } from './ceci/CeciSelect';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export interface PickerOption {
   value: string;
@@ -34,8 +40,17 @@ interface PickerProps {
 
 /**
  * Seletor bottom-sheet: botão abre uma lista em modal inferior (padrão app nativo).
+<<<<<<< HEAD
  * Evoluições docs/modais-wizards.md §4.1/§4.2: busca em listas grandes, limpar
  * seleção, labels em duas linhas e criação contextual no empty state.
+=======
+ * Evoluções docs/modais-wizards.md §4.1/§4.2: busca em listas grandes, limpar
+ * seleção, labels em duas linhas e criação contextual no empty state.
+ *
+ * Agora delega ao `CeciSelect` (camada Ceci), mantendo a API existente para não
+ * quebrar consumidores. O `searchThreshold` é repassado para a sheet subjacente
+ * via comportamento padrão de busca do `CeciPickerSheet`.
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
  */
 export const Picker: React.FC<PickerProps> = ({
   label,
@@ -46,11 +61,16 @@ export const Picker: React.FC<PickerProps> = ({
   emptyMessage,
   buttonClassName,
   sheetTitle,
+<<<<<<< HEAD
   searchThreshold = 9,
+=======
+  searchThreshold,
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   clearable = false,
   createLabel,
   onCreate,
 }) => {
+<<<<<<< HEAD
   const [open, setOpen] = useState(false);
   const [term, setTerm] = useState('');
   const selected = options.find((o) => o.value === value);
@@ -240,5 +260,21 @@ export const Picker: React.FC<PickerProps> = ({
         </>
       )}
     </div>
+=======
+  return (
+    <CeciSelect
+      label={label}
+      value={value ?? null}
+      onChange={onChange}
+      options={options}
+      placeholder={placeholder}
+      sheetTitle={sheetTitle}
+      clearable={clearable}
+      createLabel={createLabel}
+      onCreate={onCreate}
+      emptyMessage={emptyMessage}
+      className={buttonClassName}
+    />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   );
 };

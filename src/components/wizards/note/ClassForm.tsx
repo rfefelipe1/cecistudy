@@ -1,7 +1,12 @@
 // Wizard "transformar nota" — formulário de aula (MOD-001 / B.5).
 import React from 'react';
 import type { ReactNode } from 'react';
+<<<<<<< HEAD
 import { DateInput, FieldLabel, TextInput } from '../wizardFields';
+=======
+import { FieldLabel, TextInput } from '../wizardFields';
+import { CeciDatePicker } from '../../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface ClassFormProps {
   value: string;
@@ -41,7 +46,11 @@ const ClassForm: React.FC<ClassFormProps> = ({
       </div>
       <div>
         <FieldLabel>data</FieldLabel>
+<<<<<<< HEAD
         <DateInput value={classDate} onChange={(e) => onClassDateChange(e.target.value)} />
+=======
+        <CeciDatePicker value={classDate ?? null} onChange={onClassDateChange} />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </div>
     </div>
   </div>

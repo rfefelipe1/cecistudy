@@ -1,11 +1,20 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FileText } from 'lucide-react';
+<<<<<<< HEAD
 import { CELEBRACAO, VAZIO, frase } from '../../lib/voice';
+=======
+import { CELEBRACAO, VAZIO, DICA, erro, frase } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useMobileApp } from '@/context/mobileApp';
 import { hapticSuccess } from '../../lib/haptics';
 import { StarRating } from '../ui/StarRating';
 import { WizardScaffold, type WizardStep } from '../wizards/WizardScaffold';
+<<<<<<< HEAD
 import { DateInput, FieldLabel, TextArea, TextInput } from '../wizards/wizardFields';
+=======
+import { Field, FieldLabel, TextArea, TextInput } from '../wizards/wizardFields';
+import { CeciDatePicker } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { PillGroupMulti } from '../ui/PillGroupMulti';
 import { ToggleRow } from '../ui/ToggleRow';
 import { useAcervoTheory } from '../wizards/useAcervoTheory';
@@ -56,7 +65,11 @@ export const ClassNoteDetailWizard: React.FC = () => {
   if (!note) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3 text-center px-4">
+<<<<<<< HEAD
         <p className="text-xs text-ceci-secondary">essa anotação não foi encontrada.</p>
+=======
+        <p className="text-xs text-ceci-secondary">{erro('anotacaoNaoEncontrada')}</p>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         <button
           onClick={closeComposeDetails}
           className="px-4 py-2 bg-ceci-primary text-ceci-on-primary rounded-full text-xs font-bold cursor-pointer"
@@ -75,12 +88,31 @@ export const ClassNoteDetailWizard: React.FC = () => {
       subtitle: 'título + número e data da aula para organizar o diário.',
       content: (
         <div className="space-y-4">
+<<<<<<< HEAD
           <TextInput
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="ex.: transtornos de ansiedade"
             autoFocus
           />
+=======
+          <Field
+            label="título"
+            htmlFor="classnote-titulo-input"
+            required
+            description={frase(VAZIO, 'classNoteDetalheDescricao')}
+            error={!title.trim() && 'dê um título à aula para continuar'}
+            importance="primary"
+          >
+            <TextInput
+              id="classnote-titulo-input"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="ex.: transtornos de ansiedade"
+              autoFocus
+            />
+          </Field>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           <div className="grid grid-cols-2 gap-3">
             <div>
               <FieldLabel>número da aula</FieldLabel>
@@ -92,7 +124,11 @@ export const ClassNoteDetailWizard: React.FC = () => {
             </div>
             <div>
               <FieldLabel>data</FieldLabel>
+<<<<<<< HEAD
               <DateInput value={date} onChange={(e) => setDate(e.target.value)} />
+=======
+              <CeciDatePicker value={date ?? null} onChange={setDate} />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </div>
           </div>
         </div>
@@ -163,7 +199,11 @@ export const ClassNoteDetailWizard: React.FC = () => {
 
           <ToggleRow
             label="ficou com dúvidas?"
+<<<<<<< HEAD
             description={frase(VAZIO, 'marcarParaRevisar')}
+=======
+            description={frase(CELEBRACAO, 'marcarParaRevisar')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             checked={hasQuestions}
             onChange={() => setHasQuestions(!hasQuestions)}
             className="bg-surface-default rounded-2xl border border-ceci-border-default px-4 py-3 shadow-2xs"
@@ -198,6 +238,11 @@ export const ClassNoteDetailWizard: React.FC = () => {
 
   return (
     <WizardScaffold
+<<<<<<< HEAD
+=======
+      tone="content"
+      progress="linear"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title="detalhes da aula"
       icon={<FileText className="w-3.5 h-3.5" />}
       iconClass="bg-surface-rose border-ceci-border-brand text-ceci-brand-strong"
@@ -207,9 +252,16 @@ export const ClassNoteDetailWizard: React.FC = () => {
       onStepChange={setStep}
       canNext={canNext}
       blockedReason={blockedReason}
+<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeComposeDetails}
       saveLabel="concluir & guardar ♡"
+=======
+      invalidFieldId={step === 0 && !title.trim() ? 'classnote-titulo-input' : undefined}
+      onSave={handleSave}
+      onClose={closeComposeDetails}
+      saveLabel={frase(DICA, 'concluirGuardar')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

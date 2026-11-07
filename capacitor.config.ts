@@ -19,6 +19,12 @@ const config: CapacitorConfig = {
     CapacitorUpdater: {
       autoUpdate: 'off',
     },
+<<<<<<< HEAD
+=======
+    // Device: detecção de modelo/plataforma para otimizações de layout suaves
+    // (ex.: iPhone 16e). Nunca bloqueia o app se falhar.
+    Device: {},
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     SplashScreen: {
       launchShowDuration: 500,
       launchAutoHide: true,

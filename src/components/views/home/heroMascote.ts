@@ -33,8 +33,34 @@ const POR_TURNO: Record<SaudacaoTurno, [HeroMascoteExpression, HeroMascoteExpres
   noite: ['blanket-cozy', 'juggling-day'],
 };
 
+<<<<<<< HEAD
 /** A arte do hero: combina com o turno e alterna a cada dia (as oito aparecem). */
 export function heroMascote(turno: SaudacaoTurno, dia: number): HeroMascoteExpression {
   const [par, impar] = POR_TURNO[turno];
   return dia % 2 === 0 ? par : impar;
+=======
+/**
+ * Artes para dia de chuva: evita cecinho ao ar livre / com calor (ex. bike, ventilador,
+ * pular). Fica dentro de casa — cozy, leitura, café. Mesma regra de alternância por dia.
+ */
+const POR_TURNO_CLIMA_CHUVA: Record<SaudacaoTurno, [HeroMascoteExpression, HeroMascoteExpression]> = {
+  madrugada: ['books-cozy', 'snorkel-dream'],
+  manha: ['books-cozy', 'breakfast-happy'],
+  tarde: ['books-cozy', 'blanket-cozy'],
+  noite: ['blanket-cozy', 'books-cozy'],
+};
+
+/**
+ * A arte do hero: combina com o turno e alterna a cada dia (as oito aparecem).
+ * Quando `chuva` é verdadeiro, escolhe artes adequadas a dia chuvoso — nunca o cecinho
+ * com calor ou ao ar livre. Usado apenas internamente; nada de clima aparece ao user.
+ */
+export function heroMascote(
+  turno: SaudacaoTurno,
+  dia: number,
+  chuva = false,
+): HeroMascoteExpression {
+  const artes = chuva ? POR_TURNO_CLIMA_CHUVA[turno] : POR_TURNO[turno];
+  return dia % 2 === 0 ? artes[0] : artes[1];
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }

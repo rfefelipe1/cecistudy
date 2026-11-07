@@ -4,7 +4,11 @@ import { useMobileApp } from '@/context/mobileApp';
 import { EmptyState } from '../ui/EmptyState';
 import { HeroCard } from '../ui/HeroCard';
 import { ProgressBar } from '../ui/ProgressBar';
+<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
+=======
+import { CeciFilterChip } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { InternshipLogCard } from '../InternshipLogCard';
 import { StatusChip } from '../internship/StatusChip';
 import { todayKeyLocal, formatDateShortBR } from '../../lib/dateBR';
@@ -145,17 +149,26 @@ export const InternshipCaseView: React.FC = () => {
       )}
 
       {temFiltro && (
+<<<<<<< HEAD
         <PillGroup<FiltroCaso>
           size="sm"
           variant="rose"
           value={filtro}
           onChange={setFiltro}
           options={[
+=======
+        <div className="flex flex-wrap gap-1.5">
+          {[
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             { value: 'todas', label: 'todas' },
             ...(caso && caso.pendingReflection > 0
               ? [
                   {
+<<<<<<< HEAD
                     value: 'sem reflexao' as const,
+=======
+                    value: 'sem reflexao',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                     label: `sem reflexão ${caso.pendingReflection}`,
                   },
                 ]
@@ -163,13 +176,30 @@ export const InternshipCaseView: React.FC = () => {
             ...(caso && caso.pendingSupervision > 0
               ? [
                   {
+<<<<<<< HEAD
                     value: 'sem supervisao' as const,
+=======
+                    value: 'sem supervisao',
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                     label: `sem superv. ${caso.pendingSupervision}`,
                   },
                 ]
               : []),
+<<<<<<< HEAD
           ]}
         />
+=======
+          ].map((o) => (
+            <CeciFilterChip
+              key={o.value}
+              value={o.value}
+              label={o.label}
+              active={filtro === o.value}
+              onChange={(v) => setFiltro(v as FiltroCaso)}
+            />
+          ))}
+        </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       )}
 
       {/* Linha do tempo — mais recente primeiro */}

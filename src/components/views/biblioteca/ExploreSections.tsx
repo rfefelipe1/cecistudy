@@ -3,11 +3,19 @@
 // colapsáveis do acervo (repertório, psicoterapias, mistas, testes, autores,
 // conceitos, abordagens, multidisciplinar, artigos) + empty state + modais.
 
+<<<<<<< HEAD
 import React from 'react';
 import { Search, SlidersHorizontal, X, RotateCcw } from 'lucide-react';
 import { CollectionBook } from '../../../data/libraryData';
 import { Article } from '../../../data/books';
 import { TagChip } from '../../ui/TagChip';
+=======
+import React, { memo } from 'react';
+import { Search, SlidersHorizontal, X, RotateCcw } from 'lucide-react';
+import { CollectionBook } from '../../../data/libraryData';
+import { Article } from '../../../data/books';
+import { CeciTag } from '../../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Mascote } from '../../ui/Mascote';
 import { LibraryFilterModal } from '../../library/LibraryFilterModal';
 import { BookDetailModal } from '../../library/BookDetailModal';
@@ -33,7 +41,11 @@ interface ExploreSectionsProps {
   updateReadingProgress: (id: string, p: number) => void;
 }
 
+<<<<<<< HEAD
 export const ExploreSections: React.FC<ExploreSectionsProps> = ({
+=======
+const ExploreSectionsComponent: React.FC<ExploreSectionsProps> = ({
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   filter,
   savedBookIds,
   readingProgress,
@@ -156,6 +168,7 @@ export const ExploreSections: React.FC<ExploreSectionsProps> = ({
             )}
 
             {selectedTag && (
+<<<<<<< HEAD
               <TagChip
                 variant="blue"
                 size="sm"
@@ -164,6 +177,14 @@ export const ExploreSections: React.FC<ExploreSectionsProps> = ({
               >
                 tag: {selectedTag}
               </TagChip>
+=======
+              <CeciTag
+                variant="neutral"
+                value={selectedTag}
+                label={`tag: ${selectedTag}`}
+                onRemove={() => setSelectedTag(null)}
+              />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             )}
 
             {searchTerm && (
@@ -223,8 +244,16 @@ export const ExploreSections: React.FC<ExploreSectionsProps> = ({
   );
 };
 
+<<<<<<< HEAD
 /** Modais do acervo (filtro + detalhe de livro/artigo). */
 export const LibraryModals: React.FC<{
+=======
+export const ExploreSections = memo(ExploreSectionsComponent);
+
+/** Modais do acervo (filtro + detalhe de livro/artigo). */
+
+interface LibraryModalsProps {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   filter: LibraryFilterResult;
   availableTags: string[];
   savedBookIds: Set<string>;
@@ -235,7 +264,13 @@ export const LibraryModals: React.FC<{
   onCloseArticle: () => void;
   toggleSaveBook: (id: string) => void;
   updateReadingProgress: (id: string, p: number) => void;
+<<<<<<< HEAD
 }> = ({
+=======
+}
+
+const LibraryModalsComponent: React.FC<LibraryModalsProps> = ({
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   filter,
   availableTags,
   savedBookIds,
@@ -295,3 +330,8 @@ export const LibraryModals: React.FC<{
     </>
   );
 };
+<<<<<<< HEAD
+=======
+
+export const LibraryModals = memo(LibraryModalsComponent);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

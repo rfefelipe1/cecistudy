@@ -51,6 +51,11 @@ export function slideBaseKeyOf(screen: NavScreen, base: NavScreen | undefined): 
     // de overlay impedia o bump de revisão ⇒ nenhuma animação acontecia.
     case 'termHistory':
       return `termHistory-${screen.termId ?? 'all'}`;
+<<<<<<< HEAD
+=======
+    case 'semesterMemories':
+      return `semesterMemories-${screen.termId}`;
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     case 'notes':
       return 'notes';
     // `noteDetail`/`noteTransform` são overlay: a base visível é a de notas.

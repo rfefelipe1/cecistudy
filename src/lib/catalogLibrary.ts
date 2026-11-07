@@ -11,6 +11,15 @@ import { curateLibrary } from '../data/books/curate.ts';
 import type { Article, CatalogBook, InterdisciplinaryBook } from '../data/books/types.ts';
 import { getCatalogWorksByType } from './db/catalogDb.ts';
 import { isNativePlatform } from './storage.ts';
+<<<<<<< HEAD
+=======
+import {
+  CatalogBookSchema,
+  InterdisciplinaryBookSchema,
+  ArticleSchema,
+  validarLinhas,
+} from './catalogValidators';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /**
  * Carrega o dataset completo da biblioteca do catálogo.
@@ -31,9 +40,19 @@ export async function loadNativeLibraryDataset(): Promise<LibraryDataset | null>
     ) {
       return null;
     }
+<<<<<<< HEAD
     const catalogBooks = catalogRows as CatalogBook[];
     const interdisciplinaryBooks = interdisciplinaryRows as InterdisciplinaryBook[];
     const articles = articleRows as Article[];
+=======
+    const catalogBooks = validarLinhas<CatalogBook>(catalogRows, CatalogBookSchema, 'catalog');
+    const interdisciplinaryBooks = validarLinhas<InterdisciplinaryBook>(
+      interdisciplinaryRows,
+      InterdisciplinaryBookSchema,
+      'interdisciplinary',
+    );
+    const articles = validarLinhas<Article>(articleRows, ArticleSchema, 'article');
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
     return {
       catalogBooks,

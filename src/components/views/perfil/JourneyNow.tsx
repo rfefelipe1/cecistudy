@@ -12,6 +12,10 @@ import { GraduationCap, Minus, Pencil, Plus, Sparkles, X } from 'lucide-react';
 import type { ProfileJourney } from '../../../lib/profileViewModel';
 import { MAX_TERM_ORDINAL } from '../../../lib/termScope';
 import JourneyRail from './JourneyRail';
+<<<<<<< HEAD
+=======
+import { frase, CELEBRACAO, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface JourneyNowProps {
   journey: ProfileJourney;
@@ -50,7 +54,11 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
     const next = Math.max(1, Math.min(MAX_TERM_ORDINAL, draft));
     onCorrectOrdinal(journey.activeTermId, next);
     setEditing(false);
+<<<<<<< HEAD
     onShowToast(`agora seu ${next}º semestre é o atual ♡`);
+=======
+    onShowToast(frase(CELEBRACAO, 'semestreAtualComNumero', { n: next }));
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   };
 
   const stepTotal = (delta: number) => {
@@ -62,7 +70,11 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
   return (
     <section
       aria-labelledby="perfil-jornada-titulo"
+<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-4"
+=======
+      className="space-y-4"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div className="flex items-center gap-2">
         <GraduationCap className="w-4 h-4 text-ceci-brand" aria-hidden="true" />
@@ -145,7 +157,11 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditing(false)}
+<<<<<<< HEAD
                   aria-label="cancelar correção do semestre"
+=======
+                  aria-label={frase(DICA, 'cancelarCorrecaoSemestre')}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                   className="touch-target inline-flex items-center justify-center rounded-xl border border-ceci-border-default text-ceci-secondary hover:bg-surface-muted cursor-pointer"
                 >
                   <X className="w-4 h-4" aria-hidden="true" />

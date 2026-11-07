@@ -8,6 +8,10 @@ import {
   type ThesisWritingLog,
 } from '../../types';
 import { Modal } from '../ui/Modal';
+<<<<<<< HEAD
+=======
+import { CeciSelect } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { todayKeyLocal } from '../../lib/dateBR';
 import { hapticTap, hapticWarning } from '../../lib/haptics';
 
@@ -112,6 +116,7 @@ export const WritingLogSheet: React.FC<WritingLogSheetProps> = ({
           <label htmlFor="wl-cap" className={labelClass}>
             capítulo
           </label>
+<<<<<<< HEAD
           <select
             id="wl-cap"
             value={chapterId}
@@ -125,6 +130,16 @@ export const WritingLogSheet: React.FC<WritingLogSheetProps> = ({
               </option>
             ))}
           </select>
+=======
+          <CeciSelect
+            htmlFor="wl-cap"
+            label="capítulo"
+            value={chapterId ?? null}
+            onChange={setChapterId}
+            placeholder="— sem capítulo —"
+            options={chapters.map((c) => ({ value: c.id, label: c.title }))}
+          />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </div>
 
         <div className="grid grid-cols-2 gap-3">

@@ -2,6 +2,10 @@ import React, { useMemo, useState } from 'react';
 import { Search, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Modal } from './Modal';
+<<<<<<< HEAD
+=======
+import { frase, VAZIO } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Uma opção candidata a entrar num grupo do repertório (SPEC-001). */
 export interface CatalogSelectOption {
@@ -127,7 +131,11 @@ export const CatalogMultiSelect: React.FC<CatalogMultiSelectProps> = ({
 
         {visibleGroups.length === 0 && (
           <p className="px-5 py-8 text-xs text-ceci-tertiary text-center">
+<<<<<<< HEAD
             {emptyMessage ?? `nada de ${title} por aqui ainda ♡`}
+=======
+            {emptyMessage ?? frase(VAZIO, 'nadaDeAqui', { titulo: title })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </p>
         )}
 

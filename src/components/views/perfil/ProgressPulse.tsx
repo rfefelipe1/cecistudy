@@ -8,6 +8,10 @@ import React from 'react';
 import { BookOpen, CheckCircle2, ClipboardList, Clock } from 'lucide-react';
 import type { ProfilePulse } from '../../../lib/profileViewModel';
 import PulseMetric from './PulseMetric';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface ProgressPulseProps {
   pulse: ProfilePulse;
@@ -33,7 +37,11 @@ const ProgressPulse: React.FC<ProgressPulseProps> = ({
   return (
     <section
       aria-labelledby="perfil-ritmo-titulo"
+<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-4"
+=======
+      className="space-y-4"
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div>
         <h2 id="perfil-ritmo-titulo" className="font-display font-bold text-xl text-ceci-primary">
@@ -53,28 +61,44 @@ const ProgressPulse: React.FC<ProgressPulseProps> = ({
             icon={<Clock className="w-4 h-4" />}
             label="estudadas"
             value={pulse.studyTimeLabel}
+<<<<<<< HEAD
             ariaLabel={`${pulse.studyTimeLabel} estudados. abrir sessões de estudo.`}
+=======
+            ariaLabel={frase(DICA, 'pulseStudyTime', { label: pulse.studyTimeLabel })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             onClick={onOpenSessions}
           />
           <PulseMetric
             icon={<BookOpen className="w-4 h-4" />}
             label="páginas lidas"
             value={pulse.pagesRead}
+<<<<<<< HEAD
             ariaLabel={`${pulse.pagesRead} páginas lidas. abrir leituras.`}
+=======
+            ariaLabel={frase(DICA, 'pulsePagesRead', { n: pulse.pagesRead })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             onClick={onOpenReadings}
           />
           <PulseMetric
             icon={<CheckCircle2 className="w-4 h-4" />}
             label="tarefas concluídas"
             value={`${pulse.tasksCompleted}/${pulse.tasksTotal}`}
+<<<<<<< HEAD
             ariaLabel={`${pulse.tasksCompleted} de ${pulse.tasksTotal} tarefas concluídas. abrir tarefas.`}
+=======
+            ariaLabel={frase(DICA, 'pulseTasksCompleted', { n: pulse.tasksCompleted, total: pulse.tasksTotal })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             onClick={onOpenTasks}
           />
           <PulseMetric
             icon={<ClipboardList className="w-4 h-4" />}
             label="provas pendentes"
             value={pulse.examsPending}
+<<<<<<< HEAD
             ariaLabel={`${pulse.examsPending} provas pendentes. abrir avaliações.`}
+=======
+            ariaLabel={frase(DICA, 'pulseExamsPending', { n: pulse.examsPending })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             onClick={onOpenExams}
             tone={pulse.examsPending > 0 ? 'attention' : 'default'}
           />

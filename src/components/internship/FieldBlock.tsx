@@ -3,6 +3,10 @@ import type { InternshipLog, InternshipLogType } from '../../types';
 import { pluralPt } from '../../lib/pluralPt';
 import { StatusChip } from './StatusChip';
 import { typeMeta } from './LogTypeBadge';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Rótulo de paciente + sessão, para linha de meta do card clínico. */
 export const patientLine = (log: InternshipLog): string => {
@@ -118,7 +122,11 @@ export const ReflectionChip: React.FC<{
   reflected ? (
     <StatusChip tone="success" label="reflexão ok" />
   ) : (
+<<<<<<< HEAD
     <StatusChip tone="warning" onClick={onAdd} ariaLabel="adicionar reflexão">
+=======
+    <StatusChip tone="warning" onClick={onAdd} ariaLabel={frase(DICA, 'adicionarReflexao')}>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       sem reflexão · adicionar
     </StatusChip>
   );

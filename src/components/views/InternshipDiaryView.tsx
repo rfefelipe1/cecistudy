@@ -1,16 +1,29 @@
 import React, { useMemo, useState } from 'react';
+<<<<<<< HEAD
 import { HeartHandshake, Compass, AlertCircle, Users, Sparkles } from 'lucide-react';
+=======
+import { HeartHandshake, Compass, AlertCircle, Users, Sparkles, Target } from 'lucide-react';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useMobileApp } from '@/context/mobileApp';
 import { InternshipLogCard } from '../InternshipLogCard';
 import { SupervisionView } from './SupervisionView';
 import { HeroCard } from '../ui/HeroCard';
+<<<<<<< HEAD
+=======
+import { InternshipGoalSheet } from '../internship/InternshipGoalSheet';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Mascote } from '../ui/Mascote';
 import { EmptyState } from '../ui/EmptyState';
 import { DitherGrowthChart } from '../ui/dither-growth';
 import { UnderlineTabBar, type UnderlineTab } from '../ui/UnderlineTabBar';
 import { SwipeableTabPanel, useTabPager } from '../ui/SwipeableTabPanel';
+<<<<<<< HEAD
 import { VAZIO, erro, frase } from '../../lib/voice';
 import { PillGroup } from '../ui/PillGroup';
+=======
+import { VAZIO, frase } from '../../lib/voice';
+import { CeciFilterChip } from '../ui/ceci';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ProgressBar } from '../ui/ProgressBar';
 import { StatusChip } from '../internship/StatusChip';
 import { InternshipCaseCard } from '../internship/InternshipCaseCard';
@@ -98,6 +111,10 @@ export const InternshipDiaryView: React.FC = () => {
   const [filter, setFilter] = useState<Filter>('todos');
   const [pending, setPending] = useState<PendingFilter>(null);
   const [extraWeeks, setExtraWeeks] = useState(0);
+<<<<<<< HEAD
+=======
+  const [goalSheetOpen, setGoalSheetOpen] = useState(false);
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   // Arraste horizontal troca de aba (SPEC-015). Trocar de aba limpa o filtro de
   // pendência — vale para o toque na tab bar e para o arrasto, pelos dois
@@ -260,9 +277,24 @@ export const InternshipDiaryView: React.FC = () => {
           </section>
         ) : (
           <>
+<<<<<<< HEAD
             {/* a) Resumo */}
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center">
+=======
+            {/* a) Resumo — três cards de número; o primeiro traz o ícone de meta
+                (Target) que abre a sheet de definir/editar meta de horas. */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center relative">
+                <button
+                  type="button"
+                  onClick={() => setGoalSheetOpen(true)}
+                  aria-label={goal ? `editar meta de ${formatHours(goal)} h` : 'definir meta de horas'}
+                  className="absolute top-2 right-2 w-6 h-6 rounded-full bg-surface-default/60 border border-ceci-border-default text-ceci-secondary flex items-center justify-center hover:bg-surface-default/80 tap-interactive transition-colors"
+                >
+                  <Target className="w-3 h-3" />
+                </button>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 <p className="font-bold text-ceci-academic-strong text-lg">
                   {formatHours(stats.doneHours)}
                 </p>
@@ -286,6 +318,7 @@ export const InternshipDiaryView: React.FC = () => {
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* Meta de horas (D2) */}
             {goal ? (
               <div className="space-y-1.5">
@@ -302,6 +335,48 @@ export const InternshipDiaryView: React.FC = () => {
             ) : (
               <GoalCta onSet={(h) => handleUpdateProfile({ internshipGoalHours: h })} />
             )}
+=======
+            {/* Meta de horas (D2) — espaço de respiração em relação aos cards acima. */}
+            <div className="mt-5">
+              {goal ? (
+                <div className="space-y-1.5">
+                  <ProgressBar
+                    value={goalPct}
+                    barClassName={goalPct >= 100 ? 'bg-status-success' : undefined}
+                  />
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[11px] text-ceci-secondary">
+                      {goalPct >= 100
+                        ? 'meta batida ♡'
+                        : `faltam ${formatHours(Math.max(0, goal - stats.doneHours))} h`}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setGoalSheetOpen(true)}
+                      aria-label="editar meta de horas"
+                      className="w-6 h-6 rounded-full bg-surface-default/60 border border-ceci-border-default text-ceci-secondary flex items-center justify-center hover:bg-surface-default/80 tap-interactive transition-colors"
+                    >
+                      <Target className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setGoalSheetOpen(true)}
+                  className="w-full min-h-[48px] rounded-xl border border-ceci-border-default bg-surface-default flex items-center justify-center gap-3 cursor-pointer tap-interactive hover:bg-surface-rose transition-colors"
+                >
+                  <Target className="w-4 h-4 text-ceci-brand-strong" />
+                  <span className="text-sm font-semibold text-ceci-brand-strong">
+                    definir meta de horas
+                  </span>
+                  <span className="text-[11px] text-ceci-tertiary ml-auto">
+                    sem meta ainda ♡
+                  </span>
+                </button>
+              )}
+            </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
             {/* c) Pendências — somem quando zeradas (D13) */}
             {hasPending && (
@@ -346,18 +421,36 @@ export const InternshipDiaryView: React.FC = () => {
             )}
 
             {/* e) Filtros */}
+<<<<<<< HEAD
             <PillGroup<Filter>
               size="sm"
               variant="rose"
               value={filter}
               onChange={setFilter}
               options={[
+=======
+            <div className="flex flex-wrap gap-1.5">
+              {[
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 { value: 'todos', label: 'todos' },
                 { value: 'campo', label: 'campo' },
                 { value: 'clinico', label: 'clínico' },
                 { value: 'supervisao', label: 'supervisão' },
+<<<<<<< HEAD
               ]}
             />
+=======
+              ].map((o) => (
+                <CeciFilterChip
+                  key={o.value}
+                  value={o.value}
+                  label={o.label}
+                  active={filter === o.value}
+                  onChange={(v) => setFilter(v as Filter)}
+                />
+              ))}
+            </div>
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
             {pending && (
               <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default flex items-center justify-between gap-2 text-[12px] text-ceci-secondary">
@@ -429,6 +522,18 @@ export const InternshipDiaryView: React.FC = () => {
           </>
         )}
       </SwipeableTabPanel>
+<<<<<<< HEAD
+=======
+
+      {/* Sheet de baixo para cima que abre ao tocar o ícone Target do card
+          "horas feitas" ou o botão de definir meta. */}
+      <InternshipGoalSheet
+        open={goalSheetOpen}
+        onClose={() => setGoalSheetOpen(false)}
+        currentHours={goal}
+        onSet={(h) => handleUpdateProfile({ internshipGoalHours: h })}
+      />
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     </div>
   );
 };
@@ -443,6 +548,7 @@ const visibleGroups = (groups: ReturnType<typeof groupByWeek>, extra: number) =>
 
 const countDoneGroups = (groups: ReturnType<typeof groupByWeek>) =>
   groups.filter((g) => g.id !== 'upcoming').length;
+<<<<<<< HEAD
 
 const GoalCta: React.FC<{ onSet: (hours: number) => void }> = ({ onSet }) => {
   const [open, setOpen] = useState(false);
@@ -515,3 +621,5 @@ const GoalCta: React.FC<{ onSet: (hours: number) => void }> = ({ onSet }) => {
     </div>
   );
 };
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

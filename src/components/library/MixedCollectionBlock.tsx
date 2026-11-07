@@ -37,6 +37,7 @@ interface MixedCollectionBlockProps {
 }
 
 /** Bloco de categoria mista: shelf com capas de livros + artigos em folha de papel. */
+<<<<<<< HEAD
 export const MixedCollectionBlock: React.FC<MixedCollectionBlockProps> = ({
   collection,
   savedBookIds,
@@ -44,6 +45,9 @@ export const MixedCollectionBlock: React.FC<MixedCollectionBlockProps> = ({
   onSelectBook,
   onSelectArticle,
 }) => {
+=======
+export const MixedCollectionBlock = React.memo<MixedCollectionBlockProps>(({ collection, savedBookIds, readProgress, onSelectBook, onSelectArticle }) => {
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const Icon = ICON_MAP[collection.icon] ?? Globe;
   const total = collection.books.length + collection.articles.length;
 
@@ -150,4 +154,8 @@ export const MixedCollectionBlock: React.FC<MixedCollectionBlockProps> = ({
       </div>
     </div>
   );
+<<<<<<< HEAD
 };
+=======
+});
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)

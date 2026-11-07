@@ -58,7 +58,10 @@ const KNOWN = [
   'src/components/views/home/rows.tsx',
   'src/components/views/OnboardingScreen.tsx',
   'src/components/views/StreakView.tsx',
+<<<<<<< HEAD
   'src/components/views/TccView.tsx',
+=======
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   'src/components/wizards/FlashcardWizard.tsx',
   'src/components/wizards/WizardScaffoldHeader.tsx',
   'src/components/wizards/WizardScaffold.tsx',

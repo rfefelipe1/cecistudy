@@ -12,6 +12,10 @@ import {
 import type { Flashcard } from '../../types';
 import { Paper3DCard } from '../flashcards/Paper3DCard';
 import { RatingBar, type RatingOption } from '../flashcards/RatingBar';
+<<<<<<< HEAD
+=======
+import { frase, DICA } from '../../lib/voice';
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export interface ReviewSessionProps {
   /** Todos os flashcards (para contagens e "revisar todos"). */
@@ -182,12 +186,20 @@ export const ReviewSession: React.FC<ReviewSessionProps> = ({
           </div>
           <div>
             <h3 className="font-display font-bold text-base text-ceci-primary">
+<<<<<<< HEAD
               revisão concluída{name ? `, parabéns ${name}` : ', parabéns'}! ♡
+=======
+              revisão concluída{name ? frase(DICA, 'parabensNome', { nome: name }) : frase(DICA, 'parabensSemNome')} ♡
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </h3>
             <p className="text-xs text-ceci-secondary mt-1.5">
               você revisou {reviewedCount} {reviewedCount === 1 ? 'cartão' : 'cartões'} hoje.
               {nextRoundInDays !== null &&
+<<<<<<< HEAD
                 ` a próxima rodada volta em ${nextRoundInDays} ${nextRoundInDays === 1 ? 'dia' : 'dias'} ♡`}
+=======
+                frase(DICA, 'proximaRodada', { n: nextRoundInDays })}
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </p>
           </div>
           <div className="flex items-center justify-center gap-2">
