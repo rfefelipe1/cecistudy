@@ -38,22 +38,4 @@ describe('arte do hero', () => {
     expect(new Set(vistas).size).toBe(Object.keys(HERO_MASCOTES).length);
     expect(new Set(vistas).size).toBe(8);
   });
-<<<<<<< HEAD
-=======
-
-  it('em dia de chuva, nunca escolhe artes de calor ou ao ar livre', () => {
-    const tardeChuva = heroMascote('tarde', 2, true);
-    expect(['books-cozy', 'blanket-cozy']).toContain(tardeChuva);
-    expect(tardeChuva).not.toBe('heat-fan');
-    expect(tardeChuva).not.toBe('bike-ride');
-
-    const manhaChuva = heroMascote('manha', 3, true);
-    expect(manhaChuva).not.toBe('jump-hello');
-  });
-
-  it('sem chuva, mantém o comportamento original por turno e dia', () => {
-    expect(heroMascote('tarde', 2, false)).toBe('bike-ride');
-    expect(heroMascote('tarde', 3, false)).toBe('heat-fan');
-  });
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 });

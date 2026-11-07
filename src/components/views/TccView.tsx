@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import React, { useMemo, useState } from 'react';
 import { Reorder, useDragControls } from 'framer-motion';
-=======
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   Bell,
   CalendarClock,
@@ -12,10 +7,7 @@ import {
   BookOpen,
   Users,
   PenLine,
-<<<<<<< HEAD
   GripVertical,
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   Minus,
   Plus,
   Copy,
@@ -31,13 +23,8 @@ import { CompletionToggle } from '../ui/CompletionToggle';
 import { EmptyState } from '../ui/EmptyState';
 import { StatusChip } from '../ui/StatusChip';
 import { SectionTitle } from '../ui/SectionTitle';
-<<<<<<< HEAD
 import { TagChip } from '../ui/TagChip';
 import { PillGroup } from '../ui/PillGroup';
-=======
-import { CeciTag } from '../ui/ceci';
-import { CeciFilterChip } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ToggleRow } from '../ui/ToggleRow';
 import {
   dateKeyOrdinal,
@@ -72,21 +59,13 @@ import {
   type ThesisReminderPrefs,
 } from '../../types';
 import { ChapterSheet } from '../tcc/ChapterSheet';
-<<<<<<< HEAD
-=======
-import { ReorderGrip, ReorderList } from '../ui/reorder-list';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { WritingLogSheet } from '../tcc/WritingLogSheet';
 import { TaskSheet } from '../tcc/TaskSheet';
 import { MeetingSheet } from '../tcc/MeetingSheet';
 import { MorphSource, Reveal, sharedChapterId } from '@/lib/motion';
 import { ReferenceSheet } from '../tcc/ReferenceSheet';
 import { CaptureLinkSheet } from '../capture/CaptureLinkSheet';
-<<<<<<< HEAD
 import { CELEBRACAO, VAZIO, erro, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, VAZIO, DICA, erro, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import type { ThesisTab } from '../../../packages/navigation/src/types';
 
 type LeiturasFilter = 'todas' | 'candidatas' | 'lidas' | 'citadas';
@@ -286,15 +265,10 @@ export const TccView: React.FC = () => {
 
   // ---- aba capítulos (F4.1/F4.2): ordem de render, arrastar e sheet ----
   const ordered = useMemo(() => orderChaptersForRender(thesisChapters), [thesisChapters]);
-<<<<<<< HEAD
   const [dragOrder, setDragOrder] = useState<ThesisChapter[] | null>(null);
   // ---- aba orientação (F6): pendências e reuniões ----
   const [showCancelled, setShowCancelled] = useState(false);
   const [announceText, setAnnounceText] = useState('');
-=======
-  // ---- aba orientação (F6): pendências e reuniões ----
-  const [showCancelled, setShowCancelled] = useState(false);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // ---- aba leituras (F7.2): filtros e sheet da referência (SPEC-010 D7) ----
   const [leiturasFilter, setLeiturasFilter] = useState<LeiturasFilter>('todas');
   /** Segundo filtro da aba leituras: capítulo (SPEC-024 D10, T4.1). */
@@ -307,11 +281,8 @@ export const TccView: React.FC = () => {
     ],
     [ordered],
   );
-<<<<<<< HEAD
   const dragControls = useDragControls();
 
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   /**
    * A folha aberta **mora no contexto do app** (SPEC-022 D3), não aqui: a
    * barra contextual e o conteúdo abrem a mesma folha — são a mesma porta, e
@@ -329,7 +300,6 @@ export const TccView: React.FC = () => {
   const captureOpen = tccSheet?.type === 'capture';
   const captureText = tccCaptureText;
 
-<<<<<<< HEAD
   const commitDrag = () => {
     const rendered = dragOrder;
     setDragOrder(null);
@@ -348,8 +318,6 @@ export const TccView: React.FC = () => {
     }
   };
 
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const stageLabel = (stage: ChapterStage): string =>
     stage === 'a_fazer' ? 'a fazer' : stage === 'em_revisao' ? 'em revisão' : stage;
   const stageTone = (stage: ChapterStage): 'success' | 'warning' | 'muted' =>
@@ -444,13 +412,8 @@ export const TccView: React.FC = () => {
       {writingStreak > 0 && (
         <p className="text-[11px] font-medium text-ceci-brand-strong">
           {writingStreak === 1
-<<<<<<< HEAD
             ? '1 dia seguido escrevendo ♡'
             : `${writingStreak} dias seguidos escrevendo ♡`}
-=======
-            ? frase(CELEBRACAO, 'escrevendoDiasSeguidos', { n: 1 })
-            : frase(CELEBRACAO, 'escrevendoDiasSeguidos', { n: writingStreak })}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </p>
       )}
       {weeklyGoal == null && (
@@ -642,26 +605,6 @@ export const TccView: React.FC = () => {
     </div>
   );
 
-<<<<<<< HEAD
-=======
-  const commitReorder = useCallback(
-    (rendered: ThesisChapter[]) => {
-      // Converte a ordem visual (arrastar) em posições canônicas (INV-T2).
-      // commitFlatOrder devolve a mesma referência quando nada mudou,
-      // então soltar no mesmo lugar não grava.
-      const committed = commitFlatOrder(thesisChapters, rendered);
-      if (committed === thesisChapters) return;
-      setThesisChapters(committed);
-      hapticTap();
-    },
-    [thesisChapters, setThesisChapters, hapticTap],
-  );
-
-  /** Id do capítulo que acabou de ser arrastado. Usado para evitar que um
-   *  onClick do card abra o capítulo sem querer logo após o arrastar. */
-  const draggedRef = useRef<string | null>(null);
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const renderCapitulos = () => {
     if (thesisChapters.length === 0) {
       // Registro livre (Q7): a lista nasce vazia e NADA semeia capítulo —
@@ -669,11 +612,7 @@ export const TccView: React.FC = () => {
       return (
         <EmptyState
           description={frase(VAZIO, 'capitulosVazio')}
-<<<<<<< HEAD
           actionLabel="adicionar o primeiro capítulo"
-=======
-          actionLabel={frase(DICA, 'adicionarPrimeiroCapitulo')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           onAction={() => openTccSheet({ type: 'chapter', id: 'new' })}
           mascote="writing-flow"
         />
@@ -710,7 +649,6 @@ export const TccView: React.FC = () => {
     };
 
     return (
-<<<<<<< HEAD
       <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm space-y-2">
         <Reorder.Group
           axis="y"
@@ -789,71 +727,6 @@ export const TccView: React.FC = () => {
             );
           })}
         </Reorder.Group>
-=======
-      <>
-        <ReorderList
-          items={ordered}
-          getId={(ch) => ch.id}
-          getLabel={(ch) => ch.title}
-          onReorder={commitReorder}
-          onItemDragEnd={(id) => {
-            draggedRef.current = id;
-          }}
-          label="capítulos"
-        >
-          {(ch) => {
-            const done = isChapterDone(ch);
-            return (
-              <Reveal key={ch.id}>
-              <MorphSource id={sharedChapterId(ch.id)}>
-              <div
-                onClick={() => {
-                  if (draggedRef.current === ch.id) {
-                    draggedRef.current = null;
-                    return;
-                  }
-                  openTccSheet({ type: 'chapter', id: ch.id });
-                }}
-                className={`flex items-center gap-2 p-3 rounded-2xl border cursor-pointer tap-interactive ${done ? 'bg-surface-blue/60 border-ceci-border-academic' : 'bg-surface-default border-ceci-border-default hover:border-ceci-border-brand'}`}
-              >
-                <ReorderGrip />
-                <CompletionToggle
-                  checked={done}
-                  onChange={() => handleToggleChapter(ch.id)}
-                  label={`capítulo ${ch.title}`}
-                  className="!min-h-[44px] !w-11 !h-11 -ml-2"
-                />
-                <div className="min-w-0 flex-1">
-                  <p
-                    className={`text-xs font-medium truncate ${done ? 'line-through text-ceci-tertiary' : 'text-ceci-primary'}`}
-                  >
-                    {ch.title}
-                  </p>
-                  {(ch.dueDate || ch.wordCount != null || ch.wordGoal != null) && (
-                    <p className="text-[10px] text-ceci-secondary mt-0.5">
-                      {[
-                        ch.dueDate ? `prazo: ${formatDateBR(ch.dueDate)}` : null,
-                        ch.wordCount != null || ch.wordGoal != null
-                          ? `${ch.wordCount ?? 0}${ch.wordGoal != null ? `/${ch.wordGoal}` : ''} palavras`
-                          : null,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                    </p>
-                  )}
-                </div>
-                <StatusChip
-                  tone={stageTone(ch.stage)}
-                  label={stageLabel(ch.stage)}
-                  className="!min-h-[28px] !text-[10px] shrink-0"
-                />
-              </div>
-              </MorphSource>
-              </Reveal>
-            );
-          }}
-        </ReorderList>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -871,16 +744,12 @@ export const TccView: React.FC = () => {
             <Copy className="w-3.5 h-3.5" /> copiar sumário
           </button>
         </div>
-<<<<<<< HEAD
         {/* Anúncio de reordenação (a11y, F4.2): quem não arrasta precisa ouvir
             que a lista mudou e para onde. */}
         <div role="status" aria-live="polite" className="sr-only">
           {announceText}
         </div>
       </div>
-=======
-      </>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     );
   };
 
@@ -985,7 +854,6 @@ export const TccView: React.FC = () => {
             referências (abnt)
           </SectionTitle>
 
-<<<<<<< HEAD
           <PillGroup<LeiturasFilter>
             variant="rose"
             size="sm"
@@ -1004,32 +872,6 @@ export const TccView: React.FC = () => {
               options={capituloOptions}
               label="capítulo"
             />
-=======
-          <div className="flex flex-wrap gap-1.5">
-            {LEITURAS_FILTERS.map((o) => (
-              <CeciFilterChip
-                key={o.value}
-                value={o.value}
-                label={o.label}
-                active={leiturasFilter === o.value}
-                onChange={(v) => setLeiturasFilter(v as LeiturasFilter)}
-              />
-            ))}
-          </div>
-
-          {ordered.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {capituloOptions.map((o) => (
-                <CeciFilterChip
-                  key={o.value}
-                  value={o.value}
-                  label={o.label}
-                  active={leiturasCapitulo === o.value}
-                  onChange={setLeiturasCapitulo}
-                />
-              ))}
-            </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           )}
 
           {filtradas.length === 0 ? (
@@ -1088,18 +930,9 @@ export const TccView: React.FC = () => {
                               {reading.year}
                             </span>
                           )}
-<<<<<<< HEAD
                           <TagChip size="sm" variant="neutral" className="shrink-0">
                             {TYPE_LABEL[reading.type] ?? reading.type}
                           </TagChip>
-=======
-                          <CeciTag
-                            variant="neutral"
-                            className="shrink-0"
-                            value={reading.type}
-                            label={TYPE_LABEL[reading.type] ?? reading.type}
-                          />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                           {reading.url && (
@@ -1302,17 +1135,9 @@ export const TccView: React.FC = () => {
             {t.title}
           </p>
           <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-<<<<<<< HEAD
             <TagChip size="sm" variant={t.origin === 'orientadora' ? 'rose' : 'neutral'}>
               {t.origin === 'orientadora' ? 'orientadora' : 'minha'}
             </TagChip>
-=======
-            <CeciTag
-              variant={t.origin === 'orientadora' ? 'rose' : 'neutral'}
-              value={t.origin}
-              label={t.origin === 'orientadora' ? 'orientadora' : 'minha'}
-            />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             {chapter && (
               <span className="text-[10px] text-ceci-secondary truncate max-w-[9rem]">
                 {chapter.title}
@@ -1357,11 +1182,7 @@ export const TccView: React.FC = () => {
           description={frase(VAZIO, 'orientacaoVazio')}
           actionLabel="agendar reunião"
           onAction={() => openTccSheet({ type: 'meeting', id: 'new', intent: 'agendar' })}
-<<<<<<< HEAD
           secondaryActionLabel="adicionar pendência"
-=======
-          secondaryActionLabel={frase(DICA, 'adicionarPendencia')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           onSecondaryAction={() => openTccSheet({ type: 'task', id: 'new' })}
         />
       );
@@ -1453,13 +1274,9 @@ export const TccView: React.FC = () => {
                         {m.time && (
                           <span className="text-[10px] text-ceci-secondary">· {m.time}</span>
                         )}
-<<<<<<< HEAD
                         <TagChip size="sm" variant="neutral">
                           {m.mode}
                         </TagChip>
-=======
-                        <CeciTag variant="neutral" value={m.mode} label={m.mode} />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       </div>
                     </div>
                     <StatusChip
@@ -1599,11 +1416,7 @@ export const TccView: React.FC = () => {
                         {log.note}
                       </p>
                     ) : (
-<<<<<<< HEAD
                       <p className="text-[11px] text-ceci-faded mt-0.5">sem anotação</p>
-=======
-                      <p className="text-[11px] text-ceci-faded mt-0.5">{frase(VAZIO, 'semAnotacao')}</p>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                     )}
                   </div>
                 </div>

@@ -17,16 +17,9 @@ import {
 } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { Mascote } from './ui/Mascote';
-<<<<<<< HEAD
 import { PillGroup } from './ui/PillGroup';
 import { SearchRow } from './SearchRow';
 import { usePersistentState } from '../lib/usePersistentState';
-=======
-import { CeciFilterChip } from './ui/ceci';
-import { SearchRow } from './SearchRow';
-import { usePersistentState } from '../lib/usePersistentState';
-import { frase, DICA } from '../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   groupResults,
   pushRecent,
@@ -137,11 +130,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   onOpenTccScreen,
 }) => {
   const [query, setQuery] = useState('');
-<<<<<<< HEAD
-=======
-  const [searchQuery, setSearchQuery] = useState('');
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const [recents, setRecents] = usePersistentState<string[]>('recentSearches', []);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -367,15 +355,9 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     () =>
       search(
         items.map((it) => it.entry),
-<<<<<<< HEAD
         query,
       ),
     [items, query],
-=======
-        searchQuery,
-      ),
-    [items, searchQuery],
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   );
   const sections = useMemo(() => groupResults(ranked), [ranked]);
 
@@ -389,15 +371,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
     rowRefs.current.get(activeKey)?.scrollIntoView?.({ block: 'nearest' });
   }, [activeKey]);
 
-<<<<<<< HEAD
-=======
-  useEffect(() => {
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-  }, []);
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const select = (key: string) => {
     const item = byId.get(key);
     if (!item) return;
@@ -427,10 +400,6 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
   const runSuggestion = (tag: string) => {
     setQuery(tag);
-<<<<<<< HEAD
-=======
-    setSearchQuery(tag);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     inputRef.current?.focus();
   };
 
@@ -454,15 +423,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           aria-activedescendant={activeKey ? `search-option-${activeKey}` : undefined}
           aria-label="buscar no cantinho"
           value={query}
-<<<<<<< HEAD
           onChange={(e) => setQuery(e.target.value)}
-=======
-          onChange={(e) => {
-            setQuery(e.target.value);
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            debounceRef.current = setTimeout(() => setSearchQuery(e.target.value), 300);
-          }}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           onKeyDown={onKeyDown}
           placeholder="buscar no cantinho… (tarefas, aulas, beck, tcc…)"
           className="w-full bg-transparent text-sm sm:text-base focus:outline-none placeholder:text-ceci-faded text-ceci-primary"
@@ -518,26 +479,12 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           <p className="text-xs font-semibold lowercase tracking-wider text-ceci-tertiary mb-2.5">
             sugestões rápidas no cecistudy ♡
           </p>
-<<<<<<< HEAD
           <PillGroup
             value={'' as string}
             onChange={(v) => runSuggestion(String(v))}
             options={QUICK_TAGS}
             className="justify-center sm:justify-start"
           />
-=======
-          <div className="flex flex-wrap gap-1.5 justify-center sm:justify-start">
-            {QUICK_TAGS.map((o) => (
-              <CeciFilterChip
-                key={o.value}
-                value={o.value}
-                label={o.label}
-                active={false}
-                onChange={(v) => runSuggestion(String(v))}
-              />
-            ))}
-          </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           <div className="mt-6 pt-4 border-t border-ceci-border-subtle text-center text-xs text-ceci-secondary">
             busca em tudo que você anota: tarefas, provas, aulas, notas, leituras e disciplinas ♡
           </div>
@@ -558,11 +505,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
               <p className="font-display text-base text-ceci-primary mb-1">
                 nada por aqui com “{query.trim()}”…
               </p>
-<<<<<<< HEAD
               <p className="text-xs mb-4">mas que tal tentar uma dessas? ♡</p>
-=======
-              <p className="text-xs mb-4">{frase(DICA, 'queTalEssas')}</p>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               <div className="flex flex-wrap justify-center gap-1.5">
                 {QUICK_TAGS.slice(0, 4).map((t) => (
                   <button

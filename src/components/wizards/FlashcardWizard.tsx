@@ -9,11 +9,7 @@ import { hapticSuccess } from '../../lib/haptics';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
-<<<<<<< HEAD
 import { ReviewCard, TextArea } from './wizardFields';
-=======
-import { Field, ReviewCard, TextArea } from './wizardFields';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Picker } from '../ui/Picker';
 import { CourseSelect } from './CourseSelect';
 import { useAcervoTheory } from './useAcervoTheory';
@@ -132,7 +128,6 @@ export const FlashcardWizard: React.FC<{ editing?: ManagedItem | null }> = ({ ed
             />
           ) : (
             <div className="space-y-4">
-<<<<<<< HEAD
               <TextArea
                 rows={3}
                 value={question}
@@ -150,49 +145,6 @@ export const FlashcardWizard: React.FC<{ editing?: ManagedItem | null }> = ({ ed
                   if (e.key === 'Enter') e.preventDefault();
                 }}
               />
-=======
-              <Field
-                label="pergunta"
-                htmlFor="flashcard-pergunta-input"
-                required
-                description={frase(VAZIO, 'flashcardPerguntaDescricao')}
-                error={question.trim().length === 0 && 'escreva a pergunta do card para continuar'}
-                importance="primary"
-              >
-                <TextArea
-                  id="flashcard-pergunta-input"
-                  rows={3}
-                  value={question}
-                  onChange={(e) => patch({ question: e.target.value })}
-                  placeholder="qual a pergunta do card?"
-                  autoFocus
-                />
-              </Field>
-              <Field
-                label="resposta"
-                htmlFor="flashcard-resposta-input"
-                required
-                description={frase(VAZIO, 'flashcardRespostaDescricao')}
-                error={
-                  answer.trim().length === 0
-                    ? 'vira o card e escreve a resposta ♡'
-                    : undefined
-                }
-                importance="primary"
-              >
-                <TextArea
-                  id="flashcard-resposta-input"
-                  rows={5}
-                  value={answer}
-                  onChange={(e) => patch({ answer: e.target.value })}
-                  placeholder="a resposta, com suas palavras..."
-                  onKeyDown={(e) => {
-                    // Enter no modo simples segue o fluxo normal (nenhum flip); só evita submit.
-                    if (e.key === 'Enter') e.preventDefault();
-                  }}
-                />
-              </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               <div className="mx-auto w-40">
                 <Card3D
                   flipped={answer.trim().length > 0}
@@ -356,11 +308,6 @@ export const FlashcardWizard: React.FC<{ editing?: ManagedItem | null }> = ({ ed
   return (
     <>
       <WizardScaffold
-<<<<<<< HEAD
-=======
-        tone="content"
-        progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         title={editing ? 'editar flashcard' : 'novo flashcard'}
         icon={<Brain className="w-3.5 h-3.5" />}
         iconClass="bg-surface-blue border-ceci-border-academic text-ceci-academic-strong"
@@ -370,24 +317,9 @@ export const FlashcardWizard: React.FC<{ editing?: ManagedItem | null }> = ({ ed
         onStepChange={setStep}
         canNext={canNext}
         blockedReason={blockedReason}
-<<<<<<< HEAD
         onSave={handleSave}
         onClose={closeWizard}
         saveLabel={editing ? 'guardar alterações ♡' : 'guardar flashcard ♡'}
-=======
-        invalidFieldId={
-          step === 0
-            ? question.trim().length === 0
-              ? 'flashcard-pergunta-input'
-              : answer.trim().length === 0
-                ? 'flashcard-resposta-input'
-                : undefined
-            : undefined
-        }
-        onSave={handleSave}
-        onClose={closeWizard}
-        saveLabel={editing ? frase(CELEBRACAO, 'guardarAlteracoes') : 'guardar flashcard ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       />
 
       {/* Confirmação: baú abre e o mini-card voa pra dentro (decorativo, ≤650ms). */}

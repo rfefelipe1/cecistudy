@@ -2,11 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ChevronUp, ChevronDown, Trash2, GripVertical } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import { useNavValue } from '@/context/shellNavContexts';
-<<<<<<< HEAD
 import { CELEBRACAO, VAZIO, erro, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, VAZIO, DICA, erro, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   THESIS_ID,
   ThesisChapter,
@@ -18,10 +14,6 @@ import {
 } from '../../types';
 import { Modal } from '../ui/Modal';
 import { SegmentedControl } from '../ui/SegmentedControl';
-<<<<<<< HEAD
-=======
-import { CeciSelect } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { hapticTap, hapticWarning } from '../../lib/haptics';
 import { sharedChapterId } from '@/lib/motion';
 
@@ -236,7 +228,6 @@ export const ChapterSheet: React.FC<ChapterSheetProps> = ({ open, chapterId, onC
             <label htmlFor="cap-dentro" className={labelClass}>
               dentro de
             </label>
-<<<<<<< HEAD
             <select
               id="cap-dentro"
               value={parentId}
@@ -250,16 +241,6 @@ export const ChapterSheet: React.FC<ChapterSheetProps> = ({ open, chapterId, onC
                 </option>
               ))}
             </select>
-=======
-            <CeciSelect
-              htmlFor="cap-dentro"
-              label="dentro de"
-              value={parentId ?? null}
-              onChange={setParentId}
-              placeholder="— escolha o capítulo —"
-              options={parents.map((c) => ({ value: c.id, label: c.title }))}
-            />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </div>
         )}
 
@@ -353,11 +334,7 @@ export const ChapterSheet: React.FC<ChapterSheetProps> = ({ open, chapterId, onC
                     <button
                       type="button"
                       onClick={() => openTccSheet({ type: 'reference', id: r.id })}
-<<<<<<< HEAD
                       aria-label="abrir a referência"
-=======
-                      aria-label={frase(DICA, 'abrirReferencia')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       className="w-full text-left px-3 py-2 rounded-xl bg-surface-default border border-ceci-border-default text-xs text-ceci-primary hover:border-ceci-border-brand transition-colors min-h-[44px] cursor-pointer"
                     >
                       {readings.find((x) => x.id === r.readingId)?.title ?? 'referência'}

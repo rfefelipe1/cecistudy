@@ -37,12 +37,7 @@ export type EntityPrefix =
   | 'thm' // thesis meeting (SPEC-012)
   | 'tts' // thesis task (SPEC-012)
   | 'twl' // thesis writing log (SPEC-012)
-<<<<<<< HEAD
   | 'rdr'; // reading capturada por link (SPEC-012 F8)
-=======
-  | 'rdr' // reading capturada por link (SPEC-012 F8)
-  | 'mem'; // memória de semestre (SPEC-028)
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 let counter = 0;
 

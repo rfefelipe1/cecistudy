@@ -1,20 +1,12 @@
 import React from 'react';
-<<<<<<< HEAD
 import { VAZIO, CELEBRACAO, frase } from '../../lib/voice';
-=======
-import { VAZIO, CELEBRACAO, DICA, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { UserCheck } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import type { ManagedItem } from '../../types';
 import { hapticSuccess } from '../../lib/haptics';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
-<<<<<<< HEAD
 import { ReviewCard, TextArea, TextInput } from './wizardFields';
-=======
-import { Field, ReviewCard, TextArea, TextInput } from './wizardFields';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Picker } from '../ui/Picker';
 import { TagField } from '../ui/TagField';
 
@@ -56,7 +48,6 @@ export const AuthorWizard: React.FC<{ editing?: ManagedItem | null }> = ({ editi
       subtitle: 'nome e, se souber, o período de vida — o essencial para identificar.',
       content: (
         <div className="space-y-4">
-<<<<<<< HEAD
           <TextInput
             value={name}
             onChange={(e) => patch({ name: e.target.value })}
@@ -68,38 +59,6 @@ export const AuthorWizard: React.FC<{ editing?: ManagedItem | null }> = ({ editi
             onChange={(e) => patch({ lifespan: e.target.value })}
             placeholder="lifespan (opcional) — ex: 1921–2021"
           />
-=======
-          <Field
-            label="nome"
-            htmlFor="autor-nome-input"
-            required
-            description={frase(VAZIO, 'autorDescricaoNomeVida')}
-            error={!name.trim() && 'dê um nome para o autor'}
-            importance="primary"
-          >
-            <TextInput
-              id="autor-nome-input"
-              value={name}
-              onChange={(e) => patch({ name: e.target.value })}
-              placeholder="nome do autor — ex: aaron beck"
-              autoFocus
-            />
-          </Field>
-          <Field
-            label="período de vida"
-            htmlFor="autor-lifespan-input"
-            optional
-            description={frase(VAZIO, 'autorExemploLifespan')}
-            importance="secondary"
-          >
-            <TextInput
-              id="autor-lifespan-input"
-              value={lifespan}
-              onChange={(e) => patch({ lifespan: e.target.value })}
-              placeholder="lifespan (opcional) — ex: 1921–2021"
-            />
-          </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </div>
       ),
     },
@@ -153,11 +112,7 @@ export const AuthorWizard: React.FC<{ editing?: ManagedItem | null }> = ({ editi
       id: 'autor-revisar',
       title: 'revisar',
       headline: 'confere se está tudo certinho ♡',
-<<<<<<< HEAD
       subtitle: 'confere as informações antes de guardar o autor no cantinho.',
-=======
-      subtitle: frase(DICA, 'confereAutor'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       content: (
         <ReviewCard
           rows={[
@@ -211,11 +166,6 @@ export const AuthorWizard: React.FC<{ editing?: ManagedItem | null }> = ({ editi
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="compact"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title={editing ? 'editar autor' : 'novo autor'}
       icon={<UserCheck className="w-3.5 h-3.5" />}
       iconClass="bg-surface-blue border-ceci-border-academic text-ceci-academic-strong"
@@ -224,16 +174,9 @@ export const AuthorWizard: React.FC<{ editing?: ManagedItem | null }> = ({ editi
       onStepChange={setStep}
       canNext={name.trim().length > 0}
       blockedReason="dê um nome para o autor"
-<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeWizard}
       saveLabel={editing ? 'guardar alterações ♡' : 'guardar autor ♡'}
-=======
-      invalidFieldId={name.trim().length > 0 ? undefined : 'autor-nome-input'}
-      onSave={handleSave}
-      onClose={closeWizard}
-      saveLabel={editing ? frase(CELEBRACAO, 'guardarAlteracoes') : 'guardar autor ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

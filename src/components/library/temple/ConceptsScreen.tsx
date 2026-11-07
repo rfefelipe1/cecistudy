@@ -17,10 +17,6 @@ import {
   TempleSearchInput,
   TempleSectionCard,
 } from './TempleShared';
-<<<<<<< HEAD
-=======
-import { frase, VAZIO } from '../../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Reveal, sharedTempleId } from '@/lib/motion';
 
 /** Rótulos pt-BR das seções do detalhe (ordem de exibição). */
@@ -203,11 +199,7 @@ export const ConceptsScreen: React.FC = () => {
           })}
 
         {!loading && byDomain.size === 0 && (
-<<<<<<< HEAD
           <TempleEmptyState message="nada por aqui com esse nome ♡" />
-=======
-          <TempleEmptyState message={frase(VAZIO, 'nadaPorAquiNome')} />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         )}
       </div>
     </div>

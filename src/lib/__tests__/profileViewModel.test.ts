@@ -17,10 +17,7 @@ const profile = (over: Partial<UserProfile> = {}): UserProfile => ({
   totalSemesters: 8,
   university: 'USP',
   targetCareer: 'Psicologia',
-<<<<<<< HEAD
   dailyQuote: 'um passo por vez',
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   stickersCollected: 0,
   ...over,
 });

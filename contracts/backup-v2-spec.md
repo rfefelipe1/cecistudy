@@ -47,11 +47,7 @@ presentes são validadas por forma (Zod, `.passthrough()` preserva campos legado
 
 | Coleção (`payload.<key>`) | Elemento | Campos validados (forma mínima) |
 |---|---|---|
-<<<<<<< HEAD
 | `profile` | objeto | `name, semester, totalSemesters, university, targetCareer, dailyQuote, stickersCollected` |
-=======
-| `profile` | objeto | `name, semester, totalSemesters, university, targetCareer, dailyQuote, stickersCollected, coverPhotoUrl` |
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 | `courses` | array | `id, name, professor, semester, schedule[{day 0-6, start, end?}], color, icon` |
 | `classes` | array | `id, courseId, title, number, date, summary` |
 | `tasks` | array | `id, title, completed, priority, category` |

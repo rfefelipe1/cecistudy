@@ -7,10 +7,6 @@ import { BookmarkToggle } from '../ui/BookmarkToggle';
 import { copyToClipboard } from '../../lib/utils';
 import { useMobileApp } from '@/context/mobileApp';
 import { sharedBookId } from '@/lib/motion';
-<<<<<<< HEAD
-=======
-import { frase, CELEBRACAO } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface ArticleDetailModalProps {
   article: Article;
@@ -34,11 +30,7 @@ export const ArticleDetailModal: React.FC<ArticleDetailModalProps> = ({
 
   const handleCopyLink = async () => {
     const ok = await copyToClipboard(article.linkDireto || article.doi);
-<<<<<<< HEAD
     showToast(ok ? 'link copiado com carinho ♡' : 'não consegui copiar o link 😔');
-=======
-    showToast(ok ? frase(CELEBRACAO, 'linkCopiadoCarinho') : 'não consegui copiar o link 😔');
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   };
 
   return (

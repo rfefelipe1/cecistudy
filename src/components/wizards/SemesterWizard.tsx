@@ -1,18 +1,10 @@
 import React, { useMemo, useState } from 'react';
-<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, DICA, VAZIO, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Sparkles } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
-<<<<<<< HEAD
 import { FieldHint, FieldLabel, ReviewCard } from './wizardFields';
-=======
-import { Field, FieldHint, FieldLabel, ReviewCard } from './wizardFields';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useActiveTerm, sortedTerms, degreeProgress, semestersLeft } from '../../lib/termScope';
 import {
   planTermRollover,
@@ -282,7 +274,6 @@ export const SemesterWizard: React.FC = () => {
    * corrige no cartão do Perfil, e avisar é melhor do que travar (SPEC-008 D3).
    */
   const ordinalField = (
-<<<<<<< HEAD
     <div className="rounded-2xl bg-surface-muted border border-ceci-border-subtle px-4 py-3 space-y-2">
       <FieldLabel>qual semestre entra?</FieldLabel>
       <div className="flex items-center gap-3">
@@ -316,47 +307,6 @@ export const SemesterWizard: React.FC = () => {
         {clampNote}
       </p>
     </div>
-=======
-    <Field
-      label="qual semestre entra?"
-      required
-      description={frase(VAZIO, 'semestreDescricaoIntervalo')}
-      importance="primary"
-    >
-      <div className="rounded-2xl bg-surface-muted border border-ceci-border-subtle px-4 py-3 space-y-2">
-        <div className="flex items-center gap-3">
-          <input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            max={MAX_TERM_ORDINAL}
-            value={values.ordinal}
-            onChange={(e) => setOrdinal(Number(e.target.value))}
-            aria-label="número do próximo semestre"
-            aria-describedby="semester-ordinal-hint"
-            className="w-24 rounded-xl border border-ceci-border-default bg-surface-input px-3 py-2 text-lg font-display font-bold text-ceci-primary"
-          />
-          <span className="text-sm text-ceci-secondary">
-            {values.ordinal > profile.totalSemesters ? (
-              <span className="text-ceci-brand-strong">
-                além dos {profile.totalSemesters} do curso — dá pra ajustar o total no cartão do
-                perfil ♡
-              </span>
-            ) : (
-              <>{`vai abrir ${nextLabel}`}</>
-            )}
-          </span>
-        </div>
-        <p
-          id="semester-ordinal-hint"
-          role="status"
-          className="min-h-[1rem] text-[11px] text-ceci-tertiary"
-        >
-          {clampNote}
-        </p>
-      </div>
-    </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   );
 
   const steps: WizardStep[] = useMemo(() => {
@@ -439,11 +389,7 @@ export const SemesterWizard: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openTermHistory()}
-<<<<<<< HEAD
                   className="w-full rounded-full border border-ceci-border-default bg-white py-2 text-xs font-semibold text-ceci-brand-strong hover:bg-surface-rose"
-=======
-                  className="w-full rounded-full border border-ceci-border-default bg-surface-default py-2 text-xs font-semibold text-ceci-brand-strong hover:bg-surface-rose"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 >
                   ver o histórico completo
                 </button>
@@ -462,11 +408,7 @@ export const SemesterWizard: React.FC = () => {
             {inTerm.map((c) => (
               <div
                 key={c.id}
-<<<<<<< HEAD
                 className="rounded-2xl border border-ceci-border-default bg-white p-3"
-=======
-                className="rounded-2xl border border-ceci-border-default bg-surface-default p-3"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               >
                 <p className="text-sm font-semibold text-ceci-primary">{c.name}</p>
                 {/*
@@ -509,11 +451,7 @@ export const SemesterWizard: React.FC = () => {
                         }}
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                           selected
-<<<<<<< HEAD
                             ? 'bg-ceci-primary text-white'
-=======
-                            ? 'bg-ceci-primary text-ceci-on-primary'
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                             : 'bg-surface-muted text-ceci-secondary border border-ceci-border-default'
                         }`}
                       >
@@ -564,11 +502,7 @@ export const SemesterWizard: React.FC = () => {
                 className={`w-full flex items-center justify-between rounded-2xl border px-4 py-3 text-left transition-all ${
                   values[row.key]
                     ? 'border-ceci-border-brand bg-surface-rose'
-<<<<<<< HEAD
                     : 'border-ceci-border-default bg-white'
-=======
-                    : 'border-ceci-border-default bg-surface-default'
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 }`}
               >
                 <span className="text-sm font-semibold text-ceci-primary">{row.label}</span>
@@ -589,11 +523,7 @@ export const SemesterWizard: React.FC = () => {
         id: 'sem-4',
         title: 'revisão',
         headline: `prontinho, ${values.ordinal}º semestre?`,
-<<<<<<< HEAD
         subtitle: 'confere antes de gravar — dá pra desfazer logo depois.',
-=======
-        subtitle: frase(DICA, 'confereDesfazer'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         content: (
           <div className="space-y-4">
             <ReviewCard
@@ -648,20 +578,11 @@ export const SemesterWizard: React.FC = () => {
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="narrative"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title={isFirstTerm ? 'abrir meu 1º semestre' : 'virar o semestre'}
       subtitle={
         isFirstTerm
           ? 'o começo da linha do tempo'
-<<<<<<< HEAD
           : 'um capítulo novo, com o anterior inteiro guardado'
-=======
-          : frase(CELEBRACAO, 'umCapituloNovo')
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       }
       icon={<Sparkles className="w-3.5 h-3.5" />}
       iconClass="bg-surface-blue border-ceci-border-academic text-ceci-academic-strong"
@@ -670,11 +591,7 @@ export const SemesterWizard: React.FC = () => {
       onStepChange={setStep}
       canNext={canNext}
       blockedReason={blockedReason}
-<<<<<<< HEAD
       saveLabel={isFirstTerm ? 'abrir meu 1º semestre ♡' : 'virar o semestre ♡'}
-=======
-      saveLabel={isFirstTerm ? frase(CELEBRACAO, 'abrirPrimeiroSemestre') : 'virar o semestre ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       onSave={isFirstTerm ? handleOpenFirstTerm : handleSave}
       onClose={closeWizard}
       isDirty={isDirty}

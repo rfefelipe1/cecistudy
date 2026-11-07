@@ -16,11 +16,7 @@ import CecinhoTip from '../../views/home/CecinhoTip';
 import { useMobileApp } from '@/context/mobileApp';
 import { formatCourseSchedule, formatShortDate, getTodaySchedule } from '../../../lib/schedule';
 import { attendanceStats } from '../../../lib/attendance';
-<<<<<<< HEAD
 import { dica } from '../../../lib/voice';
-=======
-import { dica, frase, VAZIO } from '../../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Course } from '../../../types';
 
 interface CourseInfoContentProps {
@@ -161,11 +157,7 @@ export const CourseInfoContent: React.FC<CourseInfoContentProps> = ({ course, on
         </h3>
         <p className="text-xs text-ceci-text-soft leading-relaxed font-medium">
           {course.description ||
-<<<<<<< HEAD
             'esta disciplina ainda não tem ementa anotada. edite os detalhes da matéria para registrar os objetivos.'}
-=======
-            frase(VAZIO, 'naoTemEmenta')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </p>
       </section>
 

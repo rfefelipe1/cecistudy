@@ -1,23 +1,14 @@
-<<<<<<< HEAD
 // Calendário (SPEC-024 D1/D3/D5): agenda de 14 dias + mês navegável + painel do
 // dia com `+`. Sem grade de horários (D3) e sem escrita no render (I4): tudo é
 // derivado de `buildCalendarEntries`, que é a única fonte de eventos (D4).
 import React, { useMemo, useState } from 'react';
 import { ChevronLeft, Plus } from 'lucide-react';
-=======
-// Calendário (SPEC-redesign-calendario): planner pessoal unificado.
-// Composição: header → resumo da semana → recado do cecinho → mês compacto
-// → agenda do dia selecionado → próximos dias → ação de criação.
-// O botão "voltar" vem da barra contextual do shell (§9, ContextualBottomBar).
-import React, { useMemo, useState, useCallback } from 'react';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   useDataClientApp,
   useDataClientCourses,
   useDataClientStudy,
 } from '@/context/DataClientProvider';
 import { useNavValue } from '@/context/shellNavContexts';
-<<<<<<< HEAD
 import { buildCalendarEntries, daysInMonth } from '../../lib/schedule';
 import type { CalendarEntry } from '../../lib/schedule';
 import { addDaysKey, formatDateBR, todayKeyLocal } from '../../lib/dateBR';
@@ -35,30 +26,6 @@ export const CalendarScreen: React.FC = () => {
   const { internshipLogs, tcc, thesisChapters, thesisMeetings, thesisTasks } = useDataClientApp();
   const { courses, exams, tasks } = useDataClientCourses();
   const { sessions } = useDataClientStudy();
-=======
-import { todayKeyLocal, addDaysKey } from '@/lib/dateBR';
-import type { DateKey } from '@/types';
-import type { PersonalCalendarEvent } from '@/lib/personalCalendar';
-import { buildPersonalCalendar } from '@/lib/personalCalendar';
-import { CalendarHeader } from '../calendar/CalendarHeader';
-import { WeekContextCard } from '../calendar/WeekContextCard';
-import { CecinhoCalendarNote } from '../calendar/CecinhoCalendarNote';
-import { CompactMonthCalendar } from '../calendar/CompactMonthCalendar';
-import { SelectedDayAgenda } from '../calendar/SelectedDayAgenda';
-import { UpcomingAgenda } from '../calendar/UpcomingAgenda';
-import { CalendarCreateAction } from '../calendar/CalendarCreateAction';
-import { CalendarFilters } from '../calendar/CalendarFilters';
-import { TaskSheet } from './home/TaskSheet';
-
-type Door = 'task' | 'exam';
-type FiltroTipo = 'todos' | 'aula' | 'prova' | 'tarefa' | 'estágio' | 'estudo';
-
-export const CalendarScreen: React.FC = () => {
-  const { internshipLogs, tcc, thesisChapters, thesisTasks, thesisMeetings } =
-    useDataClientApp();
-  const { courses, exams, tasks } = useDataClientCourses();
-  const { sessions, readings, flashcards } = useDataClientStudy();
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const nav = useNavValue();
 
   const today = todayKeyLocal();
@@ -67,7 +34,6 @@ export const CalendarScreen: React.FC = () => {
   const [year, setYear] = useState(Number(initial.slice(0, 4)));
   const [month, setMonth] = useState(Number(initial.slice(5, 7)));
   const [door, setDoor] = useState<Door | null>(null);
-<<<<<<< HEAD
   const [menuOpen, setMenuOpen] = useState(false);
 
   const entriesFor = (from: DateKey, to: DateKey) =>
@@ -87,28 +53,6 @@ export const CalendarScreen: React.FC = () => {
 
   const agenda = useMemo(
     () => entriesFor(today, addDaysKey(today, 13)),
-=======
-  const [filtro, setFiltro] = useState<FiltroTipo>('todos');
-
-  const viewModel = useMemo(
-    () =>
-      buildPersonalCalendar({
-        courses,
-        exams,
-        tasks,
-        thesis: tcc,
-        chapters: thesisChapters,
-        thesisTasks,
-        meetings: thesisMeetings,
-        internshipLogs,
-        studySessions: sessions,
-        readings,
-        flashcards: [],
-        selectedDate: selected ?? today,
-        visibleYear: year,
-        visibleMonth: month,
-      }),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     [
       courses,
       exams,
@@ -119,18 +63,10 @@ export const CalendarScreen: React.FC = () => {
       thesisMeetings,
       internshipLogs,
       sessions,
-<<<<<<< HEAD
-=======
-      readings,
-      selected,
-      year,
-      month,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       today,
     ],
   );
 
-<<<<<<< HEAD
   const monthEntries = useMemo(
     () => entriesFor(dateKeyOf(year, month, 1), dateKeyOf(year, month, daysInMonth(year, month))),
     [
@@ -161,9 +97,6 @@ export const CalendarScreen: React.FC = () => {
   const selectedEntries = selected ? monthEntries.filter((e) => e.date === selected) : [];
 
   const shiftMonth = (delta: number) => {
-=======
-  const shiftMonth = useCallback((delta: number) => {
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     let m = month + delta;
     let y = year;
     if (m < 1) {
@@ -177,7 +110,6 @@ export const CalendarScreen: React.FC = () => {
     setMonth(m);
     setYear(y);
     setSelected(null);
-<<<<<<< HEAD
   };
 
   const goToday = () => {
@@ -286,126 +218,12 @@ export const CalendarScreen: React.FC = () => {
           </div>
         )}
       </section>
-=======
-  }, [month, year]);
-
-  const goToday = useCallback(() => {
-    setYear(Number(today.slice(0, 4)));
-    setMonth(Number(today.slice(5, 7)));
-    setSelected(today);
-  }, [today]);
-
-  const handleOpen = useCallback(
-    (event: PersonalCalendarEvent) => {
-      switch (event.source) {
-        case 'schedule':
-          nav.openCourseDetail(event.sourceId!);
-          break;
-        case 'exam': {
-          const exam = exams.find((e) => e.id === event.sourceId);
-          nav.openCourseDetail(exam?.courseId ?? event.sourceId!);
-          break;
-        }
-        case 'task':
-          nav.openManageItem('task', event.sourceId);
-          break;
-        case 'internship':
-          nav.openInternshipDiary();
-          break;
-        case 'session':
-          nav.openStudy('historico');
-          break;
-        case 'tcc':
-          nav.openTccScreen('visao');
-          break;
-        default:
-          break;
-      }
-    },
-    [nav, exams],
-  );
-
-  const handleCreateTask = useCallback(() => setDoor('task'), []);
-  const handleCreateExam = useCallback(() => {
-    setDoor(null);
-    nav.openWizard('exam', undefined, undefined, selected ?? today);
-  }, [nav, selected, today]);
-
-  const isCurrentMonth =
-    year === Number(today.slice(0, 4)) &&
-    month === Number(today.slice(5, 7));
-
-  return (
-    <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-5 pb-6">
-      <CalendarHeader
-        monthLabel={viewModel.visibleMonth}
-        onShiftPrev={() => shiftMonth(-1)}
-        onShiftNext={() => shiftMonth(1)}
-        onToday={goToday}
-        isCurrentMonth={isCurrentMonth}
-      />
-
-      <WeekContextCard
-        startDate={viewModel.week.startDate}
-        endDate={viewModel.week.endDate}
-        classes={viewModel.week.classes}
-        exams={viewModel.week.exams}
-        tasks={viewModel.week.tasks}
-        studyActivities={viewModel.week.studyActivities}
-        internship={viewModel.week.internship}
-        empty={
-          viewModel.week.classes === 0 &&
-          viewModel.week.exams === 0 &&
-          viewModel.week.tasks === 0 &&
-          viewModel.week.studyActivities === 0 &&
-          viewModel.week.internship === 0
-        }
-      />
-
-      <CecinhoCalendarNote tone={viewModel.cecinho.tone} />
-
-      <CalendarFilters ativo={filtro} onMudar={setFiltro} />
-
-      <CompactMonthCalendar
-        year={year}
-        month={month}
-        monthLabel={viewModel.visibleMonth}
-        days={viewModel.month.days}
-        today={today}
-        selected={selected}
-        onShift={shiftMonth}
-        onToday={goToday}
-        onSelect={(day) => setSelected(day)}
-      />
-
-      {selected && (
-        <SelectedDayAgenda
-          date={selected}
-          events={viewModel.selectedDayEvents}
-          onOpen={handleOpen}
-        />
-      )}
-
-      <UpcomingAgenda
-        todayEvents={viewModel.today}
-        tomorrowEvents={viewModel.tomorrow}
-        upcomingDays={viewModel.upcomingDays}
-        onOpen={handleOpen}
-      />
-
-      <CalendarCreateAction
-        defaultDate={selected ?? today}
-        onOpenTask={handleCreateTask}
-        onOpenExam={handleCreateExam}
-      />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
       <TaskSheet
         open={door === 'task'}
         defaultDate={selected ?? undefined}
         onClose={() => setDoor(null)}
       />
-<<<<<<< HEAD
       <MeetingSheet
         open={door === 'meeting'}
         meetingId="new"
@@ -413,8 +231,6 @@ export const CalendarScreen: React.FC = () => {
         defaultDate={selected ?? undefined}
         onClose={() => setDoor(null)}
       />
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     </div>
   );
 };

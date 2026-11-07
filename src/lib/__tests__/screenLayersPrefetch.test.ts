@@ -34,7 +34,6 @@ beforeEach(() => {
 
 describe('preloadScreenChunks (lista explícita, spec §3.1)', () => {
   it('só pede as chaves pedidas — nunca a varredura global', () => {
-<<<<<<< HEAD
     preloadScreenChunks(['home', 'estudos']);
     expect(requestPrefetch).toHaveBeenCalledTimes(2);
     expect(requestPrefetch).toHaveBeenCalledWith('screen:home', expect.any(Function));
@@ -45,18 +44,6 @@ describe('preloadScreenChunks (lista explícita, spec §3.1)', () => {
     preloadScreenChunks(['perfil']);
     expect(requestPrefetch).toHaveBeenCalledTimes(1);
     expect(requestPrefetch).toHaveBeenCalledWith('screen:perfil', expect.any(Function));
-=======
-    preloadScreenChunks(['streak', 'sync']);
-    expect(requestPrefetch).toHaveBeenCalledTimes(2);
-    expect(requestPrefetch).toHaveBeenCalledWith('screen:streak', expect.any(Function));
-    expect(requestPrefetch).toHaveBeenCalledWith('screen:sync', expect.any(Function));
-  });
-
-  it('uma chave pedida = um pedido (2 de 27 loaders, não todos)', () => {
-    preloadScreenChunks(['quizPlayer']);
-    expect(requestPrefetch).toHaveBeenCalledTimes(1);
-    expect(requestPrefetch).toHaveBeenCalledWith('screen:quizPlayer', expect.any(Function));
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 
   it('chave inválida é ignorada em silêncio', () => {
@@ -67,15 +54,9 @@ describe('preloadScreenChunks (lista explícita, spec §3.1)', () => {
 
 describe('prefetchScreensOnIntent (intenção observável, spec §3.2)', () => {
   it('passa pela intenção — bypass da fila de baixa prioridade', () => {
-<<<<<<< HEAD
     prefetchScreensOnIntent(['faculdade']);
     expect(prefetchOnIntent).toHaveBeenCalledTimes(1);
     expect(prefetchOnIntent).toHaveBeenCalledWith('screen:faculdade', expect.any(Function));
-=======
-    prefetchScreensOnIntent(['quizPlayer']);
-    expect(prefetchOnIntent).toHaveBeenCalledTimes(1);
-    expect(prefetchOnIntent).toHaveBeenCalledWith('screen:quizPlayer', expect.any(Function));
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 
   it('chave inválida (FAB dispara pointerdown no mesmo wrapper) é silêncio', () => {

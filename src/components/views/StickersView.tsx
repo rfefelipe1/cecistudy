@@ -92,7 +92,6 @@ export const StickersView: React.FC = () => {
               </div>
             )}
 
-<<<<<<< HEAD
             <div className="grid grid-cols-2 gap-3">
               {group.map((st, i) => {
                 const progress = progressFor(st);
@@ -100,15 +99,6 @@ export const StickersView: React.FC = () => {
                   <Reveal key={st.id} index={i}>
                   <div
                     className={`p-3.5 rounded-2xl border text-center transition-colors ${
-=======
-            <div className="grid grid-cols-2 gap-3 items-stretch">
-              {group.map((st, i) => {
-                const progress = progressFor(st);
-                return (
-                  <Reveal key={st.id} index={i} className="h-full flex flex-col">
-                  <div
-                    className={`h-full flex-1 flex-col justify-between p-3.5 rounded-2xl border text-center transition-colors ${
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       st.unlocked
                         ? 'bg-surface-default border-ceci-border-brand shadow-2xs'
                         : 'bg-surface-muted border-dashed border-ceci-border-default'
@@ -127,22 +117,14 @@ export const StickersView: React.FC = () => {
                     </p>
 
                     {st.unlocked ? (
-<<<<<<< HEAD
                       <span className="inline-flex items-center gap-1 text-[9px] bg-surface-rose text-ceci-brand-strong border border-ceci-border-brand px-2 py-0.5 rounded-full font-medium mt-3">
-=======
-                      <span className="inline-flex items-center gap-1 text-[9px] bg-surface-rose text-ceci-brand-strong border border-ceci-border-brand px-2 py-0.5 rounded-full font-medium mt-auto">
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                         <Sparkles className="w-2.5 h-2.5" />
                         {st.unlockedAt
                           ? `conquistado em ${st.unlockedAt.split('-').reverse().join('/')}`
                           : 'conquistado'}
                       </span>
                     ) : (
-<<<<<<< HEAD
                       <div className="mt-3 space-y-1.5">
-=======
-                      <div className="mt-auto space-y-1">
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                         {progress && (
                           <div className="space-y-0.5">
                             <div className="flex items-center justify-between text-[9px] text-ceci-secondary">
@@ -159,12 +141,9 @@ export const StickersView: React.FC = () => {
                             />
                           </div>
                         )}
-<<<<<<< HEAD
                         <span className="inline-flex items-center gap-1 text-[9px] bg-surface-muted text-ceci-tertiary px-2 py-0.5 rounded-full font-medium">
                           <Lock className="w-2.5 h-2.5" />a desbloquear
                         </span>
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       </div>
                     )}
                   </div>

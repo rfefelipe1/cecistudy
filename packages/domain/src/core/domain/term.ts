@@ -176,45 +176,6 @@ export function createAcademicTerm(input: {
   };
 }
 
-<<<<<<< HEAD
-=======
-/**
- * Cria um período **já encerrado**, para registro retroativo de semestres
- * passados (SPEC-SEMESTRES-PASSADOS-MEMORIAS-REDESIGN).
- *
- * Diferente de `createAcademicTerm` (que nasce `ativo`), este nasce
- * `encerrado`, com `endedAt` informado. É a porta para criar semestres da
- * vida real que ainda não existem no app, para depois guardar memórias deles
- * no histórico.
- *
- * `now` entra por argumento — nunca `Date.now()` aqui.
- */
-export function createClosedAcademicTerm(input: {
-  workspaceId?: EntityId;
-  ordinal: number;
-  startedAt: string;
-  endedAt: string;
-  label?: string;
-  now?: string;
-  id?: EntityId;
-}): AcademicTerm {
-  const ordinal = clampTermOrdinal(input.ordinal);
-  const now = input.now ?? `${input.endedAt}T00:00:00.000Z`;
-  return {
-    id: input.id ?? makeId('trm'),
-    workspaceId: input.workspaceId,
-    label: input.label ?? termLabel(ordinal),
-    ordinal,
-    status: 'encerrado',
-    startedAt: input.startedAt,
-    endedAt: input.endedAt,
-    statusTransitionAt: input.endedAt,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 /* -------------------------------------------------------------------------- */
 /* Transições                                                                  */
 /* -------------------------------------------------------------------------- */

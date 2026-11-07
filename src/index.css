@@ -101,10 +101,6 @@
    --color-canvas: #FFF9F0;
    --color-surface-default: #FFFDF8;
    --color-surface-subtle: #FFF3E7;
-<<<<<<< HEAD
-=======
-   --color-surface-header: #FFF3E7;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
    --color-surface-muted: #F7F1EA;
    --color-surface-rose: #FFEFF3;
    --color-surface-blue: #F1F7FA;
@@ -141,17 +137,6 @@
    --color-glass-pill-end: rgba(255, 255, 255, 0.5);
    --color-glass-pill-border: rgba(255, 255, 255, 0.7);
 
-<<<<<<< HEAD
-=======
-   /* Variante escura do glass: mesmo arranjo de tokens, valores para fundo
-      escuro. Não há tema escuro global no app hoje; a variante existe para o
-      bottom-nav receber `data-tone="dark"` quando o contexto pedir. */
-   --color-glass-hairline-dark: rgba(255, 255, 255, 0.18);
-   --color-glass-pill-start-dark: rgba(11, 19, 43, 0.85);
-   --color-glass-pill-end-dark: rgba(11, 19, 43, 0.45);
-   --color-glass-pill-border-dark: rgba(255, 255, 255, 0.22);
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
    /* TEM-001 (dark polish) — família de status theme-aware. O tom base é o
       preenchimento (`bg-status-success`) e o `-strong` é o texto/borda sobre
       superfície. `-surface`/`-border` derivam do base misturado ao
@@ -290,21 +275,9 @@
 }
 
 @layer base {
-<<<<<<< HEAD
   body {
     background-color: var(--color-canvas);
     color: var(--color-ceci-primary);
-=======
-  html,
-  body {
-    background-color: var(--color-canvas);
-    color: var(--color-ceci-primary);
-    /* Impede o "elastic bounce" do iOS Safari/WebView ao chegar ao fim do
-       scroll, que dá a sensação de a tela inteira estar sendo arrastada. */
-    overscroll-behavior: none;
-    /* Scroll nativo e suave no iOS. */
-    -webkit-overflow-scrolling: touch;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   }
 
   /* Atmosfera "cozy academia" (F3): luz de abajur atrás do conteúdo —
@@ -596,11 +569,7 @@
    backdrop-blur + saturate fazem o "frosted" (vidro fosco puro em CSS,
    sem filtro SVG — barato, robusto e idêntico entre navegadores). */
 .liquid-glass-nav {
-<<<<<<< HEAD
   background-color: color-mix(in srgb, var(--color-surface-rose) 72%, transparent);
-=======
-  background-color: color-mix(in srgb, var(--color-surface-header) 72%, transparent);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border-color: color-mix(in srgb, var(--color-surface-default) 60%, transparent);
@@ -624,72 +593,13 @@
     inset 0 1px 0 var(--color-glass-hairline);
 }
 
-<<<<<<< HEAD
-=======
-/* Variante escura do container glass: fundo translúcido escuro e borda mais
-   sutil, para não competir com o conteúdo quando o tom pede. */
-.liquid-glass-nav[data-tone="dark"] {
-  background-color: color-mix(in srgb, var(--color-surface-blue) 70%, transparent);
-  border-color: color-mix(in srgb, var(--color-glass-pill-border-dark) 50%, transparent);
-}
-
-/* Pílula ativa em tom escuro. */
-.liquid-glass-nav[data-tone="dark"] .liquid-glass-pill {
-  background-image: linear-gradient(
-    to bottom,
-    var(--color-glass-pill-start-dark),
-    var(--color-glass-pill-end-dark)
-  );
-  border-color: var(--color-glass-pill-border-dark);
-  box-shadow:
-    var(--shadow-xs),
-    inset 0 1px 0 var(--color-glass-hairline-dark);
-}
-
-/* Ripple de toque no item da bottom-nav — feedback visual no pointer/tap.
-   Sem JS: nasce ao `:active` do botão, expande e some sozinho. */
-.ripple-target {
-  overflow: hidden;
-}
-.ripple {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-}
-.ripple::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 0;
-  height: 0;
-  background: var(--color-glass-hairline);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
-}
-.ripple-target:active .ripple::after {
-  width: 220%;
-  height: 220%;
-  opacity: 1;
-  transition:
-    width 0.45s ease-out,
-    height 0.45s ease-out,
-    opacity 0.25s ease-out;
-}
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 /* FAB — vidro fosco na cor da marca: mesma receita do container
    (blur + saturate sobre fundo translúcido), mas com o rosa
    ceci-brand-strong no lugar do canvas + highlights internos de vidro. */
 .liquid-glass-fab {
   background-color: color-mix(in srgb, var(--color-ceci-brand-strong) 85%, transparent);
-<<<<<<< HEAD
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   border-color: color-mix(in srgb, white 45%, transparent);
   box-shadow:
     inset 0 1px 0 var(--color-glass-hairline),

@@ -1,15 +1,6 @@
-<<<<<<< HEAD
 import React from 'react';
 import { cn } from '../../lib/utils';
 import { daysBetween, localDateKey, todayKeyLocal } from '../../lib/dateBR';
-=======
-import React, { cloneElement, isValidElement } from 'react';
-import { cn } from '../../lib/utils';
-import { daysBetween, localDateKey, todayKeyLocal } from '../../lib/dateBR';
-import { frase, DICA } from '../../lib/voice';
-
-export type FieldImportance = 'primary' | 'secondary' | 'advanced';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Rótulo de campo discreto dos wizards (o destaque é o headline do passo). */
 export const FieldLabel: React.FC<{ children: React.ReactNode; htmlFor?: string }> = ({
@@ -18,11 +9,7 @@ export const FieldLabel: React.FC<{ children: React.ReactNode; htmlFor?: string 
 }) => (
   <label
     htmlFor={htmlFor}
-<<<<<<< HEAD
     className="block text-[11px] font-semibold text-ceci-tertiary mb-1.5 uppercase tracking-wider"
-=======
-    className="block text-[11px] font-semibold text-ceci-tertiary mb-1.5"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   >
     {children}
   </label>
@@ -43,7 +30,6 @@ export const Field: React.FC<{
   label?: string;
   htmlFor?: string;
   hint?: React.ReactNode;
-<<<<<<< HEAD
   children: React.ReactNode;
 }> = ({ label, htmlFor, hint, children }) => (
   <div>
@@ -52,70 +38,6 @@ export const Field: React.FC<{
     {hint && <FieldHint>{hint}</FieldHint>}
   </div>
 );
-=======
-  /** Linha descritiva acima do controle (não é rótulo). */
-  description?: React.ReactNode;
-  /** Mensagem de erro exibida inline, associada ao controle por aria-describedby. */
-  error?: string;
-  /** Campo obrigatório (sinalizado no rótulo). */
-  required?: boolean;
-  /** Campo opcional (sinalizado no rótulo). */
-  optional?: boolean;
-  /** Densidade/peso visual do campo no grupo. */
-  importance?: FieldImportance;
-  children: React.ReactNode;
-}> = ({
-  label,
-  htmlFor,
-  hint,
-  description,
-  error,
-  required,
-  optional,
-  importance = 'primary',
-  children,
-}) => {
-  const inputId = htmlFor;
-  const errorId = inputId ? `${inputId}-error` : undefined;
-
-  /** Injeta aria-invalid e aria-describedby no controle de entrada único. */
-  const control = isValidElement(children)
-    ? cloneElement(children as React.ReactElement<any>, error
-      ? { 'aria-invalid': true, 'aria-describedby': errorId }
-      : {})
-    : children;
-
-  return (
-    <div className={cn('space-y-1', importance === 'advanced' && 'text-ceci-secondary')}>
-      {label && (
-        <FieldLabel htmlFor={htmlFor}>
-          {label}
-          {required && (
-            <span className="ml-0.5 text-[10px] text-status-danger-strong" aria-hidden>
-              obrigatório
-            </span>
-          )}
-          {optional && !required && (
-            <span className="ml-0.5 text-[10px] text-ceci-faded">opcional</span>
-          )}
-        </FieldLabel>
-      )}
-      {description && (
-        <p id={errorId ? `${errorId}-desc` : undefined} className="text-[11px] text-ceci-secondary leading-relaxed">
-          {description}
-        </p>
-      )}
-      {control}
-      {error && (
-        <p id={errorId} role="alert" className="text-[11px] font-medium text-status-danger-strong mt-1">
-          {error}
-        </p>
-      )}
-      {hint && <FieldHint>{hint}</FieldHint>}
-    </div>
-  );
-};
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Input "chunky": fundo sólido suave, cantos grandes, bastante respiro interno. */
 const inputClass =
@@ -251,11 +173,7 @@ export const DeadlineField: React.FC<{
   if (value) {
     const days = daysBetween(today, value);
     if (days < 0) {
-<<<<<<< HEAD
       echo = { text: `passou há ${Math.abs(days)} dias`, cls: 'text-status-danger-strong' };
-=======
-      echo = { text: frase(DICA, 'passouDias', { n: Math.abs(days) }), cls: 'text-status-danger-strong' };
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     } else if (days === 0) {
       echo = { text: 'é hoje', cls: 'text-status-warning-strong' };
     } else {

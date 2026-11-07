@@ -50,11 +50,7 @@ import {
   emptyDatabase,
 } from '../data/empty';
 import { DEFAULT_WORKSPACE_ID, SCHEMA_VERSION, ensureActiveTerm, migrateDatabase } from '../data/schema';
-<<<<<<< HEAD
 import { assertTermIntegrity, enforceSingleActiveTerm, resolveActiveTerm } from '../core/domain';
-=======
-import { assertTermIntegrity, createAcademicTerm, enforceSingleActiveTerm, resolveActiveTerm } from '../core/domain';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ROLLOVER_UNDO_WINDOW_MS, TOAST_DEFAULT_MS } from '../lib/termUndoWindow';
 import type { ToastState } from '../components/ui/Toast';
 
@@ -70,16 +66,6 @@ import { usePersistentState } from '../lib/usePersistentState';
 import type { ReminderSettings } from '../lib/reminderSettings';
 import { traceAsync } from '../lib/performance/perfMarks';
 import { erroDeSync, CELEBRACAO, frase } from '../lib/voice';
-<<<<<<< HEAD
-=======
-import {
-  createSemesterMemory,
-  patchSemesterMemory,
-  memoriesByTerm,
-  type SemesterMemory,
-  type MemoryCategory,
-} from '../lib/semesterMemory';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { invalidatePendingWrites } from '../lib/db/writeQueue';
 import { useBackgroundSyncTriggers } from '../lib/sync/useBackgroundSyncTriggers';
 import { emptySyncIndex, maxStamp } from '../lib/sync/stamp';
@@ -111,27 +97,6 @@ import { MOTION_PREF_DEFAULT, type MotionPref } from '../lib/motion';
 import { DEFAULT_THEME_ID, applyTheme, getThemeById } from '../lib/themes';
 import { applyThemeColorChrome } from '../lib/themeChrome';
 
-<<<<<<< HEAD
-=======
-/**
- * Camada unificada de persistência (SPEC-M-029).
- * Única porta de gravação/leitura de dados do usuário — substitui o acesso
- * direto a `useSqliteState`/`usePersistentState` para operações destrutivas
- * (applyDatabase, resetApp, completeOnboarding, importData).
- */
-import {
-  gravar,
-  transacionar,
-  snapshot as tirarSnapshot,
-  restaurar,
-  capturarSnapshot,
-  restaurarDoSnapshot,
-  limparSnapshot,
-  temSnapshot,
-} from '../lib/data-layer';
-import type { ChaveColecao } from '../lib/data-layer/types';
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 export type { ReminderSettings, ReminderCategories } from '../lib/reminderSettings';
 
 /**
@@ -183,22 +148,6 @@ export interface DataClientStudySlice {
   academicTerms: AcademicTerm[];
   setAcademicTerms: React.Dispatch<React.SetStateAction<AcademicTerm[]>>;
   setAcademicTermsRaw: React.Dispatch<React.SetStateAction<AcademicTerm[]>>;
-<<<<<<< HEAD
-=======
-  /** Memórias de semestre (SPEC-028) — dado do aparelho, fora do backup (D8). */
-  semesterMemories: SemesterMemory[];
-  setSemesterMemories: React.Dispatch<React.SetStateAction<SemesterMemory[]>>;
-  addSemesterMemory: (
-    input: Omit<SemesterMemory, 'id' | 'createdAt' | 'updatedAt'> & { now: string },
-  ) => SemesterMemory;
-  updateSemesterMemory: (
-    id: string,
-    patch: Partial<Pick<SemesterMemory, 'title' | 'category' | 'description' | 'memoryDate'>>,
-    now: string,
-  ) => void;
-  deleteSemesterMemory: (id: string) => void;
-  getMemoriesByTerm: (termId: string) => SemesterMemory[];
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   /** Leitura (SPEC-M-014): sessões, destaques e marcadores. */
   readingSessions: ReadingSession[];
   setReadingSessions: React.Dispatch<React.SetStateAction<ReadingSession[]>>;
@@ -324,7 +273,6 @@ export interface DataClientAppSlice {
       remoteSha: string;
     } | null>
   >;
-<<<<<<< HEAD
   applyDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
   resetApp: () => void;
   completeOnboarding: (profileUpdate: Partial<UserProfile>) => void;
@@ -332,15 +280,6 @@ export interface DataClientAppSlice {
   importData: (json: string) => void;
   getSyncPayloadJson: () => Promise<string>;
   applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
-=======
-  applyDatabase: (db: ReturnType<typeof emptyDatabase>) => Promise<void>;
-  resetApp: () => Promise<void>;
-  completeOnboarding: (profileUpdate: Partial<UserProfile>) => Promise<void>;
-  exportData: () => Promise<void>;
-  importData: (json: string) => void;
-  getSyncPayloadJson: () => Promise<string>;
-  applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => Promise<void>;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   configureGithubSync: (cfg: { owner: string; repo: string; token: string }) => void;
   clearGithubSync: () => void;
   syncNow: () => Promise<void>;
@@ -433,22 +372,6 @@ setTechniquesRaw: React.Dispatch<React.SetStateAction<Technique[]>>;
   academicTerms: AcademicTerm[];
   setAcademicTerms: React.Dispatch<React.SetStateAction<AcademicTerm[]>>;
   setAcademicTermsRaw: React.Dispatch<React.SetStateAction<AcademicTerm[]>>;
-<<<<<<< HEAD
-=======
-  /** Memórias de semestre (SPEC-028) — dado do aparelho, fora do backup (D8). */
-  semesterMemories: SemesterMemory[];
-  setSemesterMemories: React.Dispatch<React.SetStateAction<SemesterMemory[]>>;
-  addSemesterMemory: (
-    input: Omit<SemesterMemory, 'id' | 'createdAt' | 'updatedAt'> & { now: string },
-  ) => SemesterMemory;
-  updateSemesterMemory: (
-    id: string,
-    patch: Partial<Pick<SemesterMemory, 'title' | 'category' | 'description' | 'memoryDate'>>,
-    now: string,
-  ) => void;
-  deleteSemesterMemory: (id: string) => void;
-  getMemoriesByTerm: (termId: string) => SemesterMemory[];
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   readingSessions: ReadingSession[];
   setReadingSessions: React.Dispatch<React.SetStateAction<ReadingSession[]>>;
   setReadingSessionsRaw: React.Dispatch<React.SetStateAction<ReadingSession[]>>;
@@ -531,7 +454,6 @@ questions: StudyQuestion[];
         remoteSha: string;
       } | null>
     >;
-<<<<<<< HEAD
     applyDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
     resetApp: () => void;
     completeOnboarding: (profileUpdate: Partial<UserProfile>) => void;
@@ -539,15 +461,6 @@ questions: StudyQuestion[];
     importData: (json: string) => void;
     getSyncPayloadJson: () => Promise<string>;
     applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
-=======
-    applyDatabase: (db: ReturnType<typeof emptyDatabase>) => Promise<void>;
-    resetApp: () => Promise<void>;
-    completeOnboarding: (profileUpdate: Partial<UserProfile>) => Promise<void>;
-    exportData: () => Promise<void>;
-    importData: (json: string) => void;
-    getSyncPayloadJson: () => Promise<string>;
-    applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => Promise<void>;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     configureGithubSync: (cfg: { owner: string; repo: string; token: string }) => void;
     clearGithubSync: () => void;
     syncNow: () => Promise<void>;
@@ -659,14 +572,7 @@ export function useDataClient(): DataClientValue {
   useEffect(() => {
     const legacy = tcc as unknown as { chapters?: unknown };
     if (!Array.isArray(legacy.chapters)) return;
-<<<<<<< HEAD
     const migrated = migrateDatabase(SCHEMA_VERSION - 1, {
-=======
-    const migrated = migrateDatabase(SCHEMA_VERSION - 2, {
-      // `21` aplica a migração 22 (conversão do `tcc` legado em
-      // `thesisChapters`/`thesisReferences`) e a 23 (idempotente). `SCHEMA_VERSION - 1`
-      // (= 22) pulava a 22 e o dreno nunca convertia o TCC legado.
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       profile,
       readings,
       tcc: tcc as unknown as Record<string, unknown>,
@@ -817,69 +723,11 @@ export function useDataClient(): DataClientValue {
     'motionPref',
     MOTION_PREF_DEFAULT,
   );
-<<<<<<< HEAD
   const skipThemeTransitionRef = useRef(true);
   useEffect(() => {
     const theme = getThemeById(themePref);
     applyTheme(theme, { transition: !skipThemeTransitionRef.current });
     applyThemeColorChrome(theme);
-=======
-
-  // Memórias de semestre (SPEC-028) — dado do aparelho, fora do backup e sem
-  // `SCHEMA_VERSION` nesta fase (D8). Persiste em localStorage/preferences,
-  // não no banco SQLite.
-  const [semesterMemories, setSemesterMemoriesRaw] = usePersistentState<SemesterMemory[]>(
-    'semesterMemories',
-    [],
-    'device',
-  );
-
-  const setSemesterMemories = useCallback((next: SemesterMemory[]) => {
-    setSemesterMemoriesRaw(next);
-  }, []);
-
-  const addSemesterMemory = useCallback(
-    (input: Omit<SemesterMemory, 'id' | 'createdAt' | 'updatedAt'> & { now: string }) => {
-      const criada = createSemesterMemory(input);
-      setSemesterMemoriesRaw([...semesterMemories, criada]);
-      return criada;
-    },
-    [semesterMemories],
-  );
-
-  const updateSemesterMemory = useCallback(
-    (
-      id: string,
-      patch: Partial<Pick<SemesterMemory, 'title' | 'category' | 'description' | 'memoryDate'>>,
-      now: string,
-    ) => {
-      setSemesterMemoriesRaw(
-        semesterMemories.map((m) => (m.id === id ? patchSemesterMemory(m, patch, now) : m)),
-      );
-    },
-    [semesterMemories],
-  );
-
-  const deleteSemesterMemory = useCallback((id: string) => {
-    setSemesterMemoriesRaw(semesterMemories.filter((m) => m.id !== id));
-  }, [semesterMemories]);
-
-  const getMemoriesByTerm = useCallback(
-    (termId: string): SemesterMemory[] => memoriesByTerm(semesterMemories, termId),
-    [semesterMemories],
-  );
-  const skipThemeTransitionRef = useRef(true);
-  const activeThemeRef = useRef<ThemeId | null>(null);
-  useEffect(() => {
-    const theme = getThemeById(themePref);
-    // SPEC-028 D11: se o tema já está aplicado (mesmo id), não re-aplica —
-    // evita trabalho desnecessário a cada navegação de pop, que era a causa
-    // do flash do tema default entre o mount e o efeito.
-    if (activeThemeRef.current === theme.id) return;
-    applyTheme(theme, { transition: !skipThemeTransitionRef.current });
-    applyThemeColorChrome(theme);
-    activeThemeRef.current = theme.id;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     skipThemeTransitionRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [themePref]);
@@ -985,18 +833,7 @@ export function useDataClient(): DataClientValue {
   } | null>(null);
 
   /** Aplica um banco completo (empty/demo/import/sincronizado) sem carimbar o SyncIndex. */
-<<<<<<< HEAD
   const applyDatabase = (db: ReturnType<typeof emptyDatabase>) => {
-=======
-  const applyDatabase = async (db: ReturnType<typeof emptyDatabase>) => {
-    // SPEC-M-029 D4: snapshot prévio antes de qualquer operação destrutiva.
-    await capturarSnapshot();
-
-    // SPEC-M-029 D8: pendências pré-destrutiva morrem ANTES de aplicar — nenhum
-    // dado velho volta a gravar depois da operação.
-    await invalidatePendingWrites();
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     // Migração one-shot (SPEC-009 §6.2): caderno de supervisão legado →
     // `InternshipLog`.
     //
@@ -1062,7 +899,6 @@ export function useDataClient(): DataClientValue {
       // aqui — backups não os trazem e o catálogo é re-semeado sob demanda.
       { transformStickers: mergeCatalogWithProgress },
     );
-<<<<<<< HEAD
   };
 
   /** Limpa tudo e volta ao estado inicial (zerado) — onboarding é reaberto. */
@@ -1071,69 +907,6 @@ export function useDataClient(): DataClientValue {
     // F5.5): nenhum dado velho volta a gravar depois do reset.
     void invalidatePendingWrites();
     applyDatabase(emptyDatabase());
-=======
-
-    // SPEC-M-029 D2/D3: grava no disco via camada unificada, com validação Zod
-    // e atomicidade entre coleções. O `setRaw` acima já atualizou a memória;
-    // agora persistimos de forma coordenada.
-    const operacoes: Array<{ chave: ChaveColecao; valor: unknown }> = [];
-    const adicionar = (chave: ChaveColecao, valor: unknown) => {
-      if (valor !== undefined && valor !== null) {
-        operacoes.push({ chave, valor });
-      }
-    };
-    adicionar('profile', nextDb.profile);
-    adicionar('courses', nextDb.courses);
-    adicionar('classes', nextDb.classes);
-    adicionar('tasks', nextDb.tasks);
-    adicionar('exams', nextDb.exams);
-    adicionar('authors', nextDb.authors);
-    adicionar('concepts', nextDb.concepts);
-    adicionar('readings', nextDb.readings);
-    adicionar('flashcards', nextDb.flashcards);
-    adicionar('decks', nextDb.decks);
-    adicionar('materials', nextDb.materials);
-    adicionar('internshipLogs', nextDb.internshipLogs);
-    adicionar('tcc', nextDb.tcc);
-    adicionar('stickers', nextDb.stickers);
-    adicionar('sessions', nextDb.sessions);
-    adicionar('techniques', nextDb.techniques);
-    adicionar('quizSessions', nextDb.quizSessions);
-    adicionar('academicTerms', nextDb.academicTerms);
-    adicionar('readingSessions', nextDb.readingSessions);
-    adicionar('readingHighlights', nextDb.readingHighlights);
-    adicionar('readingBookmarks', nextDb.readingBookmarks);
-    adicionar('thesisChapters', nextDb.thesisChapters);
-    adicionar('thesisReferences', nextDb.thesisReferences);
-    adicionar('thesisMeetings', nextDb.thesisMeetings);
-    adicionar('thesisTasks', nextDb.thesisTasks);
-    adicionar('thesisWritingLogs', nextDb.thesisWritingLogs);
-    adicionar('streakData', nextDb.streakData);
-    adicionar('looseNotes', nextDb.looseNotes);
-    adicionar('savedBookIds', nextDb.savedBookIds);
-    adicionar('readingProgress', nextDb.readingProgress);
-    adicionar('bookmarkedCourseIds', nextDb.bookmarkedCourseIds);
-
-    const resultado = await transacionar(operacoes);
-    if (!resultado.ok) {
-      // SPEC-M-029 D4: rollback automático se a gravação no disco falhar.
-      await restaurarDoSnapshot();
-      throw new Error(`applyDatabase falhou ao persistir: ${resultado.error}`);
-    }
-    limparSnapshot();
-  };
-
-  /** Limpa tudo e volta ao estado inicial (zerado) — onboarding é reaberto. */
-  const resetApp = async () => {
-    // SPEC-M-029 D4/D8: snapshot prévio e confirmação de duas etapas devem vir
-    // do chamador (UI). Aqui só executamos a operação destrutiva com proteção.
-    await capturarSnapshot();
-
-    // Pendências pré-reset morrem ANTES do novo snapshot (spec-performance
-    // F5.5): nenhum dado velho volta a gravar depois do reset.
-    await invalidatePendingWrites();
-    await applyDatabase(emptyDatabase());
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     // Bancos estáticos (approaches/questions) também são zerados para refletir o
     // "primeiro acesso"; o efeito de seed do DataClient re-semeia sob demanda
     // (agora que o array está vazio).
@@ -1141,7 +914,6 @@ export function useDataClient(): DataClientValue {
     setQuestions([]);
     // Nativo: apaga também a base SQLite (conteúdo + mapa de import legado —
     // assim uma futura reinstalação reimporta do Preferences, se houver).
-<<<<<<< HEAD
     void (async () => {
       try {
         const db = await getUserDb();
@@ -1150,18 +922,6 @@ export function useDataClient(): DataClientValue {
         console.error('[resetApp] falha ao limpar SQLite', e);
       }
     })();
-=======
-    // SPEC-M-029 D8: aguardar a limpeza para não deixar memória e disco divergentes.
-    try {
-      const db = await getUserDb();
-      if (db) await clearUserData(db);
-    } catch (e) {
-      console.error('[resetApp] falha ao limpar SQLite', e);
-      // Mesmo se a limpeza do SQLite falhar, o estado em memória já foi zerado.
-      // O snapshot permite rollback se necessário.
-    }
-    limparSnapshot();
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     showToast(frase(CELEBRACAO, 'cantinhoResetado'));
   };
 
@@ -1171,75 +931,10 @@ export function useDataClient(): DataClientValue {
    * nasce vazio (`emptyDatabase()` é o baseline) e, numa reinstalação, o
    * onboarding roda depois de o dado ser restaurado — zerar ali apagaria o que
    * a usuária acabou de recuperar. O único caminho que apaga tudo é `resetApp`.
-<<<<<<< HEAD
    */
   const completeOnboarding = (profileUpdate: Partial<UserProfile>) => {
     setProfile((prev) => ({ ...prev, ...profileUpdate }));
     setOnboarding({ completed: true, completedAt: new Date().toISOString() });
-=======
-   *
-   * SPEC-M-029 D6: nunca sobrescreve `profile.name` se já estiver preenchido.
-   * SPEC-M-029 D11: cria o `AcademicTerm` ativo correspondente ao `semester`
-   * escolhido no onboarding, para que o app não abra sempre no 1º semestre.
-   */
-  const completeOnboarding = async (profileUpdate: Partial<UserProfile>) => {
-    // SPEC-M-029 D6: preservar nome existente se o update vier vazio
-    const nomeJaPreenchido = profile.name && profile.name.trim().length > 0;
-    const nomeFinal = nomeJaPreenchido ? profile.name : (profileUpdate.name?.trim() ?? '');
-
-    const perfilParaGravar: Partial<UserProfile> = {
-      ...profileUpdate,
-      name: nomeFinal,
-    };
-
-    // Atualizar memória (estado imediato)
-    setProfile((prev) => ({ ...prev, ...perfilParaGravar }));
-    setOnboarding({ completed: true, completedAt: new Date().toISOString() });
-
-    // SPEC-M-029 D11: criar AcademicTerm ativo correspondente ao semestre escolhido
-    if (perfilParaGravar.semester !== undefined && perfilParaGravar.semester > 0) {
-      const agora = new Date();
-      const startedAt = agora.toISOString().slice(0, 10);
-      const criado = createAcademicTerm({
-        ordinal: perfilParaGravar.semester,
-        startedAt,
-        now: agora.toISOString(),
-      });
-      const termos = enforceSingleActiveTerm([...academicTerms, criado]);
-      setAcademicTermsRaw(termos);
-      // Manter profile.semester sincronizado com o termo ativo
-      setProfile((prev) =>
-        prev.semester === criado.ordinal ? prev : { ...prev, semester: criado.ordinal },
-      );
-    }
-
-    // SPEC-M-029 D3: persistir via data-layer com validação Zod
-    const operacoes: Array<{ chave: ChaveColecao; valor: unknown }> = [];
-    if (perfilParaGravar.name !== undefined) {
-      operacoes.push({ chave: 'profile', valor: { ...profile, ...perfilParaGravar } });
-    }
-    if (perfilParaGravar.semester !== undefined && perfilParaGravar.semester > 0) {
-      const agora = new Date();
-      const startedAt = agora.toISOString().slice(0, 10);
-      const criado = createAcademicTerm({
-        ordinal: perfilParaGravar.semester,
-        startedAt,
-        now: agora.toISOString(),
-      });
-      const termos = enforceSingleActiveTerm([...academicTerms, criado]);
-      operacoes.push({ chave: 'academicTerms', valor: termos });
-    }
-
-    if (operacoes.length > 0) {
-      const resultado = await transacionar(operacoes);
-      if (!resultado.ok) {
-        // SPEC-M-029 D4: rollback automático se a gravação falhar
-        await restaurarDoSnapshot();
-        throw new Error(`completeOnboarding falhou ao persistir: ${resultado.error}`);
-      }
-    }
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     showToast(frase(CELEBRACAO, 'cantinhoPronto'));
   };
 
@@ -1258,7 +953,6 @@ export function useDataClient(): DataClientValue {
   };
 
   /** Restaura um payload exportado (backup/migração), validando a versão do schema. */
-<<<<<<< HEAD
   const importData = (json: string) => {
     void (async () => {
       const db = await importAppDatabase(json);
@@ -1272,23 +966,6 @@ export function useDataClient(): DataClientValue {
       applyDatabase(db);
       showToast(frase(CELEBRACAO, 'backupRestaurado'));
     })();
-=======
-  const importData = async (json: string) => {
-    // SPEC-M-029 D4: snapshot prévio antes de import (operação destrutiva).
-    await capturarSnapshot();
-
-    const db = await importAppDatabase(json);
-    if (!db) {
-      showToast(frase(CELEBRACAO, 'backupIncompativel'));
-      limparSnapshot();
-      return;
-    }
-    // Pendências pré-import não sobrevivem ao restore (spec-performance
-    // F5.5) — invalida e aguarda o em andamento antes de aplicar.
-    await invalidatePendingWrites();
-    await applyDatabase(db);
-    showToast(frase(CELEBRACAO, 'backupRestaurado'));
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   };
 
   /** Snapshot local (JSON do backup v2) para enviar na sincronização entre dispositivos. */
@@ -1312,18 +989,9 @@ export function useDataClient(): DataClientValue {
     onboarding, syncIndex]);
 
   /** Aplica o banco mesclado pela sincronização (mesmo caminho do import). */
-<<<<<<< HEAD
   const applySyncedDatabase = useCallback((db: ReturnType<typeof emptyDatabase>) => {
     applyDatabase(db);
   }, []);
-=======
-  const applySyncedDatabase = useCallback(
-    async (db: ReturnType<typeof emptyDatabase>) => {
-      await applyDatabase(db);
-    },
-    [],
-  );
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const APP_VERSION = '1.0.0';
 
@@ -1346,11 +1014,7 @@ export function useDataClient(): DataClientValue {
   const applyMerged = useCallback(
     async (mergedJson: string, remoteManifest: SyncManifest, remoteSha: string) => {
       const db = await importAppDatabase(mergedJson);
-<<<<<<< HEAD
       if (db) applyDatabase(db);
-=======
-      if (db) await applyDatabase(db);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       setSyncCheckpoint({
         baseRevision: remoteManifest.revision,
         baseBlobSha: remoteSha,
@@ -1515,15 +1179,6 @@ export function useDataClient(): DataClientValue {
       academicTerms,
       setAcademicTerms,
       setAcademicTermsRaw,
-<<<<<<< HEAD
-=======
-      semesterMemories,
-      setSemesterMemories,
-      addSemesterMemory,
-      updateSemesterMemory,
-      deleteSemesterMemory,
-      getMemoriesByTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       readingSessions,
       setReadingSessions,
       setReadingSessionsRaw,
@@ -1546,10 +1201,6 @@ export function useDataClient(): DataClientValue {
       streakData, setStreakData, setStreakDataRaw,
       quizSessions, setQuizSessions, setQuizSessionsRaw,
       academicTerms, setAcademicTerms, setAcademicTermsRaw,
-<<<<<<< HEAD
-=======
-      semesterMemories, setSemesterMemories, addSemesterMemory, updateSemesterMemory, deleteSemesterMemory, getMemoriesByTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       readingSessions, setReadingSessions, setReadingSessionsRaw,
       readingHighlights, setReadingHighlights, setReadingHighlightsRaw,
       readingBookmarks, setReadingBookmarks, setReadingBookmarksRaw,
@@ -1782,15 +1433,6 @@ export function useDataClient(): DataClientValue {
       academicTerms,
       setAcademicTerms,
       setAcademicTermsRaw,
-<<<<<<< HEAD
-=======
-      semesterMemories,
-      setSemesterMemories,
-      addSemesterMemory,
-      updateSemesterMemory,
-      deleteSemesterMemory,
-      getMemoriesByTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       readingSessions,
       setReadingSessions,
       setReadingSessionsRaw,

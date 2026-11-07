@@ -41,10 +41,6 @@ import { normalizeText } from '../lib/readingMatching';
 import { toDateKey } from '../lib/streak';
 import {
   createAcademicTerm,
-<<<<<<< HEAD
-=======
-  createClosedAcademicTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   enforceSingleActiveTerm,
   reopenTerm,
   resolveActiveTerm,
@@ -206,20 +202,6 @@ export interface DataActions {
   openFirstTerm: (ordinal: number) => void;
   /** Reabre um período encerrado (o "re-roll" do histórico, SPEC-006 D7). */
   reopenTermById: (termId: string) => void;
-<<<<<<< HEAD
-=======
-  /**
-   * Cria um período encerrado com datas passadas, para registro retroativo de
-   * semestres que já aconteceram na vida real (SPEC-SEMESTRES-PASSADOS-MEMORIAS-REDESIGN).
-   * Rejeita ordinal já usado por outro encerrado.
-   */
-  createPastTerm: (input: {
-    ordinal: number;
-    label?: string;
-    startedAt: string;
-    endedAt: string;
-  }) => void;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   /** Arquiva a disciplina (sai da grade, continua pesquisável — nunca apaga). */
   archiveCourse: (courseId: string) => void;
   /** Devolve uma disciplina arquivada à grade do período ativo. */
@@ -1026,34 +1008,6 @@ export function useDataActions(deps: DataActionsDeps): DataActions & DataActionG
   );
 
   /**
-<<<<<<< HEAD
-=======
-   * Cria um período encerrado com datas passadas, para registro retroativo de
-   * semestres que já aconteceram na vida real (SPEC-SEMESTRES-PASSADOS-MEMORIAS-REDESIGN).
-   * Rejeita ordinal já usado por outro encerrado (evita colisão na timeline).
-   */
-  const createPastTerm = useCallback(
-    ({ ordinal, label, startedAt, endedAt }: {
-      ordinal: number;
-      label?: string;
-      startedAt: string;
-      endedAt: string;
-    }) => {
-      const jaExiste = academicTerms.some(
-        (t) => t.status === 'encerrado' && t.ordinal === ordinal,
-      );
-      if (jaExiste) return;
-      if (endedAt < startedAt) return;
-      const now = new Date().toISOString();
-      const created = createClosedAcademicTerm({ ordinal, startedAt, endedAt, label, now });
-      setAcademicTerms([...academicTerms, created]);
-      hapticSuccess();
-    },
-    [academicTerms, setAcademicTerms],
-  );
-
-  /**
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
    * Desfaz a última virada.
    *
    * Limpa a janela num único ponto (`setLastRollover(null)`) e **não** anuncia
@@ -1114,10 +1068,6 @@ export function useDataActions(deps: DataActionsDeps): DataActions & DataActionG
       setTotalSemesters,
       openFirstTerm,
       reopenTermById,
-<<<<<<< HEAD
-=======
-      createPastTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       archiveCourse,
       restoreCourse,
     }),
@@ -1131,10 +1081,6 @@ export function useDataActions(deps: DataActionsDeps): DataActions & DataActionG
       setTotalSemesters,
       openFirstTerm,
       reopenTermById,
-<<<<<<< HEAD
-=======
-      createPastTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       archiveCourse,
       restoreCourse,
     ],

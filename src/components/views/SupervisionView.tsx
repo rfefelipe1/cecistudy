@@ -1,18 +1,10 @@
 import React, { useState } from 'react';
 import { Clock } from 'lucide-react';
-<<<<<<< HEAD
 import { VAZIO, frase } from '../../lib/voice';
 import { useMobileApp } from '@/context/mobileApp';
 import { InternshipLogCard } from '../InternshipLogCard';
 import { EmptyState } from '../ui/EmptyState';
 import { PillGroup } from '../ui/PillGroup';
-=======
-import { VAZIO, DICA, frase } from '../../lib/voice';
-import { useMobileApp } from '@/context/mobileApp';
-import { InternshipLogCard } from '../InternshipLogCard';
-import { EmptyState } from '../ui/EmptyState';
-import { CeciFilterChip } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { StatusChip } from '../internship/StatusChip';
 import type { DerivedCase } from '../../lib/internshipCases';
 import type { InternshipLog } from '../../types';
@@ -67,7 +59,6 @@ export const SupervisionView: React.FC<{
       {/* Sem cabeçalho próprio (SPEC-010 D3): o hero do Diário é o topo da aba.
           O que restava aqui era o segundo cabeçalho empilhado na mesma tela. */}
 
-<<<<<<< HEAD
       <PillGroup<Filtro>
         size="sm"
         variant="rose"
@@ -79,23 +70,6 @@ export const SupervisionView: React.FC<{
           { value: 'intervisao', label: 'intervisão' },
         ]}
       />
-=======
-      <div className="flex flex-wrap gap-1.5">
-        {[
-          { value: 'todas', label: 'todas' },
-          { value: 'supervisao', label: 'supervisão' },
-          { value: 'intervisao', label: 'intervisão' },
-        ].map((o) => (
-          <CeciFilterChip
-            key={o.value}
-            value={o.value}
-            label={o.label}
-            active={filtro === o.value}
-            onChange={(v) => setFiltro(v as Filtro)}
-          />
-        ))}
-      </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
       {porPaciente.length > 0 && (
         <div className="rounded-2xl p-3 bg-surface-muted border border-status-warning-border space-y-2">
@@ -130,11 +104,7 @@ export const SupervisionView: React.FC<{
       {logs.length === 0 ? (
         <EmptyState
           description={frase(VAZIO, 'semSupervisao')}
-<<<<<<< HEAD
           actionLabel="anotar supervisão"
-=======
-          actionLabel={frase(DICA, 'anotarSupervisao')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           onAction={() => abrirWizard()}
         />
       ) : (

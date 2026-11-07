@@ -31,11 +31,7 @@ const KNOWN_INLINE: Record<string, number[]> = {
   // A curva do `ease` foi tokenizada (`IOS_EASE`): o `duration` continua
   // literal porque 0.18s não é `BASE_D.navBar` (0.24) nem `BASE_D.micro`
   // (0.12) — trocar de token aqui mudaria a entrada da barra sem medição.
-<<<<<<< HEAD
   'src/components/ui/bottom-nav-bar.tsx': [32, 64, 87, 88],
-=======
-  'src/components/ui/bottom-nav-bar.tsx': [38, 77, 106, 107],
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   'src/components/courses/detail/CourseCreateMenu.tsx': [78, 117],
   'src/components/flashcards/Card3D.tsx': [8, 102],
   'src/components/flashcards/CardBaúEnvelope.tsx': [34, 52],
@@ -55,11 +51,7 @@ const KNOWN_INLINE: Record<string, number[]> = {
   // os tokens do sistema — as duas entradas do `CourseDetailView` saíram do
   // ratchet porque o literal deixou de existir lá (ratchet só encolhe).
   'src/components/views/home/rows.tsx': [31],
-<<<<<<< HEAD
   'src/components/views/StreakView.tsx': [37, 129],
-=======
-  'src/components/views/StreakView.tsx': [38, 130],
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // SPEC-M-028 F4: o seletor de grupos passou a usar `Reveal` e perdeu o
   // `motion.button` de entrada — o literal saiu junto (ratchet só encolhe).
   // SPEC-018 F5: os imports da voz entraram no topo do arquivo e os literais
@@ -69,32 +61,16 @@ const KNOWN_INLINE: Record<string, number[]> = {
   'src/components/quizzes/QuizResultScreen.tsx': [73],
   'src/components/ui/AnimatedNumber.tsx': [12],
   // F7.3: a saída da splash usa `BASE_D.overlay * 1000` (token). O `duration: 2.2`
-<<<<<<< HEAD
   // da flutuação contínua da mascote é dívida pré-existente, deslocada uma linha
   // pelo `import` do token.
   'src/components/ui/BootSplash.tsx': [145],
-=======
-  // da flutuação contínua da mascote é dívida pré-existente, deslocada por duas
-  // linhas pelo import do `useOtaStatus` e pela leitura do estado OTA.
-  'src/components/ui/BootSplash.tsx': [147],
-  // `duration: 0.2` da animação de abertura do contexto do card — dívida
-  // pré-existente do FlashcardWizard; deslocou da linha 197 para 221 pela edição
-  // do `Field` nos TextAreas (Fase 3 da SPEC-025), o literal em si não mudou.
-  'src/components/wizards/FlashcardWizard.tsx': [221],
-  // Dívida pré-existente de `reorder-list.tsx` (não tocada nesta sessão).
-  'src/components/ui/reorder-list.tsx': [7, 8],
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // SPEC-012 F3.5: `aria-valuetext` entrou acima do literal — o número de linha
   // do ratchet acompanha (o literal em si não mudou; o gate é o mesmo).
   'src/components/ui/ProgressBar.tsx': [36],
   'src/components/ui/SegmentedControl.tsx': [72],
   'src/components/views/NoteTransformWizard.tsx': [57],
-<<<<<<< HEAD
   'src/components/wizards/FlashcardWizard.tsx': [197],
   'src/components/wizards/note/fieldsFor.tsx': [173],
-=======
-  'src/components/wizards/note/fieldsFor.tsx': [174],
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 };
 
 // `duration: 0.3` | `stiffness: 400` | `damping: 36` | `mass: 0.9`

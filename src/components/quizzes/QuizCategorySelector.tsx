@@ -1,13 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronDown, ChevronUp, Check, Target, Filter, Sparkles } from 'lucide-react';
 import { Mascote } from '../ui/Mascote';
-<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
 import { FixedBottomBar } from '../ui/FixedBottomBar';
-=======
-import { FixedBottomBar } from '../ui/FixedBottomBar';
-import { CeciStepper } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { cn } from '../../lib/utils';
 import { filterQuestionPool } from '../../lib/quizLogic';
 import { Reveal } from '@/lib/motion';
@@ -129,7 +124,6 @@ function FilterSection({
   );
 }
 
-<<<<<<< HEAD
 function CountSelector({
   count,
   onChange,
@@ -159,8 +153,6 @@ function CountSelector({
   );
 }
 
-=======
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 export const QuizCategorySelector: React.FC<QuizCategorySelectorProps> = ({
   questions,
   onStart,
@@ -321,22 +313,10 @@ export const QuizCategorySelector: React.FC<QuizCategorySelectorProps> = ({
 
               {/* Selector de quantidade */}
               <div>
-<<<<<<< HEAD
                 <CountSelector
                   count={config.count}
                   onChange={(n) => setConfig((c) => ({ ...c, count: n }))}
                   maxAvailable={pool.length}
-=======
-                <CeciStepper
-                  label="número de questões"
-                  value={config.count}
-                  onChange={(n) => setConfig((c) => ({ ...c, count: n }))}
-                  min={5}
-                  max={pool.length}
-                  step={5}
-                  quickSteps={[5, 10, 15, 20].filter((n) => n <= pool.length)}
-                  unit="questões"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 />
               </div>
 

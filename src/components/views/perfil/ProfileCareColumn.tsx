@@ -21,13 +21,8 @@ export interface ProfileCareColumnProps {
   onMotionPrefSelect: (pref: MotionPref) => void;
   onOpenSync: () => void;
   onExport: () => void;
-<<<<<<< HEAD
   onImport: (json: string) => void;
   onReset: () => void;
-=======
-  onImport: (json: string) => Promise<void>;
-  onReset: () => Promise<void>;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 export const ProfileCareColumn: React.FC<ProfileCareColumnProps> = ({

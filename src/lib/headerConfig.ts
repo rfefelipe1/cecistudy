@@ -193,18 +193,6 @@ export function buildHeaderConfig(input: HeaderConfigInput): DynamicHeaderConfig
       color: '#D85F79',
       onBack,
     };
-<<<<<<< HEAD
-=======
-  } else if (currentScreen.kind === 'semesterMemories') {
-    headerConfig = {
-      type: 'detail',
-      title: 'memórias deste semestre',
-      subtitle: 'coisas marcantes que você guardou deste período ♡',
-      icon: 'Sparkles',
-      color: '#D85F79',
-      onBack,
-    };
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   } else if (currentScreen.kind === 'notes') {
     headerConfig = {
       type: 'detail',

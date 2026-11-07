@@ -94,12 +94,6 @@ export type NavScreen =
   /** Histórico de períodos letivos (SPEC-005), empilhado sobre o perfil.
    *  `termId` presente = detalhe de um período encerrado. */
   | { kind: 'termHistory'; termId?: string }
-<<<<<<< HEAD
-=======
-  /** Memórias de um semestre (SPEC-028), empilhado sobre o histórico de períodos.
-   *  `termId` aponta para o `AcademicTerm` do qual as memórias pertencem. */
-  | { kind: 'semesterMemories'; termId: string }
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   | { kind: 'approach'; approachId: string }
   | { kind: 'families' }
   | { kind: 'family'; familyId: string }

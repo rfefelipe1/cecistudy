@@ -11,10 +11,6 @@ import {
 import { formatShortDate, getTodaySchedule } from '../../../lib/schedule';
 import { useMobileApp } from '@/context/mobileApp';
 import { hapticTap } from '../../../lib/haptics';
-<<<<<<< HEAD
-=======
-import { frase, CELEBRACAO, DICA } from '../../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { AttendanceRecord, AttendanceStatus, Course } from '../../../types';
 
 interface CourseAttendanceCardProps {
@@ -86,11 +82,7 @@ const QUICK_ACTIONS: {
     icon: <UserMinus className="w-4 h-4" />,
     className:
       'bg-status-danger-surface border-status-danger-border text-status-danger-strong hover:border-status-danger-strong/50',
-<<<<<<< HEAD
     toast: 'guardado como falta ♡',
-=======
-    toast: frase(CELEBRACAO, 'guardadoComoFalta'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   },
   {
     status: 'cancelada',
@@ -177,13 +169,8 @@ export const CourseAttendanceCard: React.FC<CourseAttendanceCardProps> = ({
     margin > 0
       ? `ainda pode faltar ${margin} ${margin === 1 ? 'aula' : 'aulas'} sem quebrar o ${minPct}%`
       : margin === 0
-<<<<<<< HEAD
         ? 'nenhuma falta restante — respira fundo e vem nas próximas aulas ♡'
         : `já foram ${absences} de ${maxAbsences} faltas permitidas — acima do limite`;
-=======
-        ? frase(DICA, 'respiraFalta')
-        : frase(DICA, 'faltasAcimaLimite', { n: absences, max: maxAbsences });
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   return (
     <section className={CARD} aria-label="frequência">

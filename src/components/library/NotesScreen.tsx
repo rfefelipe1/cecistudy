@@ -14,11 +14,7 @@ import {
 } from 'lucide-react';
 import { CATEGORY_BADGE, formatNoteDate } from './notes';
 import { Mascote } from '../ui/Mascote';
-<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
-=======
-import { CeciFilterChip } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ManageSurface } from '../ui/ManageSurface';
 import { copyToClipboard } from '../../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -129,7 +125,6 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({
 
       {/* Category Pills */}
       <div className="px-1">
-<<<<<<< HEAD
         <PillGroup
           variant="brand"
           value={noteCategoryFilter}
@@ -142,25 +137,6 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({
             { value: 'lembrete', label: 'lembretes' },
           ]}
         />
-=======
-        <div className="flex flex-wrap gap-1.5">
-        {[
-          { value: 'todas', label: 'todas' },
-          { value: 'reflexão', label: 'reflexões' },
-          { value: 'estudo', label: 'estudo' },
-          { value: 'ideia', label: 'ideias' },
-          { value: 'lembrete', label: 'lembretes' },
-        ].map((o) => (
-          <CeciFilterChip
-            key={o.value}
-            value={o.value}
-            label={o.label}
-            active={noteCategoryFilter === o.value}
-            onChange={setNoteCategoryFilter}
-          />
-        ))}
-      </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </div>
 
       {/* New Note Form */}
@@ -189,7 +165,6 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({
 
             <div className="flex items-center gap-2 pt-1">
               <span className="text-[11px] font-medium text-ceci-secondary">categoria:</span>
-<<<<<<< HEAD
               <PillGroup
                 variant="brand"
                 value={newNoteCategory}
@@ -199,19 +174,6 @@ export const NotesScreen: React.FC<NotesScreenProps> = ({
                   label: cat,
                 }))}
               />
-=======
-              <div className="flex flex-wrap gap-1.5">
-                {(['reflexão', 'estudo', 'ideia', 'lembrete'] as const).map((cat) => (
-                  <CeciFilterChip
-                    key={cat}
-                    value={cat}
-                    label={cat}
-                    active={newNoteCategory === cat}
-                    onChange={(v) => setNewNoteCategory(v as typeof newNoteCategory)}
-                  />
-                ))}
-              </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </div>
 
             <textarea

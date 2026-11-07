@@ -1,23 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { FileText } from 'lucide-react';
-<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, DICA, VAZIO, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useMobileApp } from '@/context/mobileApp';
 import type { LooseNote } from '../../types';
 import { hapticSuccess } from '../../lib/haptics';
 import { WizardScaffold, type WizardStep } from '../wizards/WizardScaffold';
-<<<<<<< HEAD
 import { FieldLabel, ReviewCard, TextArea, TextInput } from '../wizards/wizardFields';
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
 import { PillGroupMulti } from '../ui/PillGroupMulti';
-=======
-import { Field, FieldLabel, ReviewCard, TextArea, TextInput } from '../wizards/wizardFields';
-import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
-import { CeciMultiSelect } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { CourseSelect } from '../wizards/CourseSelect';
 import { useAcervoTheory } from '../wizards/useAcervoTheory';
 
@@ -109,31 +99,12 @@ export const NoteDetailWizard: React.FC = () => {
       subtitle: 'título + categoria + o conteúdo que você quer guardar.',
       content: (
         <div className="space-y-4">
-<<<<<<< HEAD
           <TextInput
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="título da nota"
             autoFocus
           />
-=======
-          <Field
-            label="título"
-            htmlFor="notedetail-titulo-input"
-            required
-            description={frase(VAZIO, 'noteDetalheDescricao')}
-            error={!title.trim() && 'dê um título à nota para continuar'}
-            importance="primary"
-          >
-            <TextInput
-              id="notedetail-titulo-input"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="título da nota"
-              autoFocus
-            />
-          </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           <ChoiceCardGrid
             label="categoria"
             options={CATEGORY_OPTIONS}
@@ -169,57 +140,33 @@ export const NoteDetailWizard: React.FC = () => {
           />
 
           <div className="space-y-2">
-<<<<<<< HEAD
             <PillGroupMulti
               label="conceitos"
               variant="rose"
               options={conceptOptions}
               value={conceptIds}
               onChange={(v) => setConceptIds(resolveIds(v))}
-=======
-            <CeciMultiSelect
-              label="conceitos"
-              value={conceptIds}
-              onChange={(v) => setConceptIds(resolveIds(v))}
-              options={conceptOptions.map((o) => ({ value: o.value, label: o.label }))}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             />
           </div>
 
           <div className="space-y-2">
-<<<<<<< HEAD
             <PillGroupMulti
               label="autores"
               variant="rose"
               options={authorOptions}
               value={authorIds}
               onChange={(v) => setAuthorIds(resolveIds(v))}
-=======
-            <CeciMultiSelect
-              label="autores"
-              value={authorIds}
-              onChange={(v) => setAuthorIds(resolveIds(v))}
-              options={authorOptions.map((o) => ({ value: o.value, label: o.label }))}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             />
           </div>
 
           <div className="space-y-2">
             {approaches.length > 0 ? (
-<<<<<<< HEAD
               <PillGroupMulti
                 label="abordagens"
                 variant="rose"
                 options={approaches.map((a) => ({ value: a.id, label: a.shortName || a.name }))}
                 value={approachIds}
                 onChange={setApproachIds}
-=======
-              <CeciMultiSelect
-                label="abordagens"
-                value={approachIds}
-                onChange={setApproachIds}
-                options={approaches.map((a) => ({ value: a.id, label: a.shortName || a.name }))}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               />
             ) : (
               <span className="text-[11px] text-ceci-tertiary">
@@ -230,20 +177,12 @@ export const NoteDetailWizard: React.FC = () => {
 
           <div className="space-y-2">
             {materials.length > 0 ? (
-<<<<<<< HEAD
               <PillGroupMulti
                 label="materiais"
                 variant="rose"
                 options={materials.map((m) => ({ value: m.id, label: m.title }))}
                 value={materialIds}
                 onChange={setMaterialIds}
-=======
-              <CeciMultiSelect
-                label="materiais"
-                value={materialIds}
-                onChange={setMaterialIds}
-                options={materials.map((m) => ({ value: m.id, label: m.title }))}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               />
             ) : (
               <span className="text-[11px] text-ceci-tertiary">
@@ -317,11 +256,6 @@ export const NoteDetailWizard: React.FC = () => {
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="content"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title="detalhes da nota"
       icon={<FileText className="w-3.5 h-3.5" />}
       iconClass="bg-surface-rose border-ceci-border-brand text-ceci-brand-strong"
@@ -329,16 +263,9 @@ export const NoteDetailWizard: React.FC = () => {
       step={step}
       onStepChange={setStep}
       canNext={canNext}
-<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeNoteDetail}
       saveLabel="guardar nota ♡"
-=======
-      invalidFieldId={step === 0 && !title.trim() ? 'notedetail-titulo-input' : undefined}
-      onSave={handleSave}
-      onClose={closeNoteDetail}
-      saveLabel={frase(DICA, 'guardarNota')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
-<<<<<<< HEAD
 import { CELEBRACAO, erro, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, DICA, erro, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import {
   THESIS_ID,
   newMeetingId,
@@ -16,11 +12,7 @@ import {
 } from '../../types';
 import { Modal } from '../ui/Modal';
 import { SegmentedControl } from '../ui/SegmentedControl';
-<<<<<<< HEAD
 import { TagChip } from '../ui/TagChip';
-=======
-import { CeciTag } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { hapticTap, hapticWarning } from '../../lib/haptics';
 import { todayKeyLocal } from '../../lib/dateBR';
 
@@ -259,13 +251,8 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
     hapticTap();
     showToast(
       chosen.length > 0
-<<<<<<< HEAD
         ? `${chosen.length} ${chosen.length === 1 ? 'pendência criada' : 'pendências criadas'} ♡`
         : 'tudo guardado ♡',
-=======
-        ? frase(CELEBRACAO, 'pendenciasCriadas', { n: chosen.length })
-        : frase(CELEBRACAO, 'tudoGuardado'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     );
     onClose();
   };
@@ -460,11 +447,7 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
                     <button
                       type="button"
                       onClick={addDecision}
-<<<<<<< HEAD
                       aria-label="adicionar decisão"
-=======
-                      aria-label={frase(DICA, 'adicionarDecisao')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       className="shrink-0 flex items-center justify-center w-11 h-11 rounded-xl text-ceci-brand-strong border border-ceci-border-brand bg-surface-rose cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
@@ -473,7 +456,6 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
                   {decisions.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-1.5">
                       {decisions.map((d) => (
-<<<<<<< HEAD
                         <TagChip
                           key={d}
                           size="sm"
@@ -483,15 +465,6 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
                         >
                           {d}
                         </TagChip>
-=======
-                        <CeciTag
-                          key={d}
-                          variant="rose"
-                          value={d}
-                          label={d}
-                          onRemove={() => removeDecision(d)}
-                        />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       ))}
                     </div>
                   )}

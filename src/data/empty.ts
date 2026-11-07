@@ -54,17 +54,10 @@ export const emptyProfile: UserProfile = {
   totalSemesters: DEFAULT_TOTAL_SEMESTERS,
   university: '',
   targetCareer: '',
-<<<<<<< HEAD
   dailyQuote: '',
   stickersCollected: 0,
   categoryXp: { faculdade: 0, estudo: 0, leituras: 0, jornada: 0 },
   photoUrl: '',
-=======
-  stickersCollected: 0,
-  categoryXp: { faculdade: 0, estudo: 0, leituras: 0, jornada: 0 },
-  photoUrl: '',
-  coverPhotoUrl: '',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 };
 
 // SPEC-012: o singleton emagrecece — sem `chapters`/`references` (viraram

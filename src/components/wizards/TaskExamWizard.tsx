@@ -7,21 +7,12 @@ import { createTaskCalendarEvent, createExamCalendarEvent } from '../../lib/cale
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
 import { Toggle } from '../ui/Toggle';
-<<<<<<< HEAD
 import { DateField, Field, ReviewCard, TextInput } from './wizardFields';
-=======
-import { Field, ReviewCard, TextInput } from './wizardFields';
-import { CeciDatePicker } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
 import { TagField } from '../ui/TagField';
 import { CourseSelect } from './CourseSelect';
 import { PRIORITIES, TASK_CATEGORIES } from './note/constants';
-<<<<<<< HEAD
 import { CELEBRACAO, VAZIO, erro, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, VAZIO, DICA, erro, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface TaskExamWizardProps {
   /** Quando definido, pula a escolha entre tarefa e prova (vindo do picker). */
@@ -206,18 +197,11 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
       content: (
         <div className="space-y-4">
           <CourseSelect value={courseId} onChange={(v) => patch({ courseId: v })} />
-<<<<<<< HEAD
           <DateField
             label="data limite (prazo)"
             value={taskDueDate}
             onChange={(v) => patch({ taskDueDate: v })}
             placeholder="sem prazo é um estado válido ♡"
-=======
-          <CeciDatePicker
-            label="data limite (prazo)"
-            value={taskDueDate ?? null}
-            onChange={(v) => patch({ taskDueDate: v })}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           />
         </div>
       ),
@@ -226,11 +210,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
       id: 'tarefa-revisar',
       title: 'revisar',
       headline: 'confere se está tudo certinho ♡',
-<<<<<<< HEAD
       subtitle: 'se algo estiver fora, é só voltar e ajustar antes de guardar.',
-=======
-      subtitle: frase(DICA, 'confereAjustar'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       content: (
         <div className="space-y-3">
           <ReviewCard
@@ -276,16 +256,10 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
             label="data da prova"
             hint="se ainda não souber, pode confirmar depois — sem data também vale ♡"
           >
-<<<<<<< HEAD
             <DateField
               value={examDate}
               onChange={(v) => patch({ examDate: v })}
               placeholder="sem data também vale ♡"
-=======
-            <CeciDatePicker
-              value={examDate ?? null}
-              onChange={(v) => patch({ examDate: v })}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             />
           </Field>
         </div>
@@ -441,20 +415,11 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
     }
     hapticSuccess();
     closeWizard();
-<<<<<<< HEAD
     showToast(kind === 'task' ? 'tarefa guardada no plano ♡' : 'prova anotada no cantinho ♡');
-=======
-    showToast(kind === 'task' ? frase(CELEBRACAO, 'tarefaGuardadaPlano') : 'prova anotada no cantinho ♡');
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   };
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="compact"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       steps={steps}
       step={step}
       onStepChange={setStep}
@@ -490,11 +455,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
           : 'bg-surface-rose border-ceci-border-brand text-ceci-brand-strong'
       }
       saveLabel={
-<<<<<<< HEAD
         editing ? 'guardar alterações ♡' : kind === 'task' ? 'guardar tarefa ♡' : 'guardar prova ♡'
-=======
-        editing ? frase(CELEBRACAO, 'guardarAlteracoes') : kind === 'task' ? 'guardar tarefa ♡' : 'guardar prova ♡'
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       }
     />
   );

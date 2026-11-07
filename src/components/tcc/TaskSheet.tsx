@@ -11,12 +11,7 @@ import {
 } from '../../types';
 import { Modal } from '../ui/Modal';
 import { SegmentedControl } from '../ui/SegmentedControl';
-<<<<<<< HEAD
 import { TagChip } from '../ui/TagChip';
-=======
-import { CeciSelect } from '../ui/ceci';
-import { CeciTag } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { formatDateBR } from '../../lib/dateBR';
 import { hapticTap, hapticWarning } from '../../lib/haptics';
 
@@ -162,7 +157,6 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, taskId, onClose }) =
             <label htmlFor="task-capitulo" className={labelClass}>
               capítulo
             </label>
-<<<<<<< HEAD
             <select
               id="task-capitulo"
               value={chapterId}
@@ -176,16 +170,6 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, taskId, onClose }) =
                 </option>
               ))}
             </select>
-=======
-            <CeciSelect
-              htmlFor="task-capitulo"
-              label="capítulo"
-              value={chapterId ?? null}
-              onChange={setChapterId}
-              placeholder="— nenhum —"
-              options={thesisChapters.map((c) => ({ value: c.id, label: c.title }))}
-            />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </div>
           <div>
             <label htmlFor="task-prazo" className={labelClass}>
@@ -214,18 +198,9 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, taskId, onClose }) =
         </div>
 
         {meetingOf && (
-<<<<<<< HEAD
           <TagChip size="sm" variant="neutral" className="!py-1">
             veio da reunião de {formatDateBR(meetingOf.date)}
           </TagChip>
-=======
-          <CeciTag
-            variant="neutral"
-            className="!py-1"
-            value={`reuniao-${meetingOf.date}`}
-            label={`veio da reunião de ${formatDateBR(meetingOf.date)}`}
-          />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         )}
 
         <div className="flex items-center justify-between gap-2 pt-3 border-t border-ceci-border-subtle">

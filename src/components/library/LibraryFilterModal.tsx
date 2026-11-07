@@ -2,11 +2,7 @@ import React from 'react';
 import { Filter } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
-<<<<<<< HEAD
 import { PillGroup } from '../ui/PillGroup';
-=======
-import { CeciFilterChip } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 interface LibraryFilterModalProps {
   isOpen: boolean;
@@ -85,35 +81,17 @@ export const LibraryFilterModal: React.FC<LibraryFilterModalProps> = ({
         <span className="text-[11px] font-bold text-ceci-tertiary uppercase tracking-wider block">
           status de leitura
         </span>
-<<<<<<< HEAD
         <PillGroup
           variant="primary"
           value={activeStatus}
           onChange={onStatusChange}
           options={[
-=======
-        <div className="flex flex-wrap gap-1.5">
-          {[
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             { value: 'todos', label: 'todos' },
             { value: 'lendo', label: 'lendo' },
             { value: 'concluido', label: 'lidos' },
             { value: 'para_ler', label: 'não iniciados' },
-<<<<<<< HEAD
           ]}
         />
-=======
-          ].map((o) => (
-            <CeciFilterChip
-              key={o.value}
-              value={o.value}
-              label={o.label}
-              active={activeStatus === o.value}
-              onChange={onStatusChange}
-            />
-          ))}
-        </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </div>
 
       {/* Section 3: Tags / Temas Rápidos */}
@@ -121,26 +99,12 @@ export const LibraryFilterModal: React.FC<LibraryFilterModalProps> = ({
         <span className="text-[11px] font-bold text-ceci-tertiary uppercase tracking-wider block">
           filtrar por tema / autor específico
         </span>
-<<<<<<< HEAD
         <PillGroup
           variant="brand"
           value={selectedTag ?? ''}
           onChange={(v) => onTagChange(v === selectedTag ? null : v)}
           options={availableTags.map((tag) => ({ value: tag, label: tag }))}
         />
-=======
-        <div className="flex flex-wrap gap-1.5">
-          {availableTags.map((tag) => (
-            <CeciFilterChip
-              key={tag}
-              value={tag}
-              label={tag}
-              active={selectedTag === tag}
-              onChange={(v) => onTagChange(v === selectedTag ? null : v)}
-            />
-          ))}
-        </div>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </div>
 
       {/* Footer buttons */}

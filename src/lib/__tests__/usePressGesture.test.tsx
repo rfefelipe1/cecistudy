@@ -54,11 +54,6 @@ describe('usePressGesture — clique curto × pressed longo', () => {
     contactDown();
     passa(LONG_PRESS_MS - 50);
     contactUp();
-<<<<<<< HEAD
-=======
-    // `onPress` é disparado pelo `pointerUp` de toque curto; o `click` nativo
-    // não deve duplicar a chamada.
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     fireEvent.click(alvo());
 
     expect(onPress).toHaveBeenCalledTimes(1);

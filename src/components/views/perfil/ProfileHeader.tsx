@@ -13,13 +13,7 @@ import ProfileIdentityInfo from './ProfileIdentityInfo';
 interface ProfileHeaderProps {
   identity: ProfileIdentity;
   achievements: Sticker[];
-<<<<<<< HEAD
   onPickPhoto: () => void;
-=======
-  onPickCover: () => void;
-  onPickPhoto: () => void;
-  onRemoveCover: () => void;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   onRemovePhoto?: () => void;
   onEdit: () => void;
   onMoreOptions: () => void;
@@ -29,33 +23,18 @@ interface ProfileHeaderProps {
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   identity,
   achievements,
-<<<<<<< HEAD
   onPickPhoto,
-=======
-  onPickCover,
-  onPickPhoto,
-  onRemoveCover,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   onRemovePhoto,
   onEdit,
   onMoreOptions,
   onOpenStickers,
 }) => {
-<<<<<<< HEAD
   const { displayName, subtitle, photoUrl, initials, level, title } = identity;
-=======
-  const { displayName, approach, university, coverPhotoUrl, photoUrl, initials, level, title } =
-    identity;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   return (
     <div className="relative w-full overflow-visible">
       {/* 1. Banner de capa — largura total, edge-to-edge, 3:1. */}
-<<<<<<< HEAD
       <ProfileBanner onClick={onPickPhoto} />
-=======
-      <ProfileBanner coverPhotoUrl={coverPhotoUrl} onClick={onPickCover} />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
       {/* 2. Avatar sobreposto à borda inferior do banner, à esquerda. */}
       <ProfileAvatarOverlay
@@ -69,13 +48,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       {/* 3. Informações de identidade — fluxo vertical, abaixo do banner. */}
       <ProfileIdentityInfo
         displayName={displayName || 'usuária'}
-<<<<<<< HEAD
         subtitle={subtitle}
         quote={identity.quote}
-=======
-        approach={approach}
-        university={university}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         level={level}
         title={title}
         achievements={achievements}

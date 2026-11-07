@@ -24,17 +24,6 @@ vi.mock('@/context/mobileApp', () => ({
   }),
 }));
 
-<<<<<<< HEAD
-=======
-vi.mock('@/context/shellNavContexts', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@/context/shellNavContexts')>();
-  return {
-    ...actual,
-    useManageItem: () => ({ openManageItem, closeManageItem: vi.fn() }),
-  };
-});
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 const HOJE = '2026-10-07';
 
 const clinicoVazio: InternshipLog = {

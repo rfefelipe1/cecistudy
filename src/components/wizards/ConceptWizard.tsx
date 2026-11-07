@@ -1,22 +1,13 @@
 import React from 'react';
-<<<<<<< HEAD
 import { VAZIO, CELEBRACAO, frase } from '../../lib/voice';
-=======
-import { VAZIO, CELEBRACAO, DICA, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Sparkles } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import type { ManagedItem } from '../../types';
 import { hapticSuccess } from '../../lib/haptics';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
-<<<<<<< HEAD
 import { FieldHint, FieldLabel, ReviewCard, TextArea, TextInput } from './wizardFields';
 import { PillGroupMulti } from '../ui/PillGroupMulti';
-=======
-import { Field, FieldHint, ReviewCard, TextArea, TextInput } from './wizardFields';
-import { CeciMultiSelect } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { Picker } from '../ui/Picker';
 import { TagField } from '../ui/TagField';
 import { useAcervoTheory } from './useAcervoTheory';
@@ -81,7 +72,6 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
       subtitle: 'nome + uma definição com as suas palavras — o resto fica opcional ♡',
       content: (
         <div className="space-y-4">
-<<<<<<< HEAD
           <TextInput
             value={name}
             onChange={(e) => patch({ name: e.target.value })}
@@ -91,44 +81,13 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
           <div>
             <FieldLabel>definição</FieldLabel>
             <TextArea
-=======
-          <Field
-            label="nome"
-            htmlFor="conceito-nome-input"
-            required
-            description={frase(VAZIO, 'conceitoDescricaoNomeDefinicao')}
-            error={!name.trim() && 'dê um nome para o conceito'}
-            importance="primary"
-          >
-            <TextInput
-              id="conceito-nome-input"
-              value={name}
-              onChange={(e) => patch({ name: e.target.value })}
-              placeholder="nome do conceito — ex: tríade cognitiva"
-              autoFocus
-            />
-          </Field>
-          <Field
-            label="definição"
-            htmlFor="conceito-definicao-input"
-            optional
-            description={frase(VAZIO, 'conceitoDefinicaoSimples')}
-            importance="secondary"
-          >
-            <TextArea
-              id="conceito-definicao-input"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               rows={4}
               value={definition}
               onChange={(e) => patch({ definition: e.target.value })}
               placeholder="o que é esse conceito?"
             />
-<<<<<<< HEAD
             <FieldHint>uma definição simples já ajuda: depois dá para aprofundar.</FieldHint>
           </div>
-=======
-          </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </div>
       ),
     },
@@ -147,7 +106,6 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
             placeholder="sem abordagem"
             emptyMessage={frase(VAZIO, 'semAbordagensRegistradas')}
           />
-<<<<<<< HEAD
           <PillGroupMulti
             label="autores relacionados"
             variant="rose"
@@ -161,19 +119,6 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
             options={courses.map((x) => ({ value: x.id, label: x.name }))}
             value={courseIds}
             onChange={(v) => patch({ courseIds: v })}
-=======
-          <CeciMultiSelect
-            label="autores relacionados"
-            value={authorIds}
-            onChange={(v) => patch({ authorIds: resolveIds(v) })}
-            options={authorOptions.map((o) => ({ value: o.value, label: o.label }))}
-          />
-          <CeciMultiSelect
-            label="disciplinas"
-            value={courseIds}
-            onChange={(v) => patch({ courseIds: v })}
-            options={courses.map((x) => ({ value: x.id, label: x.name }))}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           />
           <TagField
             tags={tags}
@@ -188,11 +133,7 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
       id: 'conceito-revisar',
       title: 'revisar',
       headline: 'confere se está tudo certinho ♡',
-<<<<<<< HEAD
       subtitle: 'confere nome e definição antes de guardar o conceito.',
-=======
-      subtitle: frase(DICA, 'confereConceito'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       content: (
         <ReviewCard
           rows={[
@@ -232,11 +173,6 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="compact"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title={editing ? 'editar conceito' : 'novo conceito'}
       icon={<Sparkles className="w-3.5 h-3.5" />}
       iconClass="bg-status-warning-surface border-status-warning-border text-status-warning-strong"
@@ -245,16 +181,9 @@ export const ConceptWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
       onStepChange={setStep}
       canNext={name.trim().length > 0}
       blockedReason="dê um nome para o conceito"
-<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeWizard}
       saveLabel={editing ? 'guardar alterações ♡' : 'guardar conceito ♡'}
-=======
-      invalidFieldId={name.trim().length > 0 ? undefined : 'conceito-nome-input'}
-      onSave={handleSave}
-      onClose={closeWizard}
-      saveLabel={editing ? frase(CELEBRACAO, 'guardarAlteracoes') : 'guardar conceito ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

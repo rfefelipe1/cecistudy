@@ -36,10 +36,6 @@ import {
 } from '../../lib/contextActions';
 import { catalogBooks, interdisciplinaryBooks } from '../../data/books';
 import { cn } from '../../lib/utils';
-<<<<<<< HEAD
-=======
-import { frase, CELEBRACAO } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 const KIND_ICON: Record<ManagedItemKind, React.ReactNode> = {
   course: <GraduationCap className="w-5 h-5" />,
@@ -236,11 +232,7 @@ export const ManageDataModal: React.FC = () => {
       ctx.handleUpdateReadingPages(id, pages === Number.MAX_SAFE_INTEGER ? 9999 : pages);
     } else if (kind === 'catalogBook') {
       ctx.updateReadingProgress(id, pages);
-<<<<<<< HEAD
       ctx.showToast(pages > 0 ? 'progresso guardado com carinho ♡' : 'progresso atualizado ♡');
-=======
-      ctx.showToast(pages > 0 ? frase(CELEBRACAO, 'progressoGuardado') : 'progresso atualizado ♡');
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     }
     reset();
   };

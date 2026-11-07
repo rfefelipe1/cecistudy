@@ -1,10 +1,6 @@
 import React from 'react';
 import type { ManagedItemKind } from '../../types';
-<<<<<<< HEAD
 import { useMobileApp } from '@/context/mobileApp';
-=======
-import { useManageItem } from '@/context/shellNavContexts';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useLongPress } from '../../lib/useLongPress';
 
 interface ManageSurfaceProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> {
@@ -26,11 +22,7 @@ export const ManageSurface: React.FC<ManageSurfaceProps> = ({
   children,
   ...rest
 }) => {
-<<<<<<< HEAD
   const { openManageItem } = useMobileApp();
-=======
-  const { openManageItem } = useManageItem();
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   const handlers = useLongPress({
     onLongPress: () => openManageItem(kind, id),
     onClick: onTap,

@@ -10,11 +10,7 @@ import { legacyNotebookToLog, THESIS_ID, emptyThesisReminderPrefs } from '@cecis
  * incremente esta versão e registre a migração correspondente em `MIGRATIONS`.
  * O export/import carrega a versão junto; o app recusa/avisa dados de versão desconhecida.
  */
-<<<<<<< HEAD
 export const SCHEMA_VERSION = 22;
-=======
-export const SCHEMA_VERSION = 23;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Versão de schema da base da usuária (antigo scaffold SQLite, hoje mantida por compatibilidade de import). */
 export const USER_SCHEMA_VERSION = 1;
@@ -693,19 +689,6 @@ export const MIGRATIONS: Record<number, Migration> = {
         : {}),
     };
   },
-<<<<<<< HEAD
-=======
-  // 22 → 23: foto de fundo (capa) do perfil de identidade (SPEC-013).
-  // Default vazio para backups antigos — o campo é opcional no tipo e no
-  // backupSchema, então atravessa sem forçar backfill.
-  23: (data) => {
-    const profile = (data.profile ?? {}) as Record<string, unknown>;
-    return {
-      profile: { coverPhotoUrl: '', ...profile },
-      ...data,
-    };
-  },
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 };
 
 /**

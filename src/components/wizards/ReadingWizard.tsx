@@ -13,11 +13,7 @@ import {
 } from '../../lib/readingMatching';
 import { loadNativeLibraryDataset } from '../../lib/catalogLibrary';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
-<<<<<<< HEAD
 import { FieldHint, FieldLabel, ReviewCard, TextInput } from './wizardFields';
-=======
-import { Field, ReviewCard, TextInput } from './wizardFields';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { ChoiceCardGrid } from '../ui/ChoiceCardGrid';
 import { AuthorSuggestInput } from '../ui/AuthorSuggestInput';
 import { CourseSelect } from './CourseSelect';
@@ -161,31 +157,12 @@ export const ReadingWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
       subtitle: 'título e autor — se a obra já está no acervo da biblioteca, usamos os dados.',
       content: (
         <div className="space-y-4">
-<<<<<<< HEAD
           <TextInput
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="título da obra ou artigo — ex: a interpretação dos sonhos"
             autoFocus
           />
-=======
-          <Field
-            label="título"
-            htmlFor="leitura-titulo-input"
-            required
-            description={frase(VAZIO, 'leituraDescricaoTituloAutor')}
-            error={!title.trim() && 'dê um título à obra para continuar'}
-            importance="primary"
-          >
-            <TextInput
-              id="leitura-titulo-input"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="título da obra ou artigo — ex: a interpretação dos sonhos"
-              autoFocus
-            />
-          </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
           {myMatches.length > 0 && (
             <div className="rounded-2xl border border-ceci-border-brand bg-surface-rose px-4 py-3 space-y-2">
@@ -264,7 +241,6 @@ export const ReadingWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
         <div className="space-y-5">
           <ChoiceCardGrid label="tipo" options={TYPES} value={type} onChange={(v) => setType(v)} />
           <div>
-<<<<<<< HEAD
             <FieldLabel>total de páginas (opcional)</FieldLabel>
             <TextInput
               type="number"
@@ -273,23 +249,6 @@ export const ReadingWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
               placeholder="ex: 200"
             />
             <FieldHint>sem esse número, não dá para calcular a porcentagem de leitura.</FieldHint>
-=======
-            <Field
-              label="total de páginas"
-              htmlFor="leitura-paginas-input"
-              optional
-              description={frase(VAZIO, 'leituraSemPaginasErro')}
-              importance="secondary"
-            >
-              <TextInput
-                id="leitura-paginas-input"
-                type="number"
-                value={totalPages}
-                onChange={(e) => setTotalPages(e.target.value)}
-                placeholder="ex: 200"
-              />
-            </Field>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           </div>
         </div>
       ),
@@ -372,11 +331,6 @@ export const ReadingWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
 
   return (
     <WizardScaffold
-<<<<<<< HEAD
-=======
-      tone="content"
-      progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       title={editing ? 'editar leitura' : 'nova leitura'}
       icon={<BookOpen className="w-3.5 h-3.5" />}
       iconClass="bg-surface-rose border-ceci-border-brand text-ceci-brand-strong"
@@ -386,16 +340,9 @@ export const ReadingWizard: React.FC<{ editing?: ManagedItem | null }> = ({ edit
       onStepChange={setStep}
       canNext={title.trim().length > 0}
       blockedReason="dê um título à obra para continuar"
-<<<<<<< HEAD
       onSave={handleSave}
       onClose={closeWizard}
       saveLabel={editing ? 'guardar alterações ♡' : 'guardar leitura ♡'}
-=======
-      invalidFieldId={title.trim().length > 0 ? undefined : 'leitura-titulo-input'}
-      onSave={handleSave}
-      onClose={closeWizard}
-      saveLabel={editing ? frase(CELEBRACAO, 'guardarAlteracoes') : 'guardar leitura ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     />
   );
 };

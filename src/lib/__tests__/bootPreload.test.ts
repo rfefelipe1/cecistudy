@@ -34,10 +34,6 @@ beforeEach(() => {
   setStepImplForTests('route-prefetch', ok);
   setStepImplForTests('catalog-approaches', ok);
   setStepImplForTests('catalog-questions', ok);
-<<<<<<< HEAD
-=======
-  // ota-update não precisa de mock: no web é no-op via isNativePlatform.
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 });
 
 const statusOf = (state: BootState, id: BootStepId) => state.steps[id].status;
@@ -71,10 +67,6 @@ describe('planBootSteps (plano por grupo)', () => {
       'route-prefetch',
       'catalog-approaches',
       'catalog-questions',
-<<<<<<< HEAD
-=======
-      'ota-update',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     ]);
     const byId = Object.fromEntries(plan.map((s) => [s.id, s]));
     expect(byId['theme'].skipReason).toBeUndefined();
@@ -84,10 +76,6 @@ describe('planBootSteps (plano por grupo)', () => {
     expect(byId['route-prefetch'].skipReason).toBeUndefined();
     expect(byId['catalog-approaches'].skipReason).toBeUndefined();
     expect(byId['catalog-questions'].skipReason).toBeUndefined();
-<<<<<<< HEAD
-=======
-    expect(byId['ota-update'].skipReason).toContain('só em nativo');
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   });
 
   it('boot frio nativo: user-db e catalog-core rodam; theme vem do provider', () => {
@@ -107,11 +95,7 @@ describe('planBootSteps (plano por grupo)', () => {
     const plan = planBootSteps(false, true);
     const idsOf = (g: string) => plan.filter((s) => s.group === g).map((s) => s.id);
     expect(idsOf('critical')).toEqual(['theme', 'user-db', 'user-state']);
-<<<<<<< HEAD
     expect(idsOf('deferred')).toEqual(['catalog-core', 'route-prefetch']);
-=======
-    expect(idsOf('deferred')).toEqual(['catalog-core', 'route-prefetch', 'ota-update']);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(idsOf('opportunistic')).toEqual(['catalog-approaches', 'catalog-questions']);
   });
 });
@@ -127,10 +111,6 @@ describe('runBootPreload (contrato BootState)', () => {
     expect(state.errors).toEqual([]);
 
     // Web: user-db/user-state/catalog-core não se aplicam — skipped, não erro.
-<<<<<<< HEAD
-=======
-    // ota-update também skipped no web (OTA só em nativo).
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     expect(statusOf(state, 'theme')).toBe('done');
     expect(statusOf(state, 'user-db')).toBe('skipped');
     expect(statusOf(state, 'user-state')).toBe('skipped');
@@ -138,10 +118,6 @@ describe('runBootPreload (contrato BootState)', () => {
     expect(statusOf(state, 'route-prefetch')).toBe('done');
     expect(statusOf(state, 'catalog-approaches')).toBe('done');
     expect(statusOf(state, 'catalog-questions')).toBe('done');
-<<<<<<< HEAD
-=======
-    expect(statusOf(state, 'ota-update')).toBe('skipped');
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
     // Progresso emite do estado inicial (nada pronto) ao final (tudo pronto).
     expect(events[0].criticalReady).toBe(false);

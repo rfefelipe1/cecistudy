@@ -146,13 +146,8 @@ export const BARRA_APARECE: Record<NavScreen['kind'], boolean> = {
   // Fluxos modais em tela cheia: a barra ficaria por cima do conteúdo.
   'quiz-loading': false,
   'quiz-play': false,
-<<<<<<< HEAD
   // Calendário empilhado: tem seu próprio rodapé (SPEC-024 D4).
   calendar: false,
-=======
-  // Calendário empilhado: recebe a barra contextual com "voltar" (SPEC-024 D4).
-  calendar: true,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // Desktop: sem barra contextual (o rodapé é outro).
   'knowledge-graph': false,
   projects: false,
@@ -171,10 +166,6 @@ export const BARRA_APARECE: Record<NavScreen['kind'], boolean> = {
   stickers: true,
   sync: true,
   termHistory: true,
-<<<<<<< HEAD
-=======
-  semesterMemories: true,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   approach: true,
   families: true,
   family: true,
@@ -502,14 +493,6 @@ export function buildContextBarConfig(input: ContextBarConfigInput): ContextBarC
     };
   }
 
-<<<<<<< HEAD
-=======
-  // Calendário: somente voltar (sem ação principal).
-  if (currentScreen.kind === 'calendar') {
-    return { ...base, primaryActions: [] };
-  }
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // Demais telas auxiliares sem ação principal cadastrada: somente voltar.
   return { ...base, primaryActions: [] };
 }

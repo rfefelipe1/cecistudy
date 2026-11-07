@@ -3,12 +3,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import type { Task } from '../../../types';
 import { ChoiceCardGrid } from '../../ui/ChoiceCardGrid';
-<<<<<<< HEAD
 import { DateInput, FieldLabel, TextInput } from '../wizardFields';
-=======
-import { FieldLabel, TextInput } from '../wizardFields';
-import { CeciDatePicker } from '../../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { PRIORITIES, TASK_CATEGORIES } from './constants';
 
 interface TaskFormProps {
@@ -56,11 +51,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
     {courseSelect}
     <div>
       <FieldLabel>prazo</FieldLabel>
-<<<<<<< HEAD
       <DateInput value={dueDate} onChange={(e) => onDueDateChange(e.target.value)} />
-=======
-      <CeciDatePicker value={dueDate ?? null} onChange={onDueDateChange} />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     </div>
   </div>
 );

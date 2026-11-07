@@ -69,19 +69,11 @@ export {
   sheetVariants,
   headerSwapVariants,
   chromeFade,
-<<<<<<< HEAD
-=======
-  iconFxVariants,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   toastVariants,
   listItemVariants,
   revealVariants,
   SHADE_OPACITY,
 } from './variants';
-<<<<<<< HEAD
-=======
-export type { IconFx } from './variants';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export { TAB_LABELS, tabLabel, screenAnnouncement } from './screenAnnounce';
 
@@ -115,15 +107,6 @@ export type { MorphDirection, MorphPayload, MorphRect } from './Morph';
 export { Reveal, RevealContext } from './Reveal';
 export type { RevealContextValue } from './Reveal';
 
-<<<<<<< HEAD
-=======
-/** `motion` e `AnimatePresence` re-exportados do runtime único (SPEC-M-027 D22).
- * Componentes que precisam do `motion` primário (ex.: `whileTap` em botão)
- * importam daqui, não de `framer-motion` direto — `src/lib/motion/` é diretório
- * permitido pelo gate de import. */
-export { motion, AnimatePresence, Reorder, useReducedMotion, useDragControls } from 'framer-motion';
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 // `fadeSlide`, `screenVariants`, `iOS_SPRING`, `PUSH_DURATION`,
 // `PUSH_EXIT_DURATION`, `TAB_DURATION` e `setNavMotionContext` foram removidos
 // (2026-10-16, Slice D): sem consumidor, ou já substituídos por

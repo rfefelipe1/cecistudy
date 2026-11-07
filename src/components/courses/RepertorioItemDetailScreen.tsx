@@ -13,10 +13,6 @@ import { Mascote } from '../ui/Mascote';
 import { TagList } from '../ui/TagList';
 import { ReaderModeModal } from '../widgets/ReaderModeModal';
 import { useMobileApp } from '@/context/mobileApp';
-<<<<<<< HEAD
-=======
-import { frase, DICA } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useCourseRepertorio } from '../wizards/useCourseRepertorio';
 import {
   CATALOG_BOOK_PREFIX,
@@ -327,11 +323,7 @@ export const RepertorioItemDetailScreen: React.FC = () => {
               </p>
             </div>
           </DetailSection>
-<<<<<<< HEAD
           <Tip>encontrou esta obra no catálogo — que tal adicionar aos seus materiais? ♡</Tip>
-=======
-          <Tip>{frase(DICA, 'queTalMateriais')}</Tip>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         </>
       )}
 

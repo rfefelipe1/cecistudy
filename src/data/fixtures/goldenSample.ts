@@ -47,13 +47,8 @@ export function sampleSnapshot(): PersistedStateSnapshot {
       totalSemesters: 10,
       university: 'USP',
       targetCareer: 'clínica psicanalítica',
-<<<<<<< HEAD
       dailyQuote: 'com leveza e foco ♡',
       stickersCollected: 3,
-=======
-      stickersCollected: 3,
-      coverPhotoUrl: '',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     },
     courses: [
       {

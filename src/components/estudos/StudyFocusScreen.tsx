@@ -1,11 +1,7 @@
 ﻿import React, { useCallback, useEffect, useState } from 'react';
 import { CheckCircle2, Timer } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
-<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
-=======
-import { CELEBRACAO, DICA, frase } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { celebrate } from '../../lib/celebrate';
 import { hapticSuccess } from '../../lib/haptics';
 import { focusController } from '../../lib/focusController';
@@ -206,11 +202,7 @@ export const StudyFocusScreen: React.FC = () => {
               className="flex items-center gap-1.5 bg-ceci-brand hover:bg-ceci-brand-strong text-ceci-on-brand px-5 py-2.5 rounded-[14px] text-xs font-medium shadow-2xs cursor-pointer"
             >
               <CheckCircle2 className="w-4 h-4" />
-<<<<<<< HEAD
               <span>guardar sessão</span>
-=======
-              <span>{frase(DICA, 'guardarSessao')}</span>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </button>
           </div>
         </div>

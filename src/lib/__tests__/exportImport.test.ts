@@ -21,11 +21,7 @@ function makeSnapshot(overrides: Partial<PersistedStateSnapshot> = {}): Persiste
       totalSemesters: 8,
       university: 'UFRJ',
       targetCareer: 'clínica',
-<<<<<<< HEAD
       dailyQuote: 'com leveza',
-=======
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       stickersCollected: 3,
       photoUrl: '',
     },
@@ -401,11 +397,7 @@ function makeLegacyBackupV5() {
       totalSemesters: 8,
       university: 'UFRJ',
       targetCareer: 'clínica',
-<<<<<<< HEAD
       dailyQuote: 'com leveza',
-=======
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       stickersCollected: 3,
       avatarMood: 'ok',
     },

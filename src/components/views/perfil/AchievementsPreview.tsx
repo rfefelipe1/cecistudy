@@ -29,11 +29,7 @@ const AchievementsPreview: React.FC<AchievementsPreviewProps> = ({
   return (
     <section
       aria-labelledby="perfil-conquistas-titulo"
-<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-4"
-=======
-      className="space-y-4"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
@@ -85,48 +81,21 @@ const AchievementsPreview: React.FC<AchievementsPreviewProps> = ({
       </div>
 
       {sample.length > 0 ? (
-<<<<<<< HEAD
         <ul className="flex items-center gap-2">
-=======
-        <ul className="grid grid-cols-2 gap-3">
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           {sample.map((sticker, i) => (
             <Reveal key={sticker.id} index={i}>
             <li
               key={sticker.id}
               title={sticker.unlocked ? sticker.name : 'ainda bloqueado'}
               className={cn(
-<<<<<<< HEAD
                 'w-9 h-9 rounded-full flex items-center justify-center text-base border',
-=======
-                'rounded-xl border flex flex-col items-center justify-center gap-1.5 p-2.5 h-full min-h-[88px]',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 sticker.unlocked
                   ? 'bg-surface-default border-ceci-border-brand'
                   : 'bg-surface-muted border-ceci-border-subtle text-ceci-muted',
               )}
             >
-<<<<<<< HEAD
               <span aria-hidden="true">
                 {sticker.unlocked ? sticker.emoji : <Lock className="w-3.5 h-3.5" />}
-=======
-              <span
-                aria-hidden="true"
-                className={cn(
-                  'text-2xl shrink-0',
-                  !sticker.unlocked ? 'text-ceci-muted' : '',
-                )}
-              >
-                {sticker.unlocked ? sticker.emoji : <Lock className="w-5 h-5" />}
-              </span>
-              <span
-                className={cn(
-                  'text-[10px] font-semibold leading-none text-center break-words',
-                  sticker.unlocked ? 'text-ceci-primary' : 'text-ceci-muted',
-                )}
-              >
-                {sticker.unlocked ? sticker.name : 'bloqueado'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               </span>
               <span className="sr-only">
                 {sticker.unlocked ? `${sticker.name}, desbloqueado` : `${sticker.name}, bloqueado`}

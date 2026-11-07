@@ -7,19 +7,10 @@ import {
 import { useNavValue, useStudyActions } from '@/context/shellNavContexts';
 import { ATTENTION_LIMIT } from '../../lib/homeMeta';
 import { resumoDoDia, saudacao, saudacaoTurno, dica } from '../../lib/voice';
-<<<<<<< HEAD
-=======
-import { useFraseMotivacao } from '../../lib/useFraseMotivacao';
-import { useFraseRotativa } from '../../lib/useFraseRotativa';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { daysUntil } from '../../lib/diasAte';
 import { buildCalendarEntries, getTodaySchedule } from '../../lib/schedule';
 import { addDaysKey, todayKeyLocal } from '../../lib/dateBR';
 import { isCardDue } from '../../lib/fsrs';
-<<<<<<< HEAD
-=======
-import { estaChovendo } from '../../lib/clima';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import HeroSection from './home/HeroSection';
 import { heroMascote } from './home/heroMascote';
 import TodayClasses from './home/TodayClasses';
@@ -39,25 +30,7 @@ export const HomeView: React.FC = () => {
   // Um relógio só: saudação, data e arte do hero saem do mesmo instante.
   const agora = new Date();
   const greeting = saudacao(agora);
-<<<<<<< HEAD
   const mascote = heroMascote(saudacaoTurno(agora), agora.getDate());
-=======
-
-  // Clima consultado internamente (Open-Meteo, sem chave, sem exibir ao user).
-  // Só escolhe a arte do cecinho: chuva → artes adequadas, sem calor ao ar livre.
-  const [chuva, setChuva] = useState(false);
-  useEffect(() => {
-    estaChovendo().then(setChuva);
-  }, []);
-
-  const mascote = heroMascote(saudacaoTurno(agora), agora.getDate(), chuva);
-
-  // Frase de motivação do dia — escolhida aleatoriamente no boot, sem repetir a última.
-  const fraseMotivacao = useFraseMotivacao();
-
-  // Frase de carinho pequena — rota a cada 10 s, sem repetir duas vezes seguidas.
-  const fraseCarcinho = useFraseRotativa(10_000);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   /**
    * Coreografia de abertura da Home (SPEC-M-028 D27): na primeira montagem da
@@ -177,11 +150,6 @@ export const HomeView: React.FC = () => {
         greeting={greeting}
         name={profile.name}
         dayMessage={dayMessage}
-<<<<<<< HEAD
-=======
-        fraseMotivacao={fraseMotivacao}
-        fraseCarcinho={fraseCarcinho?.texto ?? null}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         mascote={mascote}
       />
 

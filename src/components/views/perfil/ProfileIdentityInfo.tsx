@@ -1,10 +1,6 @@
 // Perfil — informações de identidade abaixo do banner (fluxo vertical, à esquerda).
 //
-<<<<<<< HEAD
 // Nome, subtítulo (curso · universidade), nível/título, conquistas em linha
-=======
-// Nome, subtítulo (abordagem · universidade), nível/título, conquistas em linha
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 // (4 elementos) e ações (editar / mais opções). Sem card envolvente, sem
 // aninhamento de cards.
 import React from 'react';
@@ -15,13 +11,8 @@ import ProfileAchievementsRow from './ProfileAchievementsRow';
 
 interface ProfileIdentityInfoProps {
   displayName: string;
-<<<<<<< HEAD
   subtitle: string;
   quote: string;
-=======
-  approach: string;
-  university: string;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   level: number;
   title: string;
   achievements: Sticker[];
@@ -32,13 +23,8 @@ interface ProfileIdentityInfoProps {
 
 export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
   displayName,
-<<<<<<< HEAD
   subtitle,
   quote,
-=======
-  approach,
-  university,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   level,
   title,
   achievements,
@@ -47,11 +33,7 @@ export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
   onOpenStickers,
 }) => {
   const hasName = displayName.trim().length > 0;
-<<<<<<< HEAD
   const hasMeta = subtitle.trim().length > 0;
-=======
-  const hasMeta = approach.trim().length > 0 || university.trim().length > 0;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   // 4 conquistas em linha logo abaixo do nível.
   const featured = achievements.slice(0, 4);
@@ -68,17 +50,7 @@ export const ProfileIdentityInfo: React.FC<ProfileIdentityInfoProps> = ({
             {hasName ? displayName : 'como quer ser chamada?'}
           </h1>
           {hasMeta ? (
-<<<<<<< HEAD
             <p className="text-xs text-ceci-secondary">{subtitle}</p>
-=======
-            <p className="text-xs text-ceci-secondary">
-              <span>{approach}</span>
-              {approach.trim().length > 0 && university.trim().length > 0 ? (
-                <span aria-hidden="true" className="mx-1">·</span>
-              ) : null}
-              <span>{university}</span>
-            </p>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
           ) : (
             <button
               type="button"

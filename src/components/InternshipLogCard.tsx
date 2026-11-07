@@ -305,11 +305,7 @@ export const InternshipLogCard: React.FC<InternshipLogCardProps> = ({
                           valor
                         )
                       ) : (
-<<<<<<< HEAD
                         <span className="italic text-ceci-muted">ainda não anotado ♡</span>
-=======
-                        <span className="italic text-ceci-muted">{frase(VAZIO, 'aindaNaoAnotado')}</span>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                       )}
                     </FieldBlock>
                   );

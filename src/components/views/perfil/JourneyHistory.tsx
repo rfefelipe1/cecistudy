@@ -23,11 +23,7 @@ const JourneyHistory: React.FC<JourneyHistoryProps> = ({ journey, onOpenTermHist
   return (
     <section
       aria-labelledby="perfil-historia-titulo"
-<<<<<<< HEAD
       className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-4"
-=======
-      className="space-y-4"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">

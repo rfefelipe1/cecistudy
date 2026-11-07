@@ -146,27 +146,11 @@ export async function initOta(): Promise<void> {
   }
 
   registerListeners();
-<<<<<<< HEAD
 
   // Checagem silenciosa após o app carregar (sem atrapalhar a primeira impressão).
   setTimeout(() => {
     void checkForUpdates();
   }, 4000);
-=======
-}
-
-/**
- * Agenda a checagem silenciosa de atualização após o app carregar.
- * Usado como fallback pelo shell (`OverlaysContent`) quando o boot não
- * cobriu (ex.: sessão já aberta). O boot chama `checkForUpdates` direto,
- * então este `setTimeout` é só um plano B.
- */
-export function scheduleOtaCheck(delayMs = 4000): void {
-  if (!isNativePlatform) return;
-  setTimeout(() => {
-    void checkForUpdates();
-  }, delayMs);
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 }
 
 export type CheckResult = 'up-to-date' | 'downloaded' | 'failed';

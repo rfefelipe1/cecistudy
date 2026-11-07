@@ -2,10 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Card3D } from './Card3D';
-<<<<<<< HEAD
-=======
-import { frase, DICA } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export interface CardCreation3DProps {
   question: string;
@@ -99,11 +95,7 @@ export const CardCreation3D: React.FC<CardCreation3DProps> = ({
         )}
       >
         <ArrowLeftRight className="w-3.5 h-3.5" />
-<<<<<<< HEAD
         {flipped ? 'voltar pra pergunta' : 'virar o card ♡'}
-=======
-        {flipped ? frase(DICA, 'voltarPraPergunta') : 'virar o card ♡'}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       </button>
       <p className="text-center text-[10px] text-ceci-tertiary">
         enter vira o card · shift+enter pula linha

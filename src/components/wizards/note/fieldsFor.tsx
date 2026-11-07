@@ -20,10 +20,6 @@ import type {
   Task,
 } from '../../../types';
 import { buildClassNoteFromNote, noteFirstLine } from '../../../lib/noteLogic';
-<<<<<<< HEAD
-=======
-import { frase, DICA } from '../../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { initCard } from '../../../lib/fsrs';
 import { today, truncate } from './constants';
 import ClassForm from './ClassForm';
@@ -277,11 +273,7 @@ export const FIELDS_FOR: Record<NoteTargetType, TargetFieldConfig> = {
   },
   exam: {
     stepId: 'prova',
-<<<<<<< HEAD
     headline: 'vamos registrar essa avaliação.',
-=======
-    headline: frase(DICA, 'confereAvaliacao'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     subtitle: 'título, disciplina, data e peso da avaliação que vale nota.',
     render: ({ v, patch, lookups }) => (
       <ExamForm

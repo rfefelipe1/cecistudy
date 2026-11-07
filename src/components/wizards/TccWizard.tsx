@@ -7,16 +7,9 @@ import { emptyThesisReminderPrefs, type ThesisChapter, type ThesisProject } from
 import { useMobileApp } from '../../context/mobileApp';
 import { useWizardForm } from '../../lib/useWizardForm';
 import { formatDateBR } from '../../lib/dateBR';
-<<<<<<< HEAD
 import { CELEBRACAO, frase } from '../../lib/voice';
 import { WizardScaffold, type WizardStep } from './WizardScaffold';
 import { DeadlineField, Field, FieldHint, FieldLabel, NumberInput, ReviewCard, TextArea, TextInput } from './wizardFields';
-=======
-import { CELEBRACAO, DICA, frase } from '../../lib/voice';
-import { WizardScaffold, type WizardStep } from './WizardScaffold';
-import { Field, FieldHint, FieldLabel, NumberInput, ReviewCard, TextArea, TextInput } from './wizardFields';
-import { CeciDatePicker } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /**
  * Wizard de dados do TCC (SPEC-012).
@@ -256,7 +249,6 @@ export const TccWizard: React.FC = () => {
       content: (
         <div className="space-y-5">
           <div className="grid grid-cols-2 gap-3">
-<<<<<<< HEAD
             <DeadlineField
               id="tcc-entrega"
               label="entrega final"
@@ -267,18 +259,6 @@ export const TccWizard: React.FC = () => {
               id="tcc-banca"
               label="banca"
               value={values.defenseDate}
-=======
-            <CeciDatePicker
-              htmlFor="tcc-entrega"
-              label="entrega final"
-              value={values.deliveryDate ?? null}
-              onChange={(v) => patch({ deliveryDate: v })}
-            />
-            <CeciDatePicker
-              htmlFor="tcc-banca"
-              label="banca"
-              value={values.defenseDate ?? null}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
               onChange={(v) => patch({ defenseDate: v })}
             />
           </div>
@@ -379,11 +359,7 @@ export const TccWizard: React.FC = () => {
       id: 'revisar',
       title: 'revisão',
       headline: 'olha só como ficou',
-<<<<<<< HEAD
       subtitle: 'confere antes de guardar — depois dá pra mudar na tela do tcc.',
-=======
-      subtitle: frase(DICA, 'confereTcc'),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       content: (
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-3">
@@ -415,11 +391,6 @@ export const TccWizard: React.FC = () => {
   return (
     <>
       <WizardScaffold
-<<<<<<< HEAD
-=======
-        tone="narrative"
-        progress="linear"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         title="meu tcc"
         icon={<GraduationCap className="w-3.5 h-3.5" />}
         iconClass="bg-surface-rose border-ceci-border-brand text-ceci-brand-strong"
@@ -429,11 +400,7 @@ export const TccWizard: React.FC = () => {
         onStepChange={setStep}
         canNext={canNext}
         blockedReason="o título é o começo — conta o tema do seu trabalho"
-<<<<<<< HEAD
         saveLabel="guardar tcc ♡"
-=======
-        saveLabel={frase(CELEBRACAO, 'guardarTcc')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
         onSave={handleSave}
         onClose={closeWizard}
       />

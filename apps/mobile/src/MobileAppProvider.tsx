@@ -9,10 +9,6 @@ import {
   CoursesBundle,
   KnowledgeActionsContext,
   KnowledgeBundle,
-<<<<<<< HEAD
-=======
-  ManageItemContext,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   NavValueContext,
   StudyActionsContext,
   StudyBundle,
@@ -113,15 +109,7 @@ function MobileShellInner({ children }: { children: React.ReactNode }) {
               <KnowledgeActionsContext.Provider value={knowledgeBundle}>
                 <AppActionsContext.Provider value={appBundle}>
                   <TermActionsContext.Provider value={termBundle}>
-<<<<<<< HEAD
                     <NavValueContext.Provider value={nav}>{children}</NavValueContext.Provider>
-=======
-                    <NavValueContext.Provider value={nav}>
-                      <ManageItemContext.Provider value={{ openManageItem: nav.openManageItem, closeManageItem: nav.closeManageItem }}>
-                        {children}
-                      </ManageItemContext.Provider>
-                    </NavValueContext.Provider>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                   </TermActionsContext.Provider>
                 </AppActionsContext.Provider>
               </KnowledgeActionsContext.Provider>

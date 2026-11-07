@@ -14,10 +14,6 @@ import { Modal } from '../ui/Modal';
 import { ToggleRow } from '../ui/ToggleRow';
 import { Mascote } from '../ui/Mascote';
 import { cn } from '../../lib/utils';
-<<<<<<< HEAD
-=======
-import { frase, CELEBRACAO } from '../../lib/voice';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { prefersReducedMotion, BASE_D, EASE } from '../../lib/motion';
 import { motion, type Variants } from 'framer-motion';
 import { Feather, Tag, Compass, Activity, Heart } from 'lucide-react';
@@ -235,11 +231,7 @@ export const CompleteLogModal: React.FC<CompleteLogModalProps> = ({
       ? 'o que mais tem pra anotar?'
       : step.kind === 'field'
         ? fila[step.index]?.label
-<<<<<<< HEAD
         : 'tudo anotado ♡';
-=======
-        : frase(CELEBRACAO, 'tudoAnotado')
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
   const stepKey = step.kind === 'field' ? `field-${step.index}` : step.kind;
 
@@ -382,13 +374,8 @@ export const CompleteLogModal: React.FC<CompleteLogModalProps> = ({
                 </h3>
                 <p className="text-sm text-ceci-primary font-semibold">
                   {salvos.length > 0
-<<<<<<< HEAD
                     ? `registro atualizado com ${salvos.length === 1 ? '1 campo' : `${salvos.length} campos`} ♡`
                     : 'nada mudou por aqui — tudo certo ♡'}
-=======
-                    ? frase(CELEBRACAO, 'registroAtualizadoCampos', { n: salvos.length })
-                    : frase(CELEBRACAO, 'nadaMudou')}
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
                 </p>
                 <p className="text-xs text-ceci-secondary leading-relaxed">
                   {salvos.length > 0

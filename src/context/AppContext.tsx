@@ -6,10 +6,6 @@ import type { InternshipTab, ThesisTab } from '../../packages/navigation/src/typ
 import type { ToastState } from '../components/ui/Toast';
 import type { StickerState } from '../lib/stickers';
 import type { ThemeId } from '../lib/themes';
-<<<<<<< HEAD
-=======
-import type { SemesterMemory } from '../lib/semesterMemory';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import type { DataActions, DataActionGroups } from './dataActions';
 import type { TermRolloverPlan } from '../lib/termRollover';
 import type { TccSheet, ContextBarConfig } from '../lib/contextBarConfig';
@@ -155,13 +151,8 @@ export interface AppContextValue {
 
   // onboarding / ciclo de vida dos dados
   onboarding: OnboardingState;
-<<<<<<< HEAD
   completeOnboarding: (profile: Partial<UserProfile>) => void;
   resetApp: () => void;
-=======
-  completeOnboarding: (profile: Partial<UserProfile>) => Promise<void>;
-  resetApp: () => Promise<void>;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   exportData: () => void;
   importData: (json: string) => void;
 
@@ -249,25 +240,6 @@ export interface AppContextValue {
   deleteLooseNote: (id: string) => void;
   updateLooseNote: (id: string, patch: Partial<LooseNote>) => void;
 
-<<<<<<< HEAD
-=======
-  // memórias de semestre (SPEC-028) — dado do aparelho, fora do backup (D8).
-  semesterMemories: SemesterMemory[];
-  setSemesterMemories: React.Dispatch<React.SetStateAction<SemesterMemory[]>>;
-  addSemesterMemory: (input: Omit<SemesterMemory, 'id' | 'createdAt' | 'updatedAt'> & { now: string }) => SemesterMemory;
-  updateSemesterMemory: (
-    id: string,
-    patch: Partial<Pick<SemesterMemory, 'title' | 'category' | 'description' | 'memoryDate'>>,
-    now: string,
-  ) => void;
-  deleteSemesterMemory: (id: string) => void;
-  getMemoriesByTerm: (termId: string) => SemesterMemory[];
-  isSemesterMemoriesOpen: boolean;
-  focusedSemesterMemoriesTermId: string | undefined;
-  openSemesterMemories: (termId: string) => void;
-  closeSemesterMemories: () => void;
-
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   // detalhe / transformação de nota avulsa (tela estilo wizard)
   isNoteDetailOpen: boolean;
   isNoteTransformOpen: boolean;
@@ -569,19 +541,6 @@ export interface AppContextValue {
   openFirstTerm: (ordinal: number) => void;
   /** Reabre um período encerrado (o "re-roll" do histórico). */
   reopenTermById: (termId: string) => void;
-<<<<<<< HEAD
-=======
-  /**
-   * Cria um período encerrado com datas passadas, para registro retroativo de
-   * semestres que já aconteceram na vida real (SPEC-SEMESTRES-PASSADOS-MEMORIAS-REDESIGN).
-   */
-  createPastTerm: (input: {
-    ordinal: number;
-    label?: string;
-    startedAt: string;
-    endedAt: string;
-  }) => void;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   archiveCourse: (courseId: string) => void;
   restoreCourse: (courseId: string) => void;
 
@@ -652,15 +611,5 @@ export function buildAppContextValue(
     ...shared.workspaceActions,
     // navegação (pilha por app)
     ...nav,
-<<<<<<< HEAD
-=======
-    // memórias de semestre (SPEC-028) — do data slice
-    semesterMemories: data.semesterMemories,
-    setSemesterMemories: data.setSemesterMemories,
-    addSemesterMemory: data.addSemesterMemory,
-    updateSemesterMemory: data.updateSemesterMemory,
-    deleteSemesterMemory: data.deleteSemesterMemory,
-    getMemoriesByTerm: data.getMemoriesByTerm,
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   };
 }

@@ -74,42 +74,4 @@ describe('WizardScaffold — a11y dos passos (SPEC-008 F4.7)', () => {
     renderWizard();
     expect(document.activeElement).not.toBe(screen.getByRole('heading', { level: 2 }));
   });
-<<<<<<< HEAD
-=======
-
-  it('tomo compacto esconde o mascote por padrão', () => {
-    renderWizard({ tone: 'compact' });
-    expect(screen.queryByAltText('')).not.toBeInTheDocument();
-  });
-
-  it('tomo conteúdo mostra o mascote reduzido', () => {
-    renderWizard({ tone: 'content' });
-    expect(screen.queryByAltText('')).toBeInTheDocument();
-  });
-
-  it('progresso none remove contador e barra do header', () => {
-    renderWizard({ progress: 'none' });
-    expect(screen.queryByText(/etapa/)).not.toBeInTheDocument();
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
-  });
-
-  it('quando o avanço está bloqueado, foca o campo inválido declarado', () => {
-    const Harness = () => (
-      <WizardScaffold
-        title="t"
-        icon={<span />}
-        steps={[{ id: 's1', title: 's1', headline: 'x', content: <input id="campo-titulo" /> }]}
-        step={0}
-        onStepChange={vi.fn()}
-        canNext={false}
-        blockedReason="preencha o título para continuar"
-        invalidFieldId="campo-titulo"
-        onSave={vi.fn()}
-        onClose={vi.fn()}
-      />
-    );
-    render(<Harness />);
-    expect(document.activeElement).toBe(document.getElementById('campo-titulo'));
-  });
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 });

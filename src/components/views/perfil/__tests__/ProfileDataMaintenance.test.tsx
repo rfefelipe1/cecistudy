@@ -15,26 +15,16 @@ const renderMaintenance = (
   over: {
     onOpenSync?: () => void;
     onExport?: () => void;
-<<<<<<< HEAD
     onImport?: (json: string) => void;
     onReset?: () => void;
-=======
-    onImport?: (json: string) => Promise<void>;
-    onReset?: () => Promise<void>;
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   } = {},
   native = false,
 ) => {
   const handlers = {
     onOpenSync: vi.fn(),
     onExport: vi.fn(),
-<<<<<<< HEAD
     onImport: vi.fn(),
     onReset: vi.fn(),
-=======
-    onImport: vi.fn().mockResolvedValue(undefined),
-    onReset: vi.fn().mockResolvedValue(undefined),
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     ...over,
   };
   render(<ProfileDataMaintenance maintenance={maintenance(native)} {...handlers} />);

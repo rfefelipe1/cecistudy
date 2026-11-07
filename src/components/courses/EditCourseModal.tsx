@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-<<<<<<< HEAD
 import { VAZIO, frase } from '../../lib/voice';
 import { Course, CourseScheduleSlot } from '../../types';
 import { Modal } from '../ui/Modal';
@@ -7,14 +6,6 @@ import { ColorSwatchPicker } from '../ui/ColorSwatchPicker';
 import { SchedulePicker } from '../ui/SchedulePicker';
 import { CourseIconPicker } from '../ui/CourseIconPicker';
 import { EmailSlider } from '../ui/EmailSlider';
-=======
-import { VAZIO, DICA, frase } from '../../lib/voice';
-import { Course, CourseScheduleSlot } from '../../types';
-import { Modal } from '../ui/Modal';
-import { ColorSwatchPicker } from '../ui/ColorSwatchPicker';
-import { CeciSchedulePicker } from '../ui/ceci';
-import { CourseIconPicker } from '../ui/CourseIconPicker';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { formatCourseSchedule } from '../../lib/schedule';
 import {
   buildAttendanceFromHours,
@@ -22,10 +13,6 @@ import {
   hoursPerClassFromSchedule,
 } from '../../lib/attendance';
 import { CatalogMultiSelect } from '../ui/CatalogMultiSelect';
-<<<<<<< HEAD
-=======
-import { CeciSelect } from '../ui/ceci';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 import { useCourseRepertorio } from '../wizards/useCourseRepertorio';
 
 const CATEGORIES: Array<Course['category']> = [
@@ -158,11 +145,7 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({
       <div className="w-full bg-canvas rounded-t-[28px] sm:rounded-2xl border border-ceci-border-default shadow-xl overflow-hidden p-5 sm:p-6 text-ceci-primary">
         <div className="flex items-center justify-between border-b border-ceci-border-subtle pb-3 mb-4">
           <div>
-<<<<<<< HEAD
             <h3 className="font-display font-bold text-lg text-ceci-primary">editar matéria</h3>
-=======
-            <h3 className="font-display font-bold text-lg text-ceci-primary">{frase(DICA, 'editarMateria')}</h3>
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             <p className="text-xs text-ceci-secondary">ajuste os detalhes da disciplina</p>
           </div>
           <button
@@ -221,7 +204,6 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({
             </div>
             <div>
               <label className={labelClass}>categoria</label>
-<<<<<<< HEAD
               <select
                 value={category ?? ''}
                 onChange={(e) => setCategory(e.target.value as Course['category'])}
@@ -237,18 +219,6 @@ export const EditCourseModal: React.FC<EditCourseModalProps> = ({
             <div className="col-span-2">
               <label className={labelClass}>dias e horários</label>
               <SchedulePicker value={schedule} onChange={setSchedule} />
-=======
-              <CeciSelect
-                label="categoria"
-                value={category ?? null}
-                onChange={(v) => setCategory(v as Course['category'])}
-                options={CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] }))}
-              />
-            </div>
-            <div className="col-span-2">
-              <label className={labelClass}>dias e horários</label>
-              <CeciSchedulePicker value={schedule} onChange={setSchedule} />
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
             </div>
 
             <div>

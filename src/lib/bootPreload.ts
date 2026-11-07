@@ -27,10 +27,6 @@ import { getUserDb } from './db/userDb';
 import { getCatalogApproaches, getCatalogQuestions, getCatalogDb } from './db/catalogDb';
 import { mark, measure, traceAsync } from './performance/perfMarks';
 import { requestPrefetch } from './performance/screenPrefetch';
-<<<<<<< HEAD
-=======
-import { initOta, checkForUpdates } from './ota';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 /** Janela do cache quente: dentro dela o boot é "morno" (sem passos pesados). */
 export const WARM_TTL_MS = 30 * 60 * 1000;
@@ -49,12 +45,7 @@ export type BootStepId =
   | 'catalog-core'
   | 'catalog-approaches'
   | 'catalog-questions'
-<<<<<<< HEAD
   | 'route-prefetch';
-=======
-  | 'route-prefetch'
-  | 'ota-update';
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 
 export type BootStepStatus = 'pending' | 'running' | 'done' | 'skipped' | 'error';
 
@@ -90,10 +81,6 @@ const ALL_STEP_IDS: readonly BootStepId[] = [
   'route-prefetch',
   'catalog-approaches',
   'catalog-questions',
-<<<<<<< HEAD
-=======
-  'ota-update',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 ];
 
 const STEP_GROUP: Record<BootStepId, BootStepGroup> = {
@@ -104,10 +91,6 @@ const STEP_GROUP: Record<BootStepId, BootStepGroup> = {
   'catalog-approaches': 'opportunistic',
   'catalog-questions': 'opportunistic',
   'route-prefetch': 'deferred',
-<<<<<<< HEAD
-=======
-  'ota-update': 'deferred',
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
 };
 
 // ---------------------------------------------------------------------------
@@ -242,15 +225,6 @@ export function planBootSteps(warm: boolean, native: boolean): PlannedBootStep[]
           group: STEP_GROUP[id],
           ...(warm ? { skipReason: 'cache quente (<30 min)' } : {}),
         };
-<<<<<<< HEAD
-=======
-      case 'ota-update':
-        return {
-          id,
-          group: STEP_GROUP[id],
-          ...(native ? {} : { skipReason: 'OTA só em nativo (Capacitor)' }),
-        };
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
     }
   });
 }
@@ -306,16 +280,6 @@ function defaultRunner(id: BootStepId): (() => Promise<unknown>) | null {
       return () => memoize('approaches');
     case 'catalog-questions':
       return () => memoize('questions');
-<<<<<<< HEAD
-=======
-    case 'ota-update':
-      return async () => {
-        // Inicializa o OTA (no-op se já foi inicializado pelo shell) e checa
-        // atualização em segundo plano, sem bloquear o caminho crítico.
-        void initOta();
-        await checkForUpdates();
-      };
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
   }
 }
 

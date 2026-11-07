@@ -101,18 +101,10 @@ const AttentionSection: React.FC<AttentionSectionProps> = ({
 
       {/* Captura de tarefa com steps — abre um sheet de fundo para preencher tudo */}
       <motion.button
-<<<<<<< HEAD
         whileTap={{ scale: 0.95 }}
         onClick={() => setOpenTaskSheet(true)}
         aria-label="adicionar tarefa"
         className="flex w-full items-center gap-2 bg-ceci-brand hover:bg-ceci-brand text-ceci-on-brand px-4 py-3 rounded-full text-sm font-semibold tap-interactive cursor-pointer"
-=======
-        type="button"
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setOpenTaskSheet(true)}
-        aria-label="adicionar tarefa"
-        className="flex w-full items-center gap-2 bg-ceci-brand hover:bg-ceci-brand-strong text-ceci-on-brand px-4 py-3 rounded-full text-sm font-semibold tap-interactive cursor-pointer"
->>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
       >
         <Plus className="w-4 h-4" />
         <span>adicionar tarefa</span>
