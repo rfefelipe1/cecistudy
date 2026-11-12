@@ -22,6 +22,7 @@ import type { ReminderSettings } from '../../../context/DataClientProvider';
 import type { ThemeId } from '../../../lib/themes';
 import type { MotionPref } from '../../../lib/motion';
 import type { ProfileEditValues } from './ProfileEditSheet';
+import type { CeciComboboxOption } from '../../ui/ceci/CeciCombobox';
 import ProfileEditSheet from './ProfileEditSheet';
 import ProfileHeader from './ProfileHeader';
 import ProfileStoryColumn from './ProfileStoryColumn';
@@ -30,12 +31,8 @@ import ProfileFooterNote from './ProfileFooterNote';
 import JourneyNow from './JourneyNow';
 import ProgressPulse from './ProgressPulse';
 import JourneyHistory from './JourneyHistory';
-import AchievementsPreview from './AchievementsPreview';
 import ProfilePreferences from './ProfilePreferences';
 import ProfileDataMaintenance from './ProfileDataMaintenance';
-
-/** Card envolvente padrão de cada seção da tela. */
-const CARD = 'rounded-2xl border border-ceci-border-default bg-surface-default p-5 sm:p-6 shadow-sm';
 
 export interface ProfilePageProps {
   vm: ProfileViewModel;
@@ -49,8 +46,11 @@ export interface ProfilePageProps {
   onEditOpen: () => void;
   onEditClose: () => void;
   onEditSave: (values: ProfileEditValues) => void;
+  /** Lista própria de abordagens para a escolha de meta do perfil. */
+  approachOptions: CeciComboboxOption[];
+  /** Ação do botão de voltar no cabeçalho do perfil (leva à Home). */
+  onVoltar: () => void;
   onPickPhoto: () => void;
-  onRemovePhoto: () => void;
   onCorrectOrdinal: (termId: string, ordinal: number) => void;
   onSetTotalSemesters: (total: number) => void;
   onOpenSemesterWizard: () => void;
@@ -68,7 +68,7 @@ export interface ProfilePageProps {
   onMotionPrefSelect: (pref: MotionPref) => void;
   onOpenSync: () => void;
   onExport: () => void;
-  onImport: (json: string) => void;
+  onImport: (source: string | File) => void;
   onReset: () => void;
 }
 
@@ -81,8 +81,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onEditOpen,
   onEditClose,
   onEditSave,
+  onVoltar,
   onPickPhoto,
-  onRemovePhoto,
   onCorrectOrdinal,
   onSetTotalSemesters,
   onOpenSemesterWizard,
@@ -102,6 +102,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
   onExport,
   onImport,
   onReset,
+  approachOptions,
 }) => {
   const { identity, achievements } = vm;
 
@@ -114,66 +115,48 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
           <ProfileHeader
             identity={identity}
             achievements={achievements.visible}
+            onVoltar={onVoltar}
             onPickPhoto={onPickPhoto}
-            onRemovePhoto={onRemovePhoto}
             onEdit={onEditOpen}
-            onMoreOptions={onEditOpen}
             onOpenStickers={onOpenStickers}
           />
 
-          <section className={CARD}>
-            <ProfileStoryColumn
-              vm={vm}
-              onCorrectOrdinal={onCorrectOrdinal}
-              onSetTotalSemesters={onSetTotalSemesters}
-              onOpenSemesterWizard={onOpenSemesterWizard}
-              onShowToast={onShowToast}
-              onOpenTermHistory={onOpenTermHistory}
-              onOpenSessions={onOpenSessions}
-              onOpenReadings={onOpenReadings}
-              onOpenTasks={onOpenTasks}
-              onOpenExams={onOpenExams}
-              onOpenStickers={onOpenStickers}
-              onOpenStreak={onOpenStreak}
-            />
-          </section>
+          <ProfileStoryColumn
+            vm={vm}
+            onCorrectOrdinal={onCorrectOrdinal}
+            onSetTotalSemesters={onSetTotalSemesters}
+            onOpenSemesterWizard={onOpenSemesterWizard}
+            onShowToast={onShowToast}
+            onOpenTermHistory={onOpenTermHistory}
+            onOpenSessions={onOpenSessions}
+            onOpenReadings={onOpenReadings}
+            onOpenTasks={onOpenTasks}
+            onOpenExams={onOpenExams}
+            onOpenStickers={onOpenStickers}
+            onOpenStreak={onOpenStreak}
+          />
 
-          {/* Conquistas além das 4 já exibidas no cabeçalho de identidade. */}
-          <section className={CARD}>
-            <AchievementsPreview
-              achievements={{
-                ...vm.achievements,
-                visible: vm.achievements.visible.slice(4),
-              }}
-              onOpenStickers={onOpenStickers}
-              onOpenStreak={onOpenStreak}
-            />
-          </section>
         </div>
 
         {/* O cuidado: preferências e dados (coluna 5). */}
         <div className="min-[900px]:col-span-5 space-y-5">
-          <section className={CARD}>
-            <ProfilePreferences
-              preferences={vm.preferences}
-              themePref={themePref}
-              motionPref={motionPref}
-              onUpdateReminder={onUpdateReminder}
-              onSetGcalEnabled={onSetGcalEnabled}
-              onThemeSelect={onThemeSelect}
-              onMotionPrefSelect={onMotionPrefSelect}
-            />
-          </section>
+          <ProfilePreferences
+            preferences={vm.preferences}
+            themePref={themePref}
+            motionPref={motionPref}
+            onUpdateReminder={onUpdateReminder}
+            onSetGcalEnabled={onSetGcalEnabled}
+            onThemeSelect={onThemeSelect}
+            onMotionPrefSelect={onMotionPrefSelect}
+          />
 
-          <section className={CARD}>
-            <ProfileDataMaintenance
-              maintenance={vm.maintenance}
-              onOpenSync={onOpenSync}
-              onExport={onExport}
-              onImport={onImport}
-              onReset={onReset}
-            />
-          </section>
+          <ProfileDataMaintenance
+            maintenance={vm.maintenance}
+            onOpenSync={onOpenSync}
+            onExport={onExport}
+            onImport={onImport}
+            onReset={onReset}
+          />
         </div>
       </div>
 
@@ -186,6 +169,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
         onClose={onEditClose}
         initial={editInitial}
         onSave={onEditSave}
+        approachOptions={approachOptions}
       />
     </div>
   );

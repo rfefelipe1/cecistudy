@@ -12,7 +12,7 @@
  */
 import type { WeekDayStatus } from './streak';
 
-/** Week cell styles for streak calendars (HomeView + EstudosView). */
+/** Week cell styles for streak calendars (HomeView + clínica). */
 export const WEEK_CELL_STYLE: Record<WeekDayStatus, string> = {
   done: 'bg-ceci-brand-strong text-ceci-on-brand border-ceci-brand-strong',
   today: 'bg-surface-rose text-ceci-brand-strong border-ceci-border-brand ring-2 ring-rose-300/50',

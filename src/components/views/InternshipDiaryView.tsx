@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { HeartHandshake, Compass, AlertCircle, Users, Sparkles } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import { InternshipLogCard } from '../InternshipLogCard';
@@ -9,7 +9,7 @@ import { EmptyState } from '../ui/EmptyState';
 import { DitherGrowthChart } from '../ui/dither-growth';
 import { UnderlineTabBar, type UnderlineTab } from '../ui/UnderlineTabBar';
 import { SwipeableTabPanel, useTabPager } from '../ui/SwipeableTabPanel';
-import { VAZIO, erro, frase } from '../../lib/voice';
+import { DICA, VAZIO, erro, frase } from '../../lib/voice';
 import { PillGroup } from '../ui/PillGroup';
 import { ProgressBar } from '../ui/ProgressBar';
 import { StatusChip } from '../internship/StatusChip';
@@ -35,8 +35,8 @@ const DIARIO_TAB_ORDER: readonly InternshipTab[] = ['diario', 'pacientes', 'supe
 
 /** Nome legível da aba — o `aria-label` do painel mostra isto, não o id cru. */
 const DIARIO_TAB_LABEL: Record<InternshipTab, string> = {
-  diario: 'diário',
-  pacientes: 'pacientes',
+  diario: 'visão geral',
+  pacientes: 'casos',
   supervisao: 'supervisão',
 };
 
@@ -47,11 +47,11 @@ const DIARIO_TABS = (pend: {
 }): UnderlineTab<InternshipTab>[] => [
   {
     id: 'diario',
-    label: 'diário',
+    label: 'visão geral',
     icon: <HeartHandshake className="w-4 h-4" />,
     badge: pend.noReflection.length,
   },
-  { id: 'pacientes', label: 'pacientes', icon: <Users className="w-4 h-4" /> },
+  { id: 'pacientes', label: 'casos', icon: <Users className="w-4 h-4" /> },
   {
     id: 'supervisao',
     label: 'supervisão',
@@ -87,14 +87,18 @@ export const InternshipDiaryView: React.FC = () => {
     profile,
     handleUpdateProfile,
     internshipTab,
-    openInternshipDiary,
     openInternshipCase,
   } = useMobileApp();
   const appIsDark = isDarkTheme(themePref);
-  // A aba vem da **navegação** (D16), não de useState: voltar do caso ou do
-  // wizard reabre na mesma aba, e a aba é deep-link.
-  const tab: InternshipTab = internshipTab ?? 'diario';
-  const setTab = (t: InternshipTab) => openInternshipDiary(t);
+  // A troca de aba dentro da Clínica é **local** (useState): não chama
+  // `openInternshipDiary`, que empurraria uma nova tela na pilha global e
+  // sairia da navegação principal. A `internshipTab` global só serve para
+  // entry points externos (deep-link `#/clinica/estagio/...`, calendar,
+  // Faculdade) e é sincronizada abaixo.
+  const [tab, setTab] = useState<InternshipTab>(internshipTab ?? 'diario');
+  useEffect(() => {
+    setTab((atual) => (internshipTab ?? 'diario') === atual ? atual : (internshipTab ?? 'diario'));
+  }, [internshipTab]);
   const [filter, setFilter] = useState<Filter>('todos');
   const [pending, setPending] = useState<PendingFilter>(null);
   const [extraWeeks, setExtraWeeks] = useState(0);
@@ -162,7 +166,7 @@ export const InternshipDiaryView: React.FC = () => {
   const hero =
     tab === 'pacientes'
       ? {
-          title: pluralPt(cases.length, 'paciente', 'pacientes'),
+          title: pluralPt(cases.length, 'caso', 'casos'),
           summary:
             orphans.length > 0
               ? `${pluralPt(stats.clinicalDoneCount, 'sessão clínica feita', 'sessões clínicas feitas')} · ${pluralPt(orphans.length, 'sem iniciais', 'sem iniciais')}`
@@ -188,14 +192,14 @@ export const InternshipDiaryView: React.FC = () => {
           };
 
   return (
-    <div className="space-y-4 pb-1">
+    <div className="pt-5 pb-8 sm:pt-6 sm:pb-10 space-y-4">
       {/* Hero (SPEC-010 D1) — acima da barra de abas.
           A primária **não** é do herói desde 2026-10-19 (SPEC-022 D2-ii): o
           herói do Estágio cedeu a ação para a barra contextual, que a
           executa com a mesma semente (`openInternshipWizard` com o `kind` da
           aba). O herói fica com identidade e resumo. */}
       <HeroCard
-        eyebrow="estágio"
+        eyebrow="clínica"
         title={hero.title}
         summary={hero.summary}
         expression={hero.expression}
@@ -214,9 +218,11 @@ export const InternshipDiaryView: React.FC = () => {
           <SupervisionView today={today} cases={cases} pendingIds={pend.noSupervision} />
         ) : tab === 'pacientes' ? (
           <section className="space-y-3">
+            {/* D11: privacidade da camada clínica — iniciais apenas. */}
+            <p className="text-[11px] text-ceci-tertiary">{frase(DICA, 'clinicaPrivacidade')}</p>
             {cases.length > 0 && (
               <p className="text-[11px] text-ceci-tertiary">
-                {pluralPt(cases.length, 'paciente', 'pacientes')} ·{' '}
+                {pluralPt(cases.length, 'caso', 'casos')} ·{' '}
                 {pluralPt(stats.clinicalDoneCount, 'sessão feita', 'sessões feitas')}
               </p>
             )}
@@ -260,7 +266,36 @@ export const InternshipDiaryView: React.FC = () => {
           </section>
         ) : (
           <>
-            {/* a) Resumo */}
+            {/* a) Pendências primeiro (SPEC-M-032 D3): é o que exige ação agora.
+                Somem quando zeradas (D13). */}
+            {hasPending && (
+              <div className="rounded-2xl p-4 bg-surface-muted border border-status-warning-border space-y-2">
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-status-warning-strong">
+                  <AlertCircle className="w-4 h-4" aria-hidden />
+                  pendências
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {pend.noReflection.length > 0 && (
+                    <StatusChip
+                      tone="warning"
+                      pressed={pending === 'reflexao'}
+                      onClick={() => togglePending('reflexao')}
+                      label={`${pend.noReflection.length} sem reflexão`}
+                    />
+                  )}
+                  {pend.noSupervision.length > 0 && (
+                    <StatusChip
+                      tone="warning"
+                      pressed={pending === 'supervisao'}
+                      onClick={() => togglePending('supervisao')}
+                      label={`${pend.noSupervision.length} sem supervisão`}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* b) Resumo */}
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center">
                 <p className="font-bold text-ceci-academic-strong text-lg">
@@ -303,35 +338,7 @@ export const InternshipDiaryView: React.FC = () => {
               <GoalCta onSet={(h) => handleUpdateProfile({ internshipGoalHours: h })} />
             )}
 
-            {/* c) Pendências — somem quando zeradas (D13) */}
-            {hasPending && (
-              <div className="rounded-2xl p-4 bg-surface-muted border border-status-warning-border space-y-2">
-                <div className="flex items-center gap-2 text-[13px] font-semibold text-status-warning-strong">
-                  <AlertCircle className="w-4 h-4" aria-hidden />
-                  pendências
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {pend.noReflection.length > 0 && (
-                    <StatusChip
-                      tone="warning"
-                      pressed={pending === 'reflexao'}
-                      onClick={() => togglePending('reflexao')}
-                      label={`${pend.noReflection.length} sem reflexão`}
-                    />
-                  )}
-                  {pend.noSupervision.length > 0 && (
-                    <StatusChip
-                      tone="warning"
-                      pressed={pending === 'supervisao'}
-                      onClick={() => togglePending('supervisao')}
-                      label={`${pend.noSupervision.length} sem supervisão`}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* d) Gráfico — só com 2+ semanas de dado (U7) */}
+            {/* c) Gráfico — só com 2+ semanas de dado (U7) */}
             {stats.weeksWithData >= 2 && (
               <div className="rounded-2xl p-4 bg-surface-default border border-ceci-border-default shadow-sm">
                 <DitherGrowthChart
@@ -487,7 +494,7 @@ const GoalCta: React.FC<{ onSet: (hours: number) => void }> = ({ onSet }) => {
         onKeyDown={(e) => e.key === 'Enter' && submit()}
         placeholder="ex.: 300"
         aria-label="meta de horas"
-        className="w-full rounded-xl border border-ceci-border-default bg-surface-default px-3 py-2 text-sm text-ceci-primary min-h-[44px]"
+        className="w-full rounded-xl border border-ceci-border-default bg-surface-defaurface-default px-3 py-2 text-sm text-ceci-primary min-h-[44px]"
       />
       <p className="text-[11px] text-ceci-tertiary">
         quantas horas seu estágio pede no total? dá pra mudar quando quiser

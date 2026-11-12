@@ -31,6 +31,7 @@ import { checkExactAlarmStatus, openExactAlarmSettings, supportsExactAlarmPrompt
 import { NOTIFICACAO, VAZIO, frase } from '../../../lib/voice';
 import { Modal } from '../../ui/Modal';
 import { SegmentedControl } from '../../ui/SegmentedControl';
+import { TimePickerSheet } from '../../ui/time-picker-sheet';
 import PreferenceRow from './PreferenceRow';
 import ThemePickerCard from './ThemePickerCard';
 
@@ -185,12 +186,10 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
               <label htmlFor="perfil-lembrete-horario" className="text-[11px] text-ceci-secondary">
                 horário:
               </label>
-              <input
-                id="perfil-lembrete-horario"
-                type="time"
+              <TimePickerSheet
                 value={preferences.reminderTime}
-                onChange={(e) => requestChange({ time: e.target.value })}
-                className="bg-surface-default border border-ceci-border-default focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand rounded-xl px-2.5 py-1 text-sm text-ceci-primary"
+                onChange={(v) => requestChange({ time: v })}
+                placeholder="--:--"
               />
               <span className="text-[11px] text-ceci-tertiary">no horário local</span>
             </div>

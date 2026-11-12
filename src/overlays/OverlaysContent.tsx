@@ -146,6 +146,7 @@ export const OverlaysContent: React.FC<{ app: AppContextValue }> = ({ app }) => 
         thesisReferences={app.thesisReferences}
         thesisTasks={app.thesisTasks}
         onNavigate={app.handleNavigate}
+        onOpenStudy={app.openStudy}
         onOpenNoteDetail={app.openNoteDetail}
         onOpenCourseDetail={app.openCourseDetail}
         onOpenTccScreen={app.openTccScreen}

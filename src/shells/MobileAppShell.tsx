@@ -32,6 +32,7 @@ import { SlideScreen } from './SlideScreen';
 import { CaptureHost } from './CaptureHost';
 import { useMotionProfile } from '../components/motion/MotionProfileProvider';
 import { SlideContent, OverlayContent } from './SharedScreenLayers';
+import type { NavTab } from '../types';
 import { focusController } from '../lib/focusController';
 import {
   BackExitState,
@@ -63,6 +64,9 @@ const MobileAppShellInner: React.FC = () => {
   // dados) — o BottomNavMemo só re-renderiza quando a NAVEGAÇÃO muda de fato.
   const nav = useNavValue();
   const { activeTab, handleNavigate, openCompose, openWizard, openTaskExamWizard } = nav;
+
+  /** Preview ao vivo durante o arrasto na navbar: aba sob o dedo (null = sem arrasto). */
+  const [dragPreviewTab, setDragPreviewTab] = useState<NavTab | null>(null);
 
   useEffect(() => {
     mark('first-screen-mounted');
@@ -216,6 +220,20 @@ const MobileAppShellInner: React.FC = () => {
   }, [announcement]);
 
   const onNavigateToPerfil = useCallback(() => handleNavigate('perfil'), [handleNavigate]);
+  /** Troca de aba vinda da navbar: o `dir` do arrasto vira o 4º parâmetro. */
+  const onTabChange = useCallback(
+    (tab: NavTab, dir?: 1 | -1) => handleNavigate(tab, undefined, undefined, dir),
+    [handleNavigate],
+  );
+  /** Preview ao vivo durante o arrasto: mostra a tela de destino sem navegar. */
+  const onTabPreview = useCallback((tab: NavTab) => {
+    setDragPreviewTab(tab);
+  }, []);
+  /** Commit do arrasto: navega de verdade uma única vez e limpa o preview. */
+  const onTabCommit = useCallback((tab: NavTab, dir: 1 | -1) => {
+    setDragPreviewTab(null);
+    handleNavigate(tab, undefined, undefined, dir);
+  }, [handleNavigate]);
 
   /** Falha da ação da barra contextual: a voz do cecinho em duas frases
    * (SPEC-022 D10 · `src/lib/voice.ts`). */
@@ -265,7 +283,9 @@ const MobileAppShellInner: React.FC = () => {
           em vez de desmontar seco; o sticky é preservado pois o motion está no
           próprio elemento header. Some também na sessão de foco imersiva. */}
       <AnimatePresence initial={false}>
-        {!isAuxFlow && !app.isFocusImmersiveOpen && (
+        {!isAuxFlow &&
+        !app.isFocusImmersiveOpen &&
+        !(activeTab === 'perfil' && !headerConfig) && (
           <HeaderNavMemo
             key="header"
             profile={profile}
@@ -320,13 +340,28 @@ const MobileAppShellInner: React.FC = () => {
           style={{ x: Capacitor.isNativePlatform() ? 0 : swipeX }}
           className="relative z-10"
         >
-          <AnimatePresence initial={false} custom={app.navIntent}>
-            <SlideScreen key={app.slideKey} intent={app.navIntent}>
-              <SlideContent />
-            </SlideScreen>
-          </AnimatePresence>
+          {dragPreviewTab && dragPreviewTab !== activeTab ? (
+            // Preview ao vivo durante o arrasto: mostra a tela de destino com
+            // crossfade simples de conteúdo dentro do mesmo SlideScreen.
+            // Sem novo slideKey, sem AnimatePresence extra, sem remount — nada
+            // que deixe fundo vazio ou tela fantasma na frente.
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.12, ease: EASE.standard }}
+            >
+              <SlideScreen key={app.slideKey} intent={app.navIntent}>
+                <SlideContent activeTabOverride={dragPreviewTab} />
+              </SlideScreen>
+            </motion.div>
+          ) : (
+            <AnimatePresence initial={false} custom={app.navIntent}>
+              <SlideScreen key={app.slideKey} intent={app.navIntent}>
+                <SlideContent />
+              </SlideScreen>
+            </AnimatePresence>
+          )}
         </motion.div>
-
         {/* === Camada 2: overlay (fade+scale) — compose/wizard não disputam o slide === */}
         <AnimatePresence initial={false}>
           {app.overlayKey && (
@@ -375,7 +410,9 @@ const MobileAppShellInner: React.FC = () => {
           >
             <BottomNavMemo
               activeTab={activeTab}
-              onChangeTab={handleNavigate}
+              onChangeTab={onTabChange}
+              onTabPreview={onTabPreview}
+              onTabCommit={onTabCommit}
               onOpenWizard={openWizard}
               onOpenTaskExamWizard={openTaskExamWizard}
               onOpenCompose={openCompose}

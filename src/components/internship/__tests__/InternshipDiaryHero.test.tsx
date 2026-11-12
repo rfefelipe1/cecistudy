@@ -45,11 +45,18 @@ describe('InternshipDiaryView — hero único (SPEC-010 D1/D3)', () => {
     expect(screen.getAllByTestId('hero-card')).toHaveLength(1);
     fireEvent.click(screen.getByRole('button', { name: 'ver pacientes' }));
     expect(screen.getAllByTestId('hero-card')).toHaveLength(1);
-    expect(screen.getByText('0 pacientes')).toBeInTheDocument();
+    expect(screen.getByText('0 casos')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'ver supervisão' }));
     expect(screen.getAllByTestId('hero-card')).toHaveLength(1);
     expect(screen.getByText('0 encontros')).toBeInTheDocument();
     // o cabeçalho antigo da aba (h2 "supervisão") saiu — só o hero topo
     expect(screen.queryByRole('heading', { level: 2, name: 'supervisão' })).not.toBeInTheDocument();
+  });
+
+  it('trocar de aba dentro da clínica mantém a base clínica (SPEC-M-032 D1)', () => {
+    history.replaceState(null, '', '#/clinica');
+    renderDiario();
+    fireEvent.click(screen.getByRole('button', { name: 'ver pacientes' }));
+    expect(location.hash).toBe('#/clinica/estagio/pacientes');
   });
 });

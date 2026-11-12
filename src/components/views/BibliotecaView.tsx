@@ -6,6 +6,7 @@ import {
   Search,
   Plus,
   ChevronRight,
+  ArrowLeft,
   Bookmark,
   X,
   SlidersHorizontal,
@@ -27,6 +28,7 @@ import {
   Course,
   SubTabBiblioteca,
   TempleSection,
+  Material,
 } from '../../types';
 import {
   initialContextCollections,
@@ -45,6 +47,14 @@ import {
 } from '../../data/books';
 import type { LibraryDataset } from '../../data/books/curate';
 import { loadNativeLibraryDataset } from '../../lib/catalogLibrary';
+import {
+  materialEstaConcluido,
+  materialEstaFavorito,
+} from '../../../packages/domain/src/core/domain';
+import { EixoView } from './EixoView';
+import { VerTudoView } from './VerTudoView';
+import { BuscaView } from './BuscaView';
+import { DetalheMaterialView } from './DetalheMaterialView';
 
 /** Fonte do acervo: facade estático; no nativo, troca pelo catálogo SQLite. */
 const staticLibrary: LibraryDataset = {
@@ -58,7 +68,6 @@ const staticLibrary: LibraryDataset = {
 };
 import { InlineCollectionBlock } from '../library/InlineCollectionBlock';
 import { Mascote } from '../ui/Mascote';
-import { TagChip } from '../ui/TagChip';
 import { BookDetailModal } from '../library/BookDetailModal';
 import { LibraryFilterModal } from '../library/LibraryFilterModal';
 import { TempleLoading } from '../library/temple/TempleShared';
@@ -126,10 +135,22 @@ export const BibliotecaView: React.FC<BibliotecaViewProps> = ({
   approachId,
   comparisonSlug,
 }) => {
-  const { looseNotes, savedBookIds, readingProgress, concepts, authors } = useDataClientKnowledge();
+  const {
+    looseNotes,
+    savedBookIds,
+    readingProgress,
+    concepts,
+    authors,
+    estadoPessoal,
+    bibliotecas,
+  } = useDataClientKnowledge();
   const { courses } = useDataClientCourses();
-  const { addLooseNote, deleteLooseNote, toggleSaveBook, updateReadingProgress } =
-    useKnowledgeActions();
+  const {
+    addLooseNote,
+    deleteLooseNote,
+    toggleSaveBook,
+    updateReadingProgress,
+  } = useKnowledgeActions();
   const {
     openNotesScreen,
     isCreatingLooseNote,
@@ -246,6 +267,54 @@ export const BibliotecaView: React.FC<BibliotecaViewProps> = ({
     );
   }
 
+  // Concluídos e favoritos derivados do estado pessoal (INV-7: independentes).
+  const concluidos = useMemo(
+    () =>
+      bibliotecas.filter((m) => {
+        const e = estadoPessoal.find((ep) => ep.materialId === m.id);
+        return e?.concluido === true;
+      }),
+    [bibliotecas, estadoPessoal],
+  );
+  const favoritos = useMemo(
+    () =>
+      bibliotecas.filter((m) => {
+        const e = estadoPessoal.find((ep) => ep.materialId === m.id);
+        return e?.favorito === true;
+      }),
+    [bibliotecas, estadoPessoal],
+  );
+
+  // Converte Material → CollectionBook para o MiniBookCard existente.
+  const toCollectionBook = (m: Material): CollectionBook => ({
+    id: m.id,
+    title: m.titulo,
+    author: m.autorId ?? 'autor',
+    coverColor: m.coverColor ?? '#E8C98C',
+    accentColor: m.accentColor ?? '#8C7338',
+    description: '',
+    tags: [],
+    totalPages: m.totalPaginas,
+    readPages: m.paginasLidas,
+  });
+  const concluidosCollection = concluidos.map(toCollectionBook);
+  const favoritosCollection = favoritos.map(toCollectionBook);
+
+  // Navegação interna da biblioteca (qual sub-tela mostrar). Ainda não usa a
+  // pilha NavScreen completa (SPEC-034 D7) — fica para integração com o
+  // navigationEngine; aqui as views já são renderizadas no lugar da grade.
+  const [viewMode, setViewMode] = useState<
+    'grid' | 'eixo' | 'verTudo' | 'busca' | 'detalhe'
+  >('grid');
+  const [viewParams, setViewParams] = useState<{
+    eixoId?: string;
+    secaoId?: string;
+    secaoTitulo?: string;
+    secaoDescricao?: string;
+    materiais?: Material[];
+    materialId?: string;
+  }>({});
+
   return (
     <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-6 pb-1 relative">
       {/* 1. Top Header Label & Title */}
@@ -261,6 +330,13 @@ export const BibliotecaView: React.FC<BibliotecaViewProps> = ({
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setViewMode('busca')}
+            className="w-10 h-10 rounded-2xl bg-surface-default border border-ceci-border-default hover:border-ceci-border-brand flex items-center justify-center text-ceci-primary shadow-2xs tap-interactive active:scale-95 cursor-pointer"
+            title="busca global"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button
             onClick={openTemple}
             className="w-10 h-10 rounded-2xl bg-surface-default border border-ceci-border-default hover:border-ceci-border-brand flex items-center justify-center text-ceci-primary shadow-2xs tap-interactive active:scale-95 cursor-pointer"
             title="templo de conhecimento"
@@ -270,47 +346,103 @@ export const BibliotecaView: React.FC<BibliotecaViewProps> = ({
         </div>
       </div>
 
-      {/* ==================================================================== */}
-      {/* ZONA 1: MEUS MATERIAIS (acesso pessoal primeiro)                      */}
-      {/* ==================================================================== */}
-      <MyMaterialsSection
-        looseNotesCount={looseNotes.length}
-        readingBooks={readingBooks}
-        savedBooks={savedBooks}
-        readingProgress={readingProgress}
-        onOpenNotes={openNotesScreen}
-        onSelectBook={setSelectedBook}
-      />
+      {viewMode === 'grid' ? (
+        <>
+          {/* ==================================================================== */}
+          {/* ZONA 1: MEUS MATERIAIS (acesso pessoal primeiro)                      */}
+          {/* ==================================================================== */}
+          <MyMaterialsSection
+            looseNotesCount={looseNotes.length}
+            readingBooks={readingBooks}
+            savedBooks={savedBooks}
+            concluidos={concluidosCollection}
+            favoritos={favoritosCollection}
+            readingProgress={readingProgress}
+            onOpenNotes={openNotesScreen}
+            onSelectBook={setSelectedBook}
+          />
 
-      {/* ==================================================================== */}
-      {/* ZONA 2: EXPLORAR O ACERVO                                             */}
-      {/* ==================================================================== */}
-      <ExploreSections
-        filter={filter}
-        savedBookIds={savedSet}
-        readingProgress={readingProgress}
-        selectedBook={selectedBook}
-        selectedArticle={selectedArticle}
-        onSelectBook={setSelectedBook}
-        onSelectArticle={setSelectedArticle}
-        onCloseBook={() => setSelectedBook(null)}
-        onCloseArticle={() => setSelectedArticle(null)}
-        openApproach={openApproach}
-        toggleSaveBook={toggleSaveBook}
-        updateReadingProgress={updateReadingProgress}
-      />
-      <LibraryModals
-        filter={filter}
-        availableTags={availableTags}
-        savedBookIds={savedSet}
-        readingProgress={readingProgress}
-        selectedBook={selectedBook}
-        selectedArticle={selectedArticle}
-        onCloseBook={() => setSelectedBook(null)}
-        onCloseArticle={() => setSelectedArticle(null)}
-        toggleSaveBook={toggleSaveBook}
-        updateReadingProgress={updateReadingProgress}
-      />
+          {/* ==================================================================== */}
+          {/* ZONA 2: EXPLORAR O ACERVO                                             */}
+          {/* ==================================================================== */}
+          <ExploreSections
+            filter={filter}
+            savedBookIds={savedSet}
+            readingProgress={readingProgress}
+            selectedBook={selectedBook}
+            selectedArticle={selectedArticle}
+            onSelectBook={setSelectedBook}
+            onSelectArticle={setSelectedArticle}
+            onCloseBook={() => setSelectedBook(null)}
+            onCloseArticle={() => setSelectedArticle(null)}
+            openApproach={openApproach}
+            toggleSaveBook={toggleSaveBook}
+            updateReadingProgress={updateReadingProgress}
+          />
+          <LibraryModals
+            filter={filter}
+            availableTags={availableTags}
+            savedBookIds={savedSet}
+            readingProgress={readingProgress}
+            selectedBook={selectedBook}
+            selectedArticle={selectedArticle}
+            onCloseBook={() => setSelectedBook(null)}
+            onCloseArticle={() => setSelectedArticle(null)}
+            toggleSaveBook={toggleSaveBook}
+            updateReadingProgress={updateReadingProgress}
+          />
+        </>
+      ) : (
+        <div className="px-1 space-y-4">
+          <button
+            onClick={() => setViewMode('grid')}
+            className="text-xs text-ceci-secondary mb-1 hover:text-ceci-primary cursor-pointer flex items-center gap-1"
+          >
+            <ArrowLeft className="w-3 h-3" /> voltar
+          </button>
+          {viewMode === 'eixo' && viewParams.eixoId && (
+            <EixoView
+              eixoId={viewParams.eixoId}
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'verTudo' && viewParams.secaoId && (
+            <VerTudoView
+              secaoId={viewParams.secaoId}
+              titulo={viewParams.secaoTitulo ?? 'seleção'}
+              descricao={viewParams.secaoDescricao}
+              materiais={viewParams.materiais ?? []}
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'busca' && (
+            <BuscaView
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'detalhe' && viewParams.materialId && (
+            <DetalheMaterialView
+              materialId={viewParams.materialId}
+              onNavigate={() => setViewMode('grid')}
+            />
+          )}
+        </div>
+      )}
     </div>
   );
 };

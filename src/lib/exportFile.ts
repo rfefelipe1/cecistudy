@@ -49,3 +49,44 @@ export async function exportAppDatabase(payload: BackupV2): Promise<void> {
   a.remove();
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Exporta um backup ZIP (arquivo binário).
+ * - Web/PWA  → download via blob (application/zip).
+ * - Nativo   → grava na pasta Documents e abre a share sheet.
+ */
+export async function exportBackupZip(data: Uint8Array, fileName: string): Promise<void> {
+  if (Capacitor.isNativePlatform()) {
+    try {
+      const { Filesystem, Directory, Encoding } = await import('@capacitor/filesystem');
+      const { Share } = await import('@capacitor/share');
+      const base64 = btoa(String.fromCharCode(...data));
+      await Filesystem.writeFile({
+        path: fileName,
+        data: base64,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8, // base64 é texto seguro
+      });
+      await Share.share({
+        title: 'backup do cantinho',
+        text: 'seu backup do cecistudy ♡',
+        url: fileName,
+        dialogTitle: 'guardar backup',
+      });
+      return;
+    } catch (e) {
+      console.error('native zip export failed, falling back to download', e);
+    }
+  }
+
+  const blob = new Blob([data], { type: 'application/zip' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+

@@ -12,7 +12,11 @@
  * verificador (`node contracts/verify-schema.mjs`).
  *
  * Referência de versões (ver `packages/data/src/schema.ts`):
+<<<<<<< HEAD
  *   SCHEMA_VERSION      = 22   (versão do payload persistido/backup)
+=======
+ *   SCHEMA_VERSION      = 23   (versão do payload persistido/backup)
+>>>>>>> 581d9d1 (feat: correcoes biblioteca - SPEC-M-030)
  *   USER_SCHEMA_VERSION = 1    (versão da base SQLite da usuária `cecistudy_user`)
  *   CATALOG_RELEASE     = ver `content/catalog-version.json` (catálogo estático)
  *
