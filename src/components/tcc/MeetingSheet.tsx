@@ -11,6 +11,7 @@ import {
   type ThesisTask,
 } from '../../types';
 import { Modal } from '../ui/Modal';
+import { TimePickerSheet } from '../ui/time-picker-sheet';
 import { SegmentedControl } from '../ui/SegmentedControl';
 import { TagChip } from '../ui/TagChip';
 import { hapticTap, hapticWarning } from '../../lib/haptics';
@@ -328,12 +329,10 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
                     <label htmlFor="next-hora" className={labelClass}>
                       hora (opcional)
                     </label>
-                    <input
-                      id="next-hora"
-                      type="time"
+                    <TimePickerSheet
                       value={nextTime}
-                      onChange={(e) => setNextTime(e.target.value)}
-                      className={inputClass}
+                      onChange={setNextTime}
+                      placeholder="--:--"
                     />
                   </div>
                   <div className="col-span-2">
@@ -387,12 +386,10 @@ export const MeetingSheet: React.FC<MeetingSheetProps> = ({
                 <label htmlFor="meeting-hora" className={labelClass}>
                   hora (opcional)
                 </label>
-                <input
-                  id="meeting-hora"
-                  type="time"
+                <TimePickerSheet
                   value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className={inputClass}
+                  onChange={setTime}
+                  placeholder="--:--"
                 />
               </div>
             </div>

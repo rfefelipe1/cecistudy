@@ -13,9 +13,10 @@ describe('CeciSchedulePicker', () => {
     );
     // O dia da semana aparece como chip selecionado no card do slot
     expect(screen.getAllByText('segunda-feira')[0]).toBeInTheDocument();
-    // Os valores de time aparecem nos inputs tipo time
-    expect(screen.getByDisplayValue('08:00')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('10:00')).toBeInTheDocument();
+    // Os valores de time aparecem nos chips do seletor (renderizados em span,
+    // não em input type=time — getByText bate com o que o componente mostra).
+    expect(screen.getByText('08:00')).toBeInTheDocument();
+    expect(screen.getByText('10:00')).toBeInTheDocument();
   });
 
   it('chama onChange ao adicionar horário', () => {

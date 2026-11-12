@@ -15,14 +15,13 @@ import type { EncryptedBackup } from '../../../lib/backupCrypto';
 import type { ProfileMaintenance } from '../../../lib/profileViewModel';
 import DangerZone from './DangerZone';
 import PreferenceRow from './PreferenceRow';
-import { CloudBackupToggle } from '../../views/CloudBackupToggle';
 import { erro, VAZIO, frase } from '../../../lib/voice';
 
 interface ProfileDataMaintenanceProps {
   maintenance: ProfileMaintenance;
   onOpenSync: () => void;
   onExport: () => void;
-  onImport: (json: string) => void;
+  onImport: (source: string | File) => void;
   onReset: () => void;
 }
 
@@ -65,6 +64,12 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
               : 'tudo em dia ✨';
 
   const handleFileChosen = (file: File) => {
+    // ZIP novo (SPEC-M-030 D2) não tem preview JSON: o provider lê o manifest e
+    // aplica mínimo + on-demand com os próprios toasts.
+    if (file.name.toLowerCase().endsWith('.zip')) {
+      onImport(file);
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       const json = String(reader.result);
@@ -133,7 +138,7 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
       <input
         ref={fileInputRef}
         type="file"
-        accept="application/json,.json"
+        accept="application/json,.json,.zip,application/zip"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];
@@ -163,9 +168,6 @@ const ProfileDataMaintenance: React.FC<ProfileDataMaintenanceProps> = ({
           ) : null}
         </div>
       ) : null}
-
-      {/* Backup em nuvem opcional — desligado por padrão (SPEC-M-024 D5). */}
-      <CloudBackupToggle />
 
       <Modal
         open={showExportPassword}

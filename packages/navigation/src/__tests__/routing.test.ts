@@ -56,7 +56,7 @@ describe('parseRoute', () => {
 
   it('reconhece as 5 abas', () => {
     expect(parseRoute('#/faculdade').tab).toBe('faculdade');
-    expect(parseRoute('#/estudos').tab).toBe('estudos');
+    expect(parseRoute('#/clinica').tab).toBe('clinica');
     expect(parseRoute('#/biblioteca').tab).toBe('biblioteca');
     expect(parseRoute('#/perfil').tab).toBe('perfil');
   });
@@ -120,61 +120,85 @@ describe('parseRoute', () => {
   });
 
   it('reconhece telas dedicadas de estudos (sem sub-tabs)', () => {
-    expect(parseRoute('#/estudos/foco')).toEqual({ tab: 'estudos', studyScreen: 'focus' });
-    expect(parseRoute('#/estudos/revisar')).toEqual({ tab: 'estudos', studyScreen: 'revisar' });
-    expect(parseRoute('#/estudos/leituras')).toEqual({ tab: 'estudos', studyScreen: 'leituras' });
-    expect(parseRoute('#/estudos/historico')).toEqual({ tab: 'estudos', studyScreen: 'historico' });
+    expect(parseRoute('#/clinica/foco')).toEqual({ tab: 'clinica', studyScreen: 'focus' });
+    expect(parseRoute('#/clinica/revisar')).toEqual({ tab: 'clinica', studyScreen: 'revisar' });
+    expect(parseRoute('#/clinica/leituras')).toEqual({ tab: 'clinica', studyScreen: 'leituras' });
+    expect(parseRoute('#/clinica/historico')).toEqual({ tab: 'clinica', studyScreen: 'historico' });
     // retrocompat: antigas sub-tabs → telas dedicadas / quiz
-    expect(parseRoute('#/estudos/flashcards')).toEqual({ tab: 'estudos', studyScreen: 'revisar' });
-    expect(parseRoute('#/estudos/questoes')).toEqual({ tab: 'estudos', quizCategory: true });
+    expect(parseRoute('#/clinica/flashcards')).toEqual({ tab: 'clinica', studyScreen: 'revisar' });
+    expect(parseRoute('#/clinica/questoes')).toEqual({ tab: 'clinica', quizCategory: true });
   });
 
-  it('nova sub-tab estágio: `/faculdade/estagio` → subTab estagio; diário em `/faculdade/estagio/diario`', () => {
-    expect(parseRoute('#/faculdade/estagio')).toEqual({ tab: 'faculdade', subTab: 'estagio' });
+  it('rotas de estágio da faculdade degradam para a clínica (SPEC-M-032 D1)', () => {
+    expect(parseRoute('#/faculdade/estagio')).toEqual({
+      tab: 'clinica',
+      internshipTab: 'diario',
+    });
     expect(parseRoute('#/faculdade/estagio/diario')).toEqual({
-      tab: 'faculdade',
+      tab: 'clinica',
       internshipTab: 'diario',
     });
     expect(parseRoute('#/faculdade/estagio/supervisao')).toEqual({
-      tab: 'faculdade',
+      tab: 'clinica',
       internshipTab: 'supervisao',
     });
     expect(parseRoute('#/faculdade/estagio/pacientes')).toEqual({
-      tab: 'faculdade',
+      tab: 'clinica',
       internshipTab: 'pacientes',
     });
-    // round-trip
-    expect(stackToHash([{ kind: 'tab', tab: 'faculdade' }, { kind: 'internshipDiary' }])).toBe(
-      '#/faculdade/estagio/diario',
+    // round-trip do diário da clínica
+    expect(stackToHash([{ kind: 'tab', tab: 'clinica' }, { kind: 'internshipDiary', tab: 'diario' }])).toBe(
+      '#/clinica/estagio/diario',
     );
-    expect(stackToHash(routeToStack({ tab: 'faculdade', subTab: 'estagio' }), 'estagio')).toBe(
-      '#/faculdade/estagio',
-    );
+    expect(
+      stackToHash(routeToStack({ tab: 'clinica', internshipTab: 'diario' })),
+    ).toBe('#/clinica/estagio/diario');
+  });
+
+  it('clínica é dona do diário: `/clinica/estagio/...` não troca a aba base (SPEC-M-032 D1)', () => {
+    expect(parseRoute('#/clinica/estagio/diario')).toEqual({
+      tab: 'clinica',
+      internshipTab: 'diario',
+    });
+    expect(parseRoute('#/clinica/estagio/pacientes')).toEqual({
+      tab: 'clinica',
+      internshipTab: 'pacientes',
+    });
+    expect(parseRoute('#/clinica/estagio/pacientes/ABC')).toEqual({
+      tab: 'clinica',
+      internshipTab: 'pacientes',
+      internshipPatientKey: 'ABC',
+    });
+    expect(routeToStack({ tab: 'clinica', internshipTab: 'supervisao' })[0]).toEqual({
+      kind: 'tab',
+      tab: 'clinica',
+    });
+    expect(
+      stackToHash([{ kind: 'tab', tab: 'clinica' }, { kind: 'internshipDiary', tab: 'diario' }]),
+    ).toBe('#/clinica/estagio/diario');
+    expect(
+      stackToHash([
+        { kind: 'tab', tab: 'clinica' },
+        { kind: 'internshipDiary', tab: 'pacientes' },
+        { kind: 'internshipCase', patientKey: 'ABC' },
+      ]),
+    ).toBe('#/clinica/estagio/pacientes/ABC');
   });
 
   it('perfil não tem sub-tabs — segmento desconhecido cai na aba base', () => {
     expect(parseRoute('#/perfil/xyz')).toEqual({ tab: 'perfil' });
   });
 
-  it('reconhece o diário de estágio em /faculdade/estagio/diario (legado /perfil/estagio degrada para tab estágio)', () => {
-    expect(parseRoute('#/faculdade/estagio/diario')).toEqual({
-      tab: 'faculdade',
+  it('legado /perfil/estagio degrada para o diário da clínica', () => {
+    expect(parseRoute('#/perfil/estagio')).toEqual({
+      tab: 'clinica',
       internshipTab: 'diario',
     });
-    expect(parseRoute('#/faculdade/estagio/supervisao')).toEqual({
-      tab: 'faculdade',
-      internshipTab: 'supervisao',
-    });
-    expect(parseRoute('#/faculdade/estagio/pacientes')).toEqual({
-      tab: 'faculdade',
-      internshipTab: 'pacientes',
-    });
-    expect(parseRoute('#/perfil/estagio')).toEqual({ tab: 'faculdade', subTab: 'estagio' });
   });
 
   it('reconhece as telas de tcc e stickers (legados degradam; stickers segue no perfil)', () => {
-    expect(parseRoute('#/estudos/tcc')).toEqual({ tab: 'estudos', tcc: true });
-    expect(parseRoute('#/perfil/tcc')).toEqual({ tab: 'estudos', tcc: true });
+    expect(parseRoute('#/clinica/tcc')).toEqual({ tab: 'home', tcc: true });
+    expect(parseRoute('#/perfil/tcc')).toEqual({ tab: 'home', tcc: true });
     expect(parseRoute('#/perfil/stickers')).toEqual({ tab: 'perfil', stickers: true });
   });
 
@@ -253,9 +277,9 @@ describe('parseRoute', () => {
     expect(parseRoute('#/nota')).toEqual({ compose: true, baseTab: 'home' });
     expect(parseRoute('#/nota/detalhes')).toEqual({ composeDetails: true, baseTab: 'home' });
     expect(parseRoute('#/biblioteca/nota')).toEqual({ compose: true, baseTab: 'biblioteca' });
-    expect(parseRoute('#/estudos/nota/detalhes')).toEqual({
+    expect(parseRoute('#/clinica/nota/detalhes')).toEqual({
       composeDetails: true,
-      baseTab: 'estudos',
+      baseTab: 'clinica',
     });
     expect(parseRoute('#/faculdade/c3/nota')).toEqual({
       compose: true,
@@ -306,12 +330,12 @@ describe('parseRoute', () => {
   });
 
   it('degrada rotas de quiz (jogo/resultado) ao seletor de categorias', () => {
-    expect(parseRoute('#/estudos/quiz')).toEqual({ tab: 'estudos', quizCategory: true });
-    expect(parseRoute('#/estudos/quiz/play')).toEqual({ tab: 'estudos', quizCategory: true });
-    expect(parseRoute('#/estudos/quiz/result')).toEqual({ tab: 'estudos', quizCategory: true });
+    expect(parseRoute('#/clinica/quiz')).toEqual({ tab: 'clinica', quizCategory: true });
+    expect(parseRoute('#/clinica/quiz/play')).toEqual({ tab: 'clinica', quizCategory: true });
+    expect(parseRoute('#/clinica/quiz/result')).toEqual({ tab: 'clinica', quizCategory: true });
     // hashes antigos/não-parseáveis (estado transitório não é serializável)
-    expect(parseRoute('#/quiz/play')).toEqual({ tab: 'estudos', quizCategory: true });
-    expect(parseRoute('#/quiz/result')).toEqual({ tab: 'estudos', quizCategory: true });
+    expect(parseRoute('#/quiz/play')).toEqual({ tab: 'clinica', quizCategory: true });
+    expect(parseRoute('#/quiz/result')).toEqual({ tab: 'clinica', quizCategory: true });
   });
 
   it('desconhecido cai em home', () => {
@@ -322,18 +346,18 @@ describe('parseRoute', () => {
 describe('routeToStack', () => {
   it('monta pilha simples de tab', () => {
     expect(routeToStack({ tab: 'home' })).toEqual([{ kind: 'tab', tab: 'home' }]);
-    expect(routeToStack({ tab: 'estudos', subTab: 'leituras' })).toEqual([
-      { kind: 'tab', tab: 'estudos' },
+    expect(routeToStack({ tab: 'clinica', subTab: 'leituras' })).toEqual([
+      { kind: 'tab', tab: 'clinica' },
     ]);
   });
 
   it('monta pilha de telas dedicadas de estudos', () => {
-    expect(routeToStack({ tab: 'estudos', studyScreen: 'focus' })).toEqual([
-      { kind: 'tab', tab: 'estudos' },
+    expect(routeToStack({ tab: 'clinica', studyScreen: 'focus' })).toEqual([
+      { kind: 'tab', tab: 'clinica' },
       { kind: 'study', screen: 'focus' },
     ]);
-    expect(routeToStack({ tab: 'estudos', studyScreen: 'revisar' })).toEqual([
-      { kind: 'tab', tab: 'estudos' },
+    expect(routeToStack({ tab: 'clinica', studyScreen: 'revisar' })).toEqual([
+      { kind: 'tab', tab: 'clinica' },
       { kind: 'study', screen: 'revisar' },
     ]);
   });
@@ -396,7 +420,7 @@ describe('routeToStack', () => {
       { kind: 'internshipDiary', tab: 'pacientes' },
       { kind: 'internshipCase', patientKey: 'ms' },
     ]);
-    expect(routeToStack({ tcc: true })).toEqual([{ kind: 'tab', tab: 'estudos' }, { kind: 'tcc' }]);
+    expect(routeToStack({ tcc: true })).toEqual([{ kind: 'tab', tab: 'home' }, { kind: 'tcc' }]);
     expect(routeToStack({ stickers: true })).toEqual([
       { kind: 'tab', tab: 'perfil' },
       { kind: 'stickers' },
@@ -464,9 +488,9 @@ describe('routeToStack', () => {
 describe('stackToHash', () => {
   it('serializa tab base sem sub-tab padrão', () => {
     expect(stackToHash([{ kind: 'tab', tab: 'home' }])).toBe('#/home');
-    expect(stackToHash([{ kind: 'tab', tab: 'estudos' }], 'sessoes')).toBe('#/estudos');
-    expect(stackToHash([{ kind: 'tab', tab: 'estudos' }], DEFAULT_SUB_TAB.estudos)).toBe(
-      '#/estudos',
+    expect(stackToHash([{ kind: 'tab', tab: 'clinica' }], 'casos')).toBe('#/clinica/casos');
+    expect(stackToHash([{ kind: 'tab', tab: 'clinica' }], DEFAULT_SUB_TAB.clinica)).toBe(
+      '#/clinica',
     );
   });
 
@@ -479,28 +503,28 @@ describe('stackToHash', () => {
   it('serializa telas dedicadas de estudos', () => {
     expect(
       stackToHash([
-        { kind: 'tab', tab: 'estudos' },
+        { kind: 'tab', tab: 'clinica' },
         { kind: 'study', screen: 'focus' },
       ]),
-    ).toBe('#/estudos/foco');
+    ).toBe('#/clinica/foco');
     expect(
       stackToHash([
-        { kind: 'tab', tab: 'estudos' },
+        { kind: 'tab', tab: 'clinica' },
         { kind: 'study', screen: 'revisar' },
       ]),
-    ).toBe('#/estudos/revisar');
+    ).toBe('#/clinica/revisar');
     expect(
       stackToHash([
-        { kind: 'tab', tab: 'estudos' },
+        { kind: 'tab', tab: 'clinica' },
         { kind: 'study', screen: 'leituras' },
       ]),
-    ).toBe('#/estudos/leituras');
+    ).toBe('#/clinica/leituras');
     expect(
       stackToHash([
-        { kind: 'tab', tab: 'estudos' },
+        { kind: 'tab', tab: 'clinica' },
         { kind: 'study', screen: 'historico' },
       ]),
-    ).toBe('#/estudos/historico');
+    ).toBe('#/clinica/historico');
   });
 
   it('serializa telas auxiliares ignorando sub-tab', () => {
@@ -537,7 +561,7 @@ describe('stackToHash', () => {
         { kind: 'internshipDiary', tab: 'supervisao' },
       ]),
     ).toBe('#/faculdade/estagio/supervisao');
-    expect(stackToHash([{ kind: 'tab', tab: 'estudos' }, { kind: 'tcc' }])).toBe('#/estudos/tcc');
+    expect(stackToHash([{ kind: 'tab', tab: 'clinica' }, { kind: 'tcc' }])).toBe('#/clinica/tcc');
     expect(stackToHash([{ kind: 'tab', tab: 'perfil' }, { kind: 'stickers' }])).toBe(
       '#/perfil/stickers',
     );
@@ -581,13 +605,13 @@ describe('stackToHash', () => {
 
   it('serializa telas de quiz com rota parseável por etapa', () => {
     const base = [
-      { kind: 'tab' as const, tab: 'estudos' as const },
+      { kind: 'tab' as const, tab: 'clinica' as const },
       { kind: 'quiz-category' as const },
     ];
-    expect(stackToHash(base)).toBe('#/estudos/quiz');
-    expect(stackToHash([...base, QUIZ_PLAY_SCREEN])).toBe('#/estudos/quiz/play');
+    expect(stackToHash(base)).toBe('#/clinica/quiz');
+    expect(stackToHash([...base, QUIZ_PLAY_SCREEN])).toBe('#/clinica/quiz/play');
     expect(stackToHash([...base, QUIZ_PLAY_SCREEN, QUIZ_RESULT_SCREEN])).toBe(
-      '#/estudos/quiz/result',
+      '#/clinica/quiz/result',
     );
   });
 
@@ -664,10 +688,10 @@ describe('round-trip hash ↔ rota', () => {
       '#/faculdade/c3/repertorio/cat-9',
       '#/calendario',
       '#/calendario/2026-10-05',
-      '#/estudos/foco',
-      '#/estudos/revisar',
-      '#/estudos/leituras',
-      '#/estudos/historico',
+      '#/clinica/foco',
+      '#/clinica/revisar',
+      '#/clinica/leituras',
+      '#/clinica/historico',
       '#/biblioteca/conceitos',
       '#/biblioteca/notas',
       '#/biblioteca/notas/note-1',
@@ -681,8 +705,7 @@ describe('round-trip hash ↔ rota', () => {
       '#/biblioteca/abordagens/psic-04-01',
       '#/streak',
       '#/perfil/streak',
-      '#/faculdade/estagio',
-      '#/estudos/tcc',
+      '#/clinica/tcc',
       '#/perfil/stickers',
       '#/nota',
       '#/nota/detalhes',
@@ -696,7 +719,7 @@ describe('round-trip hash ↔ rota', () => {
       '#/faculdade/c3/novo/prova',
       '#/novo/materia',
       '#/faculdade/novo/materia',
-      '#/estudos/quiz',
+      '#/clinica/quiz',
       '#/perfil/semestre',
       '#/perfil/semestre/historico',
       '#/perfil/semestre/historico/trm-3',

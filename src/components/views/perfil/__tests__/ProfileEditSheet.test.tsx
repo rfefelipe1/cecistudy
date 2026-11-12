@@ -18,6 +18,7 @@ const initial = (over: Partial<ProfileEditValues> = {}): ProfileEditValues => ({
   name: 'ceci',
   targetCareer: '',
   university: 'USP',
+  dailyQuote: '',
   nomeAutorizado: false,
   ...over,
 });
@@ -53,6 +54,7 @@ describe('ProfileEditSheet', () => {
       name: 'maria',
       targetCareer: 'psicanalise',
       university: 'USP',
+      dailyQuote: '',
       nomeAutorizado: false,
     });
   });
@@ -136,7 +138,7 @@ describe('ProfileEditSheet', () => {
     expect(save.disabled).toBe(false);
     fireEvent.click(save);
     expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ targetCareer: 'psicanalise' }),
+      expect.objectContaining({ targetCareer: 'psicanálise' }),
     );
   });
 });

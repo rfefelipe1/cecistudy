@@ -41,14 +41,16 @@ const JourneyRail: React.FC<JourneyRailProps> = ({ slots }) => {
   const summary = slots.map((s) => `${s.ordinal}º ${STATUS_TEXT[s.status]}`).join(', ');
 
   return (
-    <div className="rounded-2xl bg-surface-muted border border-ceci-border-subtle px-3 py-4">
+    <div className="rounded-2xl bg-surface-muted border border-ceci-border-subtle px-3 py-3">
       <ol className="flex items-center" aria-label={`trilho da formação: ${summary}`}>
         {slots.map((slot, index) => (
-          <Reveal key={slot.ordinal} index={index}>
+          // `flex-1` no wrapper (não só no `<li>`): sem isto cada Reveal vira um
+          // item flex do tamanho do conteúdo e o trilho inteiro encolhe à esquerda.
+          <Reveal key={slot.ordinal} index={index} className="flex-1 min-w-0">
           <li
             key={slot.ordinal}
             aria-current={slot.status === 'current' ? 'step' : undefined}
-            className="flex flex-1 flex-col items-center gap-1 min-w-0"
+            className="flex w-full flex-col items-center gap-1 min-w-0"
           >
             <span className="flex items-center w-full" aria-hidden="true">
               <span

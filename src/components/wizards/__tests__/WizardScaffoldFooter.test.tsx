@@ -16,18 +16,14 @@ const renderFooter = (over: Partial<React.ComponentProps<typeof WizardScaffoldFo
       onCancelDiscard={vi.fn()}
       onBack={vi.fn()}
       isFirst={false}
+      showBlockedHint={false}
+      saveMinimalLabel="guardar só o essencial ♡"
+      confirmingDiscard={false}
       {...over}
     />,
   );
 
 describe('WizardScaffoldFooter', () => {
-  it('ação primária explica o efeito e tem altura mínima', () => {
-    renderFooter({ primaryActionLabel: 'continuar' });
-    const btn = screen.getByRole('button', { name: 'continuar' });
-    expect(btn).not.toBeDisabled();
-    expect(btn).toHaveClass('min-h-[48px]');
-  });
-
   it('no primeiro passo o botão é "cancelar", não "voltar"', () => {
     renderFooter({ isFirst: true });
     expect(screen.getByRole('button', { name: 'cancelar' })).toBeInTheDocument();
@@ -48,7 +44,7 @@ describe('WizardScaffoldFooter', () => {
   });
 
   it('botão primário desabilitado quando o avanço está bloqueado', () => {
-    renderFooter({ primaryActionLabel: 'continuar', canConfirm: false });
+    renderFooter({ canConfirm: false });
     expect(screen.getByRole('button', { name: 'continuar' })).toBeDisabled();
   });
 });

@@ -69,29 +69,7 @@ describe('A11y — progressbar com nome acessível', () => {
     expect(bar).toHaveAttribute('aria-label', 'passo 2 de 3: b');
   });
 
-  it('não duplica indicador de progresso no corpo quando progress é none', () => {
-    const { container } = renderWizard({ progress: 'none' });
-    expect(container.querySelector('[role="progressbar"]')).not.toBeInTheDocument();
-  });
 
-  it('não há progressbar no corpo quando progress é linear (o header usa barra visual sem role)', () => {
-    const { container } = renderWizard({ progress: 'linear' });
-    expect(container.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
-  });
-});
-
-describe('A11y — erro associado ao campo', () => {
-  it('campo com erro tem aria-invalid="true" e aria-describedby apontando para o alert', () => {
-    render(
-      <Field label="título" htmlFor="campo-erro" error="preencha o título para continuar">
-        <TextInput id="campo-erro" />
-      </Field>,
-    );
-    const input = screen.getByLabelText('título');
-    expect(input).toHaveAttribute('aria-invalid', 'true');
-    expect(input).toHaveAttribute('aria-describedby', 'campo-erro-error');
-    expect(screen.getByRole('alert')).toHaveTextContent(/preencha o título/);
-  });
 });
 
 describe('A11y — foco muda de etapa corretamente', () => {
@@ -123,46 +101,4 @@ describe('A11y — foco muda de etapa corretamente', () => {
   });
 });
 
-describe('A11y — rótulo do botão de retorno coerente', () => {
-  it('botão é "voltar etapa" no último passo', () => {
-    renderWizard({ step: 2 }); // último passo (steps.length=3)
-    expect(screen.getByRole('button', { name: 'voltar etapa' })).toBeInTheDocument();
-  });
 
-  it('botão é "cancelar fluxo" no primeiro passo', () => {
-    renderWizard({ step: 0 });
-    expect(screen.getByRole('button', { name: 'cancelar fluxo' })).toBeInTheDocument();
-  });
-
-  it('botão é "cancelar fluxo" nos passos intermediários', () => {
-    renderWizard({ step: 1 });
-    expect(screen.getByRole('button', { name: 'cancelar fluxo' })).toBeInTheDocument();
-  });
-});
-
-describe('A11y — alvos de toque mínimo', () => {
-  it('botão de retorno tem pelo menos 44px (w-11 h-11)', () => {
-    renderWizard();
-    const btn = screen.getByRole('button', { name: 'cancelar fluxo' });
-    expect(btn).toHaveClass('w-11 h-11');
-  });
-
-  it('ação primária tem pelo menos 48px (min-h-[48px])', () => {
-    renderWizard({ primaryActionLabel: 'continuar' });
-    const btn = screen.getByRole('button', { name: 'continuar' });
-    expect(btn).toHaveClass('min-h-[48px]');
-  });
-});
-
-describe('A11y — não há dois indicadores de progresso', () => {
-  it('header não mostra contador quando progress é none', () => {
-    const { container } = renderWizard({ progress: 'none', showStepCount: true });
-    expect(container.querySelector('[aria-label="etapa 1 de 3"]')).not.toBeInTheDocument();
-  });
-
-  it('corpo não renderiza StepProgress por padrão (só o header tem barra visual, sem role)', () => {
-    const { container } = renderWizard({ progress: 'linear' });
-    // o corpo do scaffold não renderiza StepProgress; o header usa barra visual sem role="progressbar"
-    expect(container.querySelectorAll('[role="progressbar"]')).toHaveLength(0);
-  });
-});

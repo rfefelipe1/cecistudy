@@ -81,17 +81,13 @@ describe('buildContextBarConfig', () => {
     ).toBeNull();
   });
 
-  it('streak: a barra vai para o mesmo destino do botão da tela', () => {
+  it('streak: sem ação principal (a navegação de estudo saiu da aba)', () => {
     const cfg = buildContextBarConfig({
       ...baseInput,
       currentScreen: { kind: 'streak' },
       screenKey: 'streak',
     });
-    expect(cfg?.primaryActions).toHaveLength(1);
-    expect(cfg?.primaryActions[0].id).toBe('ir-para-estudar');
-    expect(cfg?.primaryActions[0].label).toBe('ir para estudar');
-    cfg?.primaryActions[0].onSelect();
-    expect(handlers.handleNavigate).toHaveBeenCalledWith('estudos', 'sessoes');
+    expect(cfg?.primaryActions).toHaveLength(0);
   });
 
   it('disciplina: a barra oferece as mesmas ações do menu "novo registro" da tela', () => {

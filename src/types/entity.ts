@@ -513,3 +513,116 @@ export type QuickType =
   | 'session'
   | 'exam'
   | 'author';
+
+// Biblioteca (SPEC-034) — entidades de dados independentes da interface.
+// Todas carregam `workspaceId?` (Fase 3) para isolamento de contexto.
+
+/** Obra do catálogo da Biblioteca (livro, artigo, apostila, paper, pesquisa). */
+export interface Material {
+  id: string;
+  workspaceId?: string;
+  titulo: string;
+  autorId?: string;
+  /** Eixo temático ao qual pertence (opcional; um material pode estar em mais de um eixo via coleções/prateleiras). */
+  eixoId?: string;
+  tipo: 'livro' | 'artigo' | 'apostila' | 'paper' | 'pesquisa';
+  totalPaginas?: number;
+  paginasLidas?: number;
+  /** Disponibilidade do arquivo para leitura (spec principal §11). */
+  disponibilidade: 'disponivel' | 'indisponivel';
+  caminhoArquivo?: string;
+  ultimaLeituraEm?: string;
+  criadoEm: string;
+  atualizadoEm: string;
+  /** Cor de fundo da capa (fallback quando não há imagem). */
+  coverColor?: string;
+  /** Cor de destaque da lombada/detalhes. */
+  accentColor?: string;
+}
+
+/** Autor com página própria de referência (spec principal §10). */
+export interface AutorBiblioteca {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  bio?: string;
+  nascimento?: string;
+  obrasPrincipais?: string[];
+  fotoUrl?: string;
+}
+
+/** Eixo temático abrangente de conhecimento (spec principal §5). */
+export interface EixoTematico {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao: string;
+  cor?: string;
+  ordem: number;
+}
+
+/** Subdivisão de um eixo temático (spec principal §5.2). */
+export interface Subtema {
+  id: string;
+  eixoId: string;
+  workspaceId?: string;
+  nome: string;
+  descricao: string;
+  ordem: number;
+}
+
+/** Seleção curada de materiais (spec principal §14.1). */
+export interface ColecaoEditorial {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao?: string;
+  materialIds: string[];
+}
+
+/** Prateleira: agrupamento de materiais apresentado em uma seção. */
+export interface Prateleira {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao?: string;
+  materialIds: string[];
+  ordem: number;
+}
+
+/** Relação recomendada entre materiais (spec principal §13). */
+export interface Recomendacao {
+  id: string;
+  workspaceId?: string;
+  materialId: string;
+  motivo?: string;
+  tipo: 'similar' | 'complementar' | 'destacada';
+  ativo: boolean;
+}
+
+/** Estado pessoal independente por material (spec principal §8.5).
+ *  salvo / emLeitura / concluido / favorito são booleanos independentes:
+ *  um livro pode estar salvo e favorito, concluído e favorito, etc. */
+export interface EstadoPessoal {
+  materialId: string;
+  workspaceId?: string;
+  salvo: boolean;
+  emLeitura: boolean;
+  concluido: boolean;
+  favorito: boolean;
+  nota?: number;
+  dataAtualizacao: string;
+}
+
+/** Arquivo associado a um material e sua disponibilidade (spec principal §11-12). */
+export interface Arquivo {
+  id: string;
+  materialId: string;
+  workspaceId?: string;
+  nomeArquivo: string;
+  caminho: string;
+  tamanho: number;
+  tipoMime: string;
+  disponibilidade: 'local' | 'remoto' | 'indisponivel';
+  atualizadoEm: string;
+}

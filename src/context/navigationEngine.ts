@@ -231,6 +231,12 @@ export interface NavigationValue {
   isSyncScreenOpen: boolean;
   openSyncScreen: () => void;
   closeSyncScreen: () => void;
+  isSyncLocalScreenOpen: boolean;
+  openSyncLocalScreen: () => void;
+  closeSyncLocalScreen: () => void;
+  isSyncRemoteScreenOpen: boolean;
+  openSyncRemoteScreen: () => void;
+  closeSyncRemoteScreen: () => void;
 
   // quiz
   isQuizCategoryOpen: boolean;
@@ -317,7 +323,7 @@ export interface NavigationValue {
   openSearch: () => void;
   closeSearch: () => void;
 
-  handleNavigate: (tab: NavTab, subTab?: string, target?: string) => void;
+  handleNavigate: (tab: NavTab, subTab?: string, target?: string, tabDir?: 1 | -1) => void;
 
   // header dinâmico
   headerConfig: DynamicHeaderConfig | null;
@@ -402,15 +408,19 @@ export function useNavigationEngine(
    * de slide muda de verdade — push/pop de OVERLAY_KINDS (compose/wizard/nota) não
    * remonta a tela de baixo, preservando o estado local (ex.: sub-tab ativa).
    */
-  const setStack = useCallback((next: NavScreen[]) => {
+  const setStack = useCallback((next: NavScreen[], opts?: { tabDir?: 1 | -1 }) => {
     const prev = navigationStackRef.current;
     const slideChanged = slideLayerChanged(prev, next);
     const reduced = prefersReducedMotion();
     const pendingGesture = peekMotionIntent().fromGesture;
 
-    const base = pendingGesture
+    const derived = pendingGesture
       ? peekMotionIntent()
       : deriveIntent(prev, next, { reduced, morph: peekMorph() !== null });
+    // Troca de aba vinda do arrasto na navbar: ganha uma direção para virar
+    // slide horizontal (o tap continua no crossfade de `tab`).
+    const base =
+      opts?.tabDir && derived.kind === 'tab' ? { ...derived, dir: opts.tabDir } : derived;
     // Container transform (SPEC-M-028 D24): promove o retrato do card (push) ou
     // monta o caminho inverso a partir do alvo registrado (pop). Devolve se há
     // animação — e, se houver, a intenção passa a dizer que há morph, para a
@@ -548,6 +558,8 @@ export function useNavigationEngine(
     currentScreen.kind === 'tcc' ? currentScreen.focusId : undefined;
   const isStickersScreenOpen = currentScreen.kind === 'stickers';
   const isSyncScreenOpen = currentScreen.kind === 'sync';
+  const isSyncLocalScreenOpen = currentScreen.kind === 'sync-local';
+  const isSyncRemoteScreenOpen = currentScreen.kind === 'sync-remote';
   const isNotesScreenOpen = currentScreen.kind === 'notes';
   const isNoteDetailOpen = currentScreen.kind === 'noteDetail';
   const isNoteTransformOpen = currentScreen.kind === 'noteTransform';
@@ -844,31 +856,18 @@ export function useNavigationEngine(
   ]);
 
   const handleNavigate = useCallback(
-    (tab: NavTab, subTab?: string, target?: string) => {
+    (tab: NavTab, subTab?: string, target?: string, tabDir?: 1 | -1) => {
       if (tab === 'faculdade' && subTab) setSubTabFaculdade(subTab as SubTabFaculdade);
       if (tab === 'biblioteca' && subTab) setSubTabBiblioteca(subTab as SubTabBiblioteca);
       targetSectionRef.current = subTab;
 
       const base: NavScreen = { kind: 'tab', tab };
-      let next: NavScreen[];
-      if (tab === 'estudos' && subTab) {
-        // Antigas sub-tabs de estudos → telas dedicadas (feed é a base)
-        const screenMap: Record<string, StudyScreen> = {
-          flashcards: 'revisar',
-          leituras: 'leituras',
-          historico: 'historico',
-        };
-        next =
-          subTab === 'questoes'
-            ? [base, { kind: 'quiz-category' }]
-            : subTab === 'sessoes'
-              ? [base]
-              : [base, { kind: 'study', screen: screenMap[subTab] }];
-      } else {
-        next =
-          tab === 'faculdade' && target ? [base, { kind: 'course', courseId: target }] : [base];
-      }
-      setStack(next);
+      // A clínica não tem sub-tabs de estudo: a tela é própria e o estado dela
+      // mora em `internshipTab` (SPEC-009 D16). Sub-tab de estudo só chega por
+      // chamador legado, que agora usa `openStudy`.
+      const next: NavScreen[] =
+        tab === 'faculdade' && target ? [base, { kind: 'course', courseId: target }] : [base];
+      setStack(next, { tabDir });
       setTargetId(target);
       syncHash(next);
       scrollToTop();
@@ -1134,13 +1133,20 @@ export function useNavigationEngine(
   const openInternshipDiary = useCallback(
     (tab?: InternshipTab, focusLogId?: string) => {
       const top = navigationStack[navigationStack.length - 1];
+      // A Clínica é a dona da tela: abrir uma aba de dentro dela não pode
+      // trocar a aba base para faculdade (SPEC-M-032 D1). A base só vira
+      // faculdade quando a entrada é a Seção de Estágio da Faculdade.
+      const baseTab: NavTab =
+        navigationStack[0]?.kind === 'tab' && navigationStack[0].tab === 'clinica'
+          ? 'clinica'
+          : 'faculdade';
       const next: NavScreen[] =
         top.kind === 'internshipDiary'
           ? navigationStack.map((s) =>
               s.kind === 'internshipDiary' ? { ...s, tab, focusLogId } : s,
             )
           : [
-              { kind: 'tab', tab: 'faculdade' as NavTab },
+              { kind: 'tab', tab: baseTab },
               { kind: 'internshipDiary', tab, focusLogId },
             ];
       setStack(next);
@@ -1159,8 +1165,13 @@ export function useNavigationEngine(
    */
   const openInternshipCase = useCallback(
     (patientKey: string) => {
+      // Mesma regra do diário: dentro da Clínica a base é a Clínica.
+      const baseTab: NavTab =
+        navigationStack[0]?.kind === 'tab' && navigationStack[0].tab === 'clinica'
+          ? 'clinica'
+          : 'faculdade';
       const next: NavScreen[] = [
-        { kind: 'tab', tab: 'faculdade' as NavTab },
+        { kind: 'tab', tab: baseTab },
         { kind: 'internshipDiary', tab: 'pacientes' },
         { kind: 'internshipCase', patientKey },
       ];
@@ -1168,7 +1179,7 @@ export function useNavigationEngine(
       syncHash(next);
       scrollToTop();
     },
-    [setStack, syncHash],
+    [navigationStack, setStack, syncHash],
   );
 
   const closeInternshipDiary = useCallback(() => goBack(), [goBack]);
@@ -1185,7 +1196,7 @@ export function useNavigationEngine(
       const next: NavScreen[] =
         top.kind === 'tcc'
           ? navigationStack.map((s) => (s.kind === 'tcc' ? { ...s, tab, focusId } : s))
-          : [{ kind: 'tab', tab: 'estudos' as NavTab }, { kind: 'tcc', tab, focusId } as const];
+          : [{ kind: 'tab', tab: 'home' as NavTab }, { kind: 'tcc', tab, focusId } as const];
       setStack(next);
       syncHash(next);
       scrollToTop();
@@ -1247,6 +1258,24 @@ export function useNavigationEngine(
 
   const closeSyncScreen = useCallback(() => goBack(), [goBack]);
 
+  const openSyncLocalScreen = useCallback(() => {
+    const next = [...navigationStack, { kind: 'sync-local' } as const];
+    setStack(next);
+    syncHash(next);
+    scrollToTop();
+  }, [navigationStack, setStack, syncHash]);
+
+  const closeSyncLocalScreen = useCallback(() => goBack(), [goBack]);
+
+  const openSyncRemoteScreen = useCallback(() => {
+    const next = [...navigationStack, { kind: 'sync-remote' } as const];
+    setStack(next);
+    syncHash(next);
+    scrollToTop();
+  }, [navigationStack, setStack, syncHash]);
+
+  const closeSyncRemoteScreen = useCallback(() => goBack(), [goBack]);
+
   const openQuizCategory = useCallback(
     (_config?: Partial<QuizConfig>) => {
       const next = stackAfterOpenQuizCategory(navigationStack);
@@ -1268,12 +1297,12 @@ export function useNavigationEngine(
   const openQuizGroupDetail = useCallback(
     (group: QuestionGroup) => {
       const top = navigationStack[navigationStack.length - 1];
-      // Encontra a última seção de quiz ou usa a base estudos
+      // Encontra a última seção de quiz ou usa a base clínica
       const qi = [...navigationStack].reverse().findIndex(isQuizSection);
       const base: NavScreen[] =
         qi !== -1
           ? navigationStack.slice(0, navigationStack.length - qi)
-          : [{ kind: 'tab', tab: 'estudos' }, { kind: 'quiz-category' }];
+          : [{ kind: 'tab', tab: 'clinica' }, { kind: 'quiz-category' }];
       // Troca ou empilha o detalhe do grupo
       const isDetailOnTop = base.length > 0 && base[base.length - 1].kind === 'quiz-group-detail';
       const next: NavScreen[] = isDetailOnTop
@@ -1327,9 +1356,9 @@ export function useNavigationEngine(
     (screen: StudyScreen) => {
       const top = navigationStack[navigationStack.length - 1];
       const base: readonly NavScreen[] =
-        top.kind === 'tab' && top.tab === 'estudos'
+        top.kind === 'tab' && top.tab === 'clinica'
           ? navigationStack
-          : [{ kind: 'tab' as const, tab: 'estudos' as NavTab }];
+          : [{ kind: 'tab' as const, tab: 'clinica' as NavTab }];
       const next: NavScreen[] =
         top.kind === 'study' && top.screen === screen
           ? navigationStack
@@ -1925,6 +1954,12 @@ export function useNavigationEngine(
       isSyncScreenOpen,
       openSyncScreen,
       closeSyncScreen,
+      isSyncLocalScreenOpen,
+      openSyncLocalScreen,
+      closeSyncLocalScreen,
+      isSyncRemoteScreenOpen,
+      openSyncRemoteScreen,
+      closeSyncRemoteScreen,
       isTermHistoryOpen,
       focusedTermId,
       openTermHistory,

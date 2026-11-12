@@ -206,6 +206,8 @@ export const VAZIO: Catalogo = {
   escritaVazio: 'registre suas sessões de escrita e acompanhe o ritmo até a entrega ♡',
   tccComecar:
     'comece pelo que dá identidade ao trabalho: um título, quem orienta e a pergunta que ele quer responder. o resto você preenche no caminho ♡',
+  /** Card do TCC na Home (SPEC-M-032 D8): convite curto, cabe no card. */
+  tccComecarCurto: 'bora começar ♡',
   tccLembretes:
     'o app avisa de capítulos, reuniões, entrega e banca — no ritmo que você escolher depois',
   /** Lembrete só toca no app instalado (SPEC-024 D18): no navegador é config sem efeito. */
@@ -220,13 +222,41 @@ export const VAZIO: Catalogo = {
   semLeituraParecida: 'ainda não tem leitura parecida por aqui ♡',
   calendarioVazio: 'nada marcado nos próximos dias — o calendário enche sozinho conforme você anota ♡',
   diaSemNada: 'nada marcado neste dia ♡',
+  /** Agenda (SPEC-035 D6): os três vazios que a tela precisa nomear. */
+  agendaVazia:
+    'sua agenda está livre por enquanto. quer adicionar uma tarefa ou um evento?',
+  agendaInboxVazia:
+    'sua inbox está limpinha ♡ quando surgir uma pendência, você pode guardar sem data e organizar depois.',
+  agendaSemResultadoFiltro:
+    'nada apareceu com esses filtros ♡ quer limpar algum filtro ou guardar uma nova tarefa?',
   /** Capítulo aberto sem referência vinculada (SPEC-024 T4.2). */
   capituloSemReferencia:
     'nenhuma referência vinculada ainda — o vínculo se faz na própria referência ♡',
+  /** Perfil: ajuda do seletor de abordagem (meta de atuação). */
+  perfilAbordagemAjuda: 'sua lista própria de abordagens para a meta de atuação',
   semAbordagensRegistradas: 'ainda não há abordagens registradas.',
   semDisciplinas: 'ainda não há disciplinas cadastradas. que tal criar a primeira?',
   semGrupos: 'ainda não há grupos. crie um depois ♡',
   semConceitosNoCantinho: 'ainda não há conceitos no cantinho.',
+
+  // --- Captura de memória (SPEC-M-032)
+  captureTitulo: 'capturar memória',
+  captureSubtitulo: 'guarde o que aconteceu pra não esquecer depois ♡',
+  captureLabelCategoria: 'categoria',
+  capturePlaceholderTitulo: 'conte brevemente o que aconteceu…',
+  captureLabelDescricao: 'descrição',
+  capturePlaceholderDescricao: 'detalhes opcionais',
+  captureLabelData: 'data',
+  captureDataSemData: 'sem data',
+  captureModoGuiado: 'responder por categorias',
+  captureAcaoSair: 'sair',
+  captureAcaoSalvar: 'guardar memória',
+
+  // --- Memórias de semestre (SPEC-M-032)
+  memoriasSubtitulo: 'suas memórias guardadas, por categoria',
+  vazioMemoriasTitulo: 'ainda não há memórias neste semestre',
+  vazioMemoriasDescricao: 'registre a primeira e ela aparece aqui ♡',
+  memoriasContexto: (p) => `${p.data} — ${p.n} memória${p.n !== 1 ? 's' : ''}`,
 
   // --- Perfil: o que cada row faz
   rowSync: 'enviar e puxar alterações com o repositório github.',
@@ -287,6 +317,19 @@ export const DICA: Catalogo = {
 
   // --- Faculdade: a assinatura do cecinho no bloco de estágio
   faculdadePraticaAcompanha: 'guardo tudo com você, registro por registro ♡',
+
+  // --- Clínica: aviso de privacidade da lista de casos (SPEC-M-032 D11)
+  clinicaPrivacidade: 'só as iniciais ficam aqui — nada que identifique o caso ♡',
+
+  // --- Agenda: o recado do dia (SPEC-035 D6). O tom vem da carga derivada;
+  // a frase, daqui. Nunca as duas coisas no componente.
+  agendaAtrasadas: () => 'tem algumas coisinhas esperando. quer começar pela mais antiga?',
+  agendaProvaProxima: () => 'a prova está chegando. quer separar uma pequena revisão para hoje?',
+  agendaDiaCheio: () => 'o dia está cheio, então vamos por partes. comece pela próxima coisa importante.',
+  agendaInboxCheia: () => 'tem algumas ideias sem data. você pode organizar depois, sem perder nada por aqui.',
+  agendaDiaVazio: () => 'hoje está mais calminho. você pode guardar uma tarefa ou deixar esse espaço respirar.',
+  /** Dica de campo vazia na entrevista de memórias (SPEC-M-032). */
+  semTituloAinda: 'ainda sem título',
 };
 
 // ---------------------------------------------------------------------------
@@ -521,6 +564,15 @@ export const CELEBRACAO: Catalogo = {
   sessaoDeLeituraGuardada: 'sessão de leitura guardada com carinho ♡',
   tccGuardado: 'tcc guardado ♡',
   listaCopiada: 'lista copiada ♡',
+
+  // --- Memórias de semestre (SPEC-M-032)
+  memoriaFelizPergunta: 'qual memória feliz desse semestre você quer guardar?',
+  memoriaEngracadaPergunta: 'qual memória engraçada desse semestre você quer guardar?',
+  memoriaAssustadoraPergunta: 'qual memória assustadora desse semestre você quer guardar?',
+  memoriaMemoravelPergunta: 'qual memória memorável desse semestre você quer guardar?',
+  memoriaPrimeira: 'sua primeira memória deste semestre',
+  memoriaGuardada: 'memória guardada ♡',
+  memoriaRemovida: 'memória removida ♡',
   /** Sumário de capítulos copiado (SPEC-024 T4.3). */
   sumarioCopiado: 'sumário copiado ♡',
   tarefaAtualizada: 'tarefa atualizada ♡',
@@ -531,6 +583,8 @@ export const CELEBRACAO: Catalogo = {
   preenchemosDaEstante: 'preenchemos com os dados da sua estante ♡',
   tarefaSalvaNaAgenda: 'tarefa salva e marcada na sua agenda ♡',
   provaSalvaNaAgenda: 'prova salva e marcada na sua agenda ♡',
+  /** SPEC-035 D5: tarefa criada sem data fica na inbox, e a usuária precisa saber. */
+  tarefaNaInbox: 'ficou na sua inbox para organizar depois ♡',
 
   // --- Faculdade
   registroApagado: 'registro apagado ♡',
@@ -580,6 +634,8 @@ export const CELEBRACAO: Catalogo = {
   cantinhoPronto: 'cantinho pronto — bora começar? ♡',
   backupIncompativel: 'ops, esse arquivo de backup não é compatível ♡',
   backupRestaurado: 'backup restaurado com carinho ♡',
+  /** Restauração ZIP on-demand: um toast por domínio (SPEC-M-030 D10). */
+  dominioCarregado: (p) => `carreguei ${p.dominio} ♡. pode seguir usando.`,
   sincronizado: 'sincronizado com carinho ♡',
   dadosEnviados: 'dados enviados para a nuvem ♡',
   planoDoDiaCompleto: (p) => `plano do dia completo! parabéns${p.nome ? `, ${p.nome}` : ''} 🎉`,
@@ -693,6 +749,22 @@ export const ONBOARDING: Catalogo = {
   boasVindasDescricao:
     'esse daqui é o seu cantinho. eu anoto suas aulas, leituras e provas, e cuido da sua jornada até o CRP — se quiser, pode me chamar de ceço.',
   comecar: 'bora?',
+  /** Entrada de restauração no primeiro acesso (SPEC-M-030 D2). */
+  jaTenhoBackup: 'já tenho um backup',
+  /** Preview do manifest no onboarding (SPEC-M-030 D2/T5.2). */
+  previewTitulo: 'backup encontrado ♡',
+  previewDescricao: (p) => `esse backup é da ${p.nome}. importa e a gente continua?`,
+  previewNome: 'nome',
+  previewTema: 'tema',
+  previewTela: 'tela',
+  previewData: 'data',
+  previewSchema: 'schema',
+  previewSync: 'sync GitHub',
+  previewSim: 'sim',
+  previewNao: 'não',
+  previewAviso: 'isso substitui o cadastro atual. se quiser guardar o que tem, faz um backup antes ♡',
+  previewCancelar: 'cancelar',
+  previewImportar: 'importar',
 
   quemEuChamo: 'como eu te chamo?',
   quemEuChamoDica: 'só o primeiro nome serve — é assim que eu vou te chamar por aqui',
@@ -855,6 +927,11 @@ export const ERRO: Record<string, ErroVoz> = {
   linkInvalido: {
     oQueAconteceu: 'não achei um link nesse texto',
     oQuePodeFazer: 'cola um endereço que comece com http',
+  },
+  /** Um domínio do backup ZIP não pôde ser lido; o resto foi restaurado (D8). */
+  dominioNaoCarregado: {
+    oQueAconteceu: (p) => `não consegui ler ${p.dominio} do backup`,
+    oQuePodeFazer: 'o resto foi restaurado — siga usando normalmente',
   },  /** Código desconhecido — nunca vaza a mensagem original. */
   [FALLBACK]: {
     oQueAconteceu: 'não consegui fazer isso agora',

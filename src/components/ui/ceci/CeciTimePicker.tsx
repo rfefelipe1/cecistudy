@@ -1,7 +1,8 @@
 import React from 'react';
-import { Clock, X } from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CeciFieldShell } from './CeciFieldShell';
+import { TimePickerSheet } from '../time-picker-sheet';
 
 export interface CeciTimePickerProps {
   label?: string;
@@ -23,10 +24,8 @@ export interface CeciTimePickerProps {
 /**
  * Seletor de horário único em 24 horas.
  *
- * Usa `<input type="time">` nativo quando disponível (precisão textual), com
- * wrapper visual padronizado (label, descrição, erro, foco, disabled). Não
- * cria relógio circular decorativo — horário acadêmico e lembrete são casos de
- * preenchimento direto.
+ * Abre uma sheet com wheel de escolha de hora (24h, sem AM/PM) ao tocar,
+ * mantendo o wrapper visual padronizado (label, descrição, erro, foco, disabled).
  */
 export const CeciTimePicker: React.FC<CeciTimePickerProps> = ({
   label,
@@ -55,29 +54,33 @@ export const CeciTimePicker: React.FC<CeciTimePickerProps> = ({
         optional={optional}
       >
         <div className={cn(
-          'w-full bg-surface-input border border-transparent rounded-2xl px-4 py-4 text-sm flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand transition-colors',
+          'w-full border border-transparent rounded-2xl px-4 py-4 text-sm flex items-center justify-between gap-2 focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand transition-colors',
           disabled && 'bg-surface-muted cursor-not-allowed',
           className,
         )}>
           <div className="flex items-center gap-2 min-w-0">
-            <Clock className="w-4 h-4 text-ceci-tertiary shrink-0" />
-            <input
-              type="time"
-              value={timeValue}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
-              aria-label={label ?? 'selecionar horário'}
-              disabled={disabled}
-              readOnly
-              className="flex-1 bg-transparent text-sm text-ceci-primary placeholder-ceci-faded outline-none min-w-0"
-            />
+            {disabled ? (
+              <span className="flex-1 text-sm text-ceci-faded placeholder-ceci-faded min-w-0">
+                {timeValue || placeholder}
+              </span>
+            ) : (
+              <TimePickerSheet
+                value={timeValue}
+                onChange={(v) => onChange(v)}
+                placeholder={placeholder}
+              />
+            )}
           </div>
           {timeValue && (
             <button
               type="button"
               onClick={() => onChange('')}
               aria-label="limpar horário"
-              className="w-7 h-7 rounded-xl flex items-center justify-center text-ceci-tertiary hover:text-status-danger-strong hover:bg-red-50 transition-colors tap-interactive cursor-pointer"
+              disabled={disabled}
+              className={cn(
+                'w-7 h-7 rounded-xl flex items-center justify-center text-ceci-tertiary hover:text-status-danger-strong hover:bg-red-50 transition-colors tap-interactive cursor-pointer',
+                disabled && 'opacity-50 pointer-events-none',
+              )}
             >
               <X className="w-3 h-3" />
             </button>

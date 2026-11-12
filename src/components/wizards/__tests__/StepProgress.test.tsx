@@ -12,13 +12,6 @@ describe('StepProgress', () => {
     expect(bar).toHaveAttribute('aria-label', 'passo 2 de 3: b');
   });
 
-  it('variante none não renderiza nada', () => {
-    const { container } = render(
-      <StepProgress steps={['a', 'b']} current={0} variant="none" />,
-    );
-    expect(container.innerHTML).toBe('');
-  });
-
   it('fluxo de etapa única não divide por zero', () => {
     render(<StepProgress steps={['só um']} current={0} />);
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');

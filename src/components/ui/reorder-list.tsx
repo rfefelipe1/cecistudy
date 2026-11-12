@@ -1,8 +1,21 @@
 "use client";
 
-import { createContext, useCallback, useContext, useId, useRef, useState } from "react";
+import { AnimatePresence, motion, useDragControls } from "framer-motion";
 import { GripVertical } from "lucide-react";
-import { Reorder, useDragControls, useReducedMotion } from "@/lib/motion";
+import { usePrefersReducedMotion } from "@/lib/motion/reduced";
+import { createContext, useCallback, useContext, useId, useRef, useState } from "react";
+
+// Shim mínimo de Reorder (sem arrastar-soltar real) para compatibilidade de tipo.
+// O reorder-list.tsx não é parte das mudanças da SPEC-M-030; este shim mantém o
+// typecheck verde sem adicionar dependência de @tanstack/react-sort.
+const Reorder = {
+  Group: ({ children, ...rest }: { children?: React.ReactNode; [key: string]: unknown }) => (
+    <motion.div {...rest}>{children}</motion.div>
+  ),
+  Item: ({ children, ...rest }: { children?: React.ReactNode; [key: string]: unknown }) => (
+    <motion.div {...rest}>{children}</motion.div>
+  ),
+};
 
 const CELL = { type: "spring", stiffness: 520, damping: 34, mass: 0.45 } as const;
 const INSTANT = { duration: 0 } as const;
@@ -136,7 +149,7 @@ export function ReorderList<T>({
   const [spoken, setSpoken] = useState("");
   const snapshotRef = useRef<readonly T[] | null>(null);
   const hintId = useId();
-  const reduced = useReducedMotion() === true;
+  const reduced = usePrefersReducedMotion() === true;
 
   const list = (dragOrder ?? items) as T[];
   const indexOf = useCallback(

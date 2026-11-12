@@ -21,7 +21,7 @@ export type {
 } from '../../../src/types/quiz';
 import type { TempleSection } from './temple';
 
-export type NavTab = 'home' | 'faculdade' | 'estudos' | 'biblioteca' | 'perfil';
+export type NavTab = 'home' | 'faculdade' | 'clinica' | 'biblioteca' | 'perfil';
 
 export type SubTabFaculdade = 'disciplinas' | 'estagio';
 
@@ -42,7 +42,7 @@ export type InternshipTab = 'diario' | 'pacientes' | 'supervisao';
  */
 export type ThesisTab = 'visao' | 'capitulos' | 'leituras' | 'orientacao' | 'escrita';
 
-/** Telas dedicadas abertas a partir do feed de estudos. */
+/** Telas dedicadas de estudo (legado, sem ponto de entrada na navegação — SPEC-M-032 D9). */
 export type StudyScreen = 'focus' | 'revisar' | 'leituras' | 'historico';
 export type SubTabBiblioteca = 'materiais' | 'autores' | 'conceitos' | 'abordagens' | 'mapa';
 
@@ -75,7 +75,7 @@ export type NavScreen =
   | { kind: 'internshipCase'; patientKey: string }
   /**
    * Tela cheia do meu TCC (SPEC-012). `tab`/`focusId` são o deep-link da aba
-   * (toque em notificação, busca global, hash `#/estudos/tcc/<tab>[/<id>]`);
+   * (toque em notificação, busca global, hash `#/clinica/tcc/<tab>[/<id>]`);
    * ausentes = default (`visao`). `focusId` inexistente degrada para a aba sem
    * erro — item removido não pode derrubar a navegação.
    */
@@ -112,7 +112,11 @@ export type NavScreen =
     }
   /** Sincronização entre dispositivos (pareamento P2P), empilhada sobre o perfil. */
   | { kind: 'sync' }
-  /** Telas dedicadas do estudo (empurradas sobre a aba estudos pelo feed). */
+  /** Tela de instruções do sync local (backup local importado/exportado). */
+  | { kind: 'sync-local' }
+  /** Tela de instruções do sync remoto (GitHub PAT). */
+  | { kind: 'sync-remote' }
+  /** Telas dedicadas do estudo — **legado**: só deep-link, sem entrada na navegação. */
   | { kind: 'study'; screen: StudyScreen }
   /** Desktop: grafo de conhecimento (nós + relações + detalhe). */
   | { kind: 'knowledge-graph' }
