@@ -16,6 +16,8 @@ const heroProps = {
   greeting: 'oi',
   name: 'Ceci',
   dayMessage: 'x',
+  fraseMotivacao: 'um passo de cada vez, você chega lá ♡',
+  fraseCarcinho: 'vai no seu ritmo, meu bem.\num passinho de cada vez.',
   mascote: 'books-cozy' as const,
 };
 

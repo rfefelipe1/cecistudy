@@ -21,7 +21,7 @@ const WHAT_COUNTS = [
 ];
 
 export const StreakView: React.FC = () => {
-  const { streakStats, currentWeekProgress, streakData, handleNavigate } = useMobileApp();
+  const { streakStats, currentWeekProgress, streakData } = useMobileApp();
   const todayKey = toDateKey(new Date());
   const weekCells = currentWeekProgress.filter((c) => c.status !== 'weekend');
   const doneThisWeek = currentWeekProgress.filter((c) => c.status === 'done').length;
@@ -80,12 +80,9 @@ export const StreakView: React.FC = () => {
         />
 
         {todayPending && (
-          <button
-            onClick={() => handleNavigate('estudos', 'sessoes')}
-            className="w-full bg-ceci-primary hover:bg-ceci-primary-hover text-ceci-on-primary py-2.5 rounded-2xl text-xs font-bold cursor-pointer transition-colors"
-          >
-            bora estudar?
-          </button>
+          <p className="text-xs text-ceci-secondary">
+            cada dia útil com atividade mantém a chama acesa ♡
+          </p>
         )}
 
         <div className="grid grid-cols-2 gap-3 pt-2">

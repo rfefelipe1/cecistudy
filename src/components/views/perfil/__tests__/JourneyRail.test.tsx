@@ -11,7 +11,6 @@ import {
   deriveProfileViewModel,
   type ProfileViewModelInput,
 } from '../../../../lib/profileViewModel';
-import { MAX_TERM_ORDINAL } from '../../../../lib/termScope';
 import type { AcademicTerm, UserProfile } from '../../../../types';
 
 const profile = (over: Partial<UserProfile> = {}): UserProfile => ({
@@ -127,6 +126,22 @@ describe('JourneyNow', () => {
     expect(screen.getAllByText(/do curso/)).toHaveLength(1);
   });
 
+  it('usa o semestre ativo como título e deixa a correção num botão de ícone', () => {
+    render(
+      <JourneyNow
+        journey={journeyFor(8, 6)}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={noop}
+        onOpenSemesterWizard={noop}
+        onShowToast={noop}
+      />,
+    );
+    expect(screen.getByText('6º semestre')).toBeTruthy();
+    expect(screen.queryByText('sua jornada')).toBeNull();
+    expect(screen.queryByText('semestre atual')).toBeNull();
+    expect(screen.getByRole('button', { name: /corrigir semestre atual/ })).toBeTruthy();
+  });
+
   it('avisa (sem bloquear) quando o ordinal passa do total (I4 / SPEC-008 D3)', () => {
     render(
       <JourneyNow
@@ -178,12 +193,7 @@ describe('JourneyNow', () => {
     expect(onCorrectOrdinal).toHaveBeenCalledWith('trm-1', 5);
   });
 
-  /**
-   * Comportamento herdado do `JourneyTermCard` (SPEC-008) — a reestruturação em
-   * `JourneyNow` (SPEC-013 D1) não pode perder as garantias que a tela antiga
-   * fixou: correção por id, teto global, stepper do total, escape e rascunho.
-   */
-  describe('JourneyNow — garantias herdadas do JourneyTermCard (SPEC-008)', () => {
+  describe('garantias herdadas do JourneyTermCard (SPEC-008)', () => {
     it('escape cancela a correção sem gravar', () => {
       const onCorrectOrdinal = vi.fn();
       render(
@@ -222,45 +232,6 @@ describe('JourneyNow', () => {
       expect(onCorrectOrdinal).toHaveBeenCalledWith('trm-9', 10);
     });
 
-    it('edita o total com stepper, preso a 1..12', () => {
-      const onSetTotalSemesters = vi.fn();
-      const { rerender } = render(
-        <JourneyNow
-          journey={journeyFor(8, 6)}
-          onCorrectOrdinal={noop}
-          onSetTotalSemesters={onSetTotalSemesters}
-          onOpenSemesterWizard={noop}
-          onShowToast={noop}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /aumentar o total do curso/ }));
-      expect(onSetTotalSemesters).toHaveBeenCalledWith(9);
-
-      rerender(
-        <JourneyNow
-          journey={journeyFor(12, 6)}
-          onCorrectOrdinal={noop}
-          onSetTotalSemesters={onSetTotalSemesters}
-          onOpenSemesterWizard={noop}
-          onShowToast={noop}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /aumentar o total do curso/ }));
-      expect(onSetTotalSemesters).toHaveBeenCalledTimes(1);
-
-      rerender(
-        <JourneyNow
-          journey={journeyFor(1, 1)}
-          onCorrectOrdinal={noop}
-          onSetTotalSemesters={onSetTotalSemesters}
-          onOpenSemesterWizard={noop}
-          onShowToast={noop}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /diminuir o total do curso/ }));
-      expect(onSetTotalSemesters).toHaveBeenCalledTimes(1);
-    });
-
     it('o rascunho de correção reseta quando o período ativo muda de id', () => {
       const { rerender } = render(
         <JourneyNow
@@ -292,33 +263,6 @@ describe('JourneyNow', () => {
       );
     });
 
-    it('virar o semestre abre o wizard; sem período, abre o primeiro', () => {
-      const onOpenSemesterWizard = vi.fn();
-      const { rerender } = render(
-        <JourneyNow
-          journey={journeyFor(8, 6)}
-          onCorrectOrdinal={noop}
-          onSetTotalSemesters={noop}
-          onOpenSemesterWizard={onOpenSemesterWizard}
-          onShowToast={noop}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /virar o semestre/ }));
-      expect(onOpenSemesterWizard).toHaveBeenCalledTimes(1);
-
-      rerender(
-        <JourneyNow
-          journey={{ ...journeyFor(8, 6), hasActiveTerm: false, activeTermId: undefined }}
-          onCorrectOrdinal={noop}
-          onSetTotalSemesters={noop}
-          onOpenSemesterWizard={onOpenSemesterWizard}
-          onShowToast={noop}
-        />,
-      );
-      fireEvent.click(screen.getByRole('button', { name: /abrir meu 1º semestre/ }));
-      expect(onOpenSemesterWizard).toHaveBeenCalledTimes(2);
-    });
-
     it('sem período ativo, não oferece correção', () => {
       render(
         <JourneyNow
@@ -331,5 +275,71 @@ describe('JourneyNow', () => {
       );
       expect(screen.queryByRole('button', { name: /corrigir/ })).toBeNull();
     });
+  });
+
+  it('edita o total com stepper, preso a 1..12', () => {
+    const onSetTotalSemesters = vi.fn();
+    const { rerender } = render(
+      <JourneyNow
+        journey={journeyFor(8, 6)}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={onSetTotalSemesters}
+        onOpenSemesterWizard={noop}
+        onShowToast={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /aumentar o total do curso/ }));
+    expect(onSetTotalSemesters).toHaveBeenCalledWith(9);
+
+    rerender(
+      <JourneyNow
+        journey={journeyFor(12, 6)}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={onSetTotalSemesters}
+        onOpenSemesterWizard={noop}
+        onShowToast={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /aumentar o total do curso/ }));
+    expect(onSetTotalSemesters).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <JourneyNow
+        journey={journeyFor(1, 1)}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={onSetTotalSemesters}
+        onOpenSemesterWizard={noop}
+        onShowToast={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /diminuir o total do curso/ }));
+    expect(onSetTotalSemesters).toHaveBeenCalledTimes(1);
+  });
+
+  it('virar o semestre abre o wizard; sem período, abre o primeiro', () => {
+    const onOpenSemesterWizard = vi.fn();
+    const { rerender } = render(
+      <JourneyNow
+        journey={journeyFor(8, 6)}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={noop}
+        onOpenSemesterWizard={onOpenSemesterWizard}
+        onShowToast={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /virar o semestre/ }));
+    expect(onOpenSemesterWizard).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <JourneyNow
+        journey={{ ...journeyFor(8, 6), hasActiveTerm: false, activeTermId: undefined }}
+        onCorrectOrdinal={noop}
+        onSetTotalSemesters={noop}
+        onOpenSemesterWizard={onOpenSemesterWizard}
+        onShowToast={noop}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /abrir meu 1º semestre/ }));
+    expect(onOpenSemesterWizard).toHaveBeenCalledTimes(2);
   });
 });

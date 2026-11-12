@@ -21,7 +21,7 @@ export interface ProfileCareColumnProps {
   onMotionPrefSelect: (pref: MotionPref) => void;
   onOpenSync: () => void;
   onExport: () => void;
-  onImport: (json: string) => void;
+  onImport: (source: string | File) => void;
   onReset: () => void;
 }
 

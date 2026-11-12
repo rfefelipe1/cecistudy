@@ -1,6 +1,6 @@
 // Sheet pequeno de fundo (position="bottom") para criar uma tarefa na tela de
 // home. Substitui o formulário inline "adicionar sem nada".
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CheckCircle2, ChevronLeft } from 'lucide-react';
 import { useMobileApp } from '@/context/mobileApp';
 import type { Task } from '@/types';
@@ -40,6 +40,7 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
   const [triedNext, setTriedNext] = useState(false);
+  const savingRef = useRef(false);
 
   const [values, setValues] = useState<TaskSheetValues>(EMPTY_VALUES);
 
@@ -51,6 +52,7 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
     setStep(0);
     setTriedNext(false);
     setValues({ ...EMPTY_VALUES, taskDueDate: defaultDate ?? '' });
+    savingRef.current = false;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -71,7 +73,10 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
   ];
 
   const handleSave = useCallback(() => {
-    if (busy || !taskTitle.trim()) return;
+    // Lock síncrono: o `busy` é state (assíncrono) e deixa passar um segundo
+    // clique rápido antes de atualizar. O ref trava imediatamente.
+    if (savingRef.current || !taskTitle.trim()) return;
+    savingRef.current = true;
     setBusy(true);
     handleAddTask({
       id: 't-' + Date.now(),
@@ -83,9 +88,12 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
       priority: taskPriority,
     });
     hapticSuccess();
-    showToast(frase(CELEBRACAO, 'tarefaSalva'));
+    // SPEC-035 D5: sem prazo, a tarefa não some — ela fica na inbox, e o toast diz isso.
+    showToast(frase(CELEBRACAO, taskDueDate ? 'tarefaSalvaNaAgenda' : 'tarefaNaInbox'));
     onClose();
     setBusy(false);
+    // savingRef.current fica true até o sheet reabrir (useEffect acima) —
+    // impede clique duplo rápido gravar duas vezes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     busy,
@@ -193,12 +201,24 @@ export const TaskSheet: React.FC<TaskSheetProps> = ({ open, onClose, defaultDate
               />
               <DeadlineField
                 label="data limite (prazo)"
+                id="task-due-date"
                 value={taskDueDate}
                 onChange={(v) => patch({ taskDueDate: v })}
               />
             </div>
           )}
         </div>
+
+        {/* CF-005: título basta. O fluxo detalhado continua ali para quem quiser. */}
+        {step === 0 && canNext && (
+          <button
+            type="button"
+            onClick={handleSave}
+            className="w-full text-center px-4 py-2.5 mt-3 rounded-xl text-[11px] font-semibold text-ceci-brand-strong bg-surface-rose border border-ceci-border-brand min-h-[44px] cursor-pointer"
+          >
+            guardar só com o título
+          </button>
+        )}
 
         {/* Rodapé com navegação entre steps */}
         <div className="flex items-center justify-between gap-3 pt-3 mt-4 border-t border-ceci-border-subtle">

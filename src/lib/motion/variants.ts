@@ -47,17 +47,20 @@ const GESTURE_EXIT_TRAVEL_PX = 90;
 export function createScreenTargets(width: number, profile: MotionProfile): ScreenTargets {
   const { d, reduced } = profile;
 
-  // Sob movimento reduzido, TODO alvo horizontal é 0 — e é escrito **explícito**,
-  // não omitido: se a tela parou a meio caminho em x=400 e o perfil virou
-  // reduzido, omitir `x` deixaria o transform travado onde estava.
+  // Sob movimento reduzido, TODO alvo é 0 — e é escrito **explícito**,
+  // não omitido: se a tela parou a meio caminho em x=400 (ou y=8 na troca de
+  // aba) e o perfil virou reduzido, omitir a propriedade deixaria o transform
+  // travado onde estava.
   if (reduced) {
     const fadeIn: TargetAndTransition = {
       x: 0,
+      y: 0,
       opacity: 1,
       transition: { duration: d.replace, ease: EASE.standard },
     };
     const fadeOut: TargetAndTransition = {
       x: 0,
+      y: 0,
       opacity: 0,
       transition: { duration: d.replace, ease: EASE.exit },
     };
@@ -79,7 +82,12 @@ export function createScreenTargets(width: number, profile: MotionProfile): Scre
     // `animate` também omitiria, e o framer-motion só anima as keys **presentes**
     // no alvo — a tela ficaria transparente para sempre, com o fundo do app
     // aparecendo por baixo. Era o bug de "troco de aba e a tela some".
-    front: { x: 0, opacity: 1, transition: { duration: d.screenRest, ease: EASE.standard } },
+    front: {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      transition: { duration: d.screenRest, ease: EASE.standard },
+    },
 
     /** `depth` níveis abaixo do topo. */
     behind: (depth: number) => ({
@@ -103,7 +111,21 @@ export function createScreenTargets(width: number, profile: MotionProfile): Scre
               opacity: 1,
               transition: { duration: d.screenEnter, ease: EASE.enter },
             }
-          : { x: 0, opacity: 0, transition: { duration: d.replace, ease: EASE.standard } },
+          : intent.kind === 'tab' && intent.dir !== 0
+            ? // Aba arrastada na navbar: abas são **irmãs**, não hierarquia.
+              // Viajar uma viewport é a gramática de push/pop e lê como virar
+              // página — só o conteúdo materializa por cima do fundo parado.
+              {
+                x: 0,
+                y: 8,
+                opacity: 0,
+                transition: { duration: d.replace, ease: EASE.standard },
+              }
+            : {
+                x: 0,
+                opacity: 0,
+                transition: { duration: d.replace, ease: EASE.standard },
+              },
 
     exit: (intent: NavIntent) => {
       if (intent.morph) {
@@ -122,6 +144,15 @@ export function createScreenTargets(width: number, profile: MotionProfile): Scre
           x: -intent.dir * width,
           opacity: 1,
           transition: { duration: d.screenExit, ease: EASE.exit },
+        };
+      }
+      // Aba arrastada: a que sai só esmaece, sem viajar.
+      if (intent.kind === 'tab' && intent.dir !== 0) {
+        return {
+          x: 0,
+          y: 0,
+          opacity: 0,
+          transition: { duration: d.replace, ease: EASE.exit },
         };
       }
       return { x: 0, opacity: 0, transition: { duration: d.replace, ease: EASE.exit } };

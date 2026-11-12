@@ -11,17 +11,17 @@ import type {
   QuestionGroup,
 } from './types';
 
-function estudosBase(stack: NavScreen[]): NavScreen[] {
+function clinicaBase(stack: NavScreen[]): NavScreen[] {
   const top = stack[stack.length - 1];
-  return top.kind === 'tab' && top.tab === 'estudos'
+  return top.kind === 'tab' && top.tab === 'clinica'
     ? stack
-    : [{ kind: 'tab', tab: 'estudos' as NavTab }];
+    : [{ kind: 'tab', tab: 'clinica' as NavTab }];
 }
 
-/** Empilha o seletor de assuntos do quiz (sobre a aba estudos). */
+/** Empilha o seletor de assuntos do quiz (sobre a aba clínica). */
 export function stackAfterOpenQuizCategory(stack: NavScreen[]): NavScreen[] {
   const top = stack[stack.length - 1];
-  const base = estudosBase(stack);
+  const base = clinicaBase(stack);
   return top.kind === 'quiz-category' ? stack : [...base, { kind: 'quiz-category' }];
 }
 
@@ -31,7 +31,7 @@ export function stackAfterOpenQuizGroupDetail(
   group: QuestionGroup,
 ): NavScreen[] {
   const top = stack[stack.length - 1];
-  const base = estudosBase(stack);
+  const base = clinicaBase(stack);
   const withCategory =
     top.kind === 'quiz-category'
       ? stack
@@ -48,7 +48,7 @@ export function stackAfterOpenQuizGroupDetail(
 /** Empilha o splash de preparação (transitório; degrada ao seletor). */
 export function stackAfterOpenQuizLoading(stack: NavScreen[], config: QuizConfig): NavScreen[] {
   const top = stack[stack.length - 1];
-  const base = estudosBase(stack);
+  const base = clinicaBase(stack);
   // Aceita topo sendo quiz-category OU quiz-group-detail
   const quizSection = ['quiz-category', 'quiz-group-detail'] as const;
   if (quizSection.includes(top.kind as (typeof quizSection)[number])) {
@@ -71,7 +71,7 @@ export function stackAfterOpenQuizPlay(
   const base: NavScreen[] =
     qi !== -1
       ? stack.slice(0, stack.length - qi)
-      : [{ kind: 'tab', tab: 'estudos' as NavTab }, { kind: 'quiz-category' }];
+      : [{ kind: 'tab', tab: 'clinica' as NavTab }, { kind: 'quiz-category' }];
   return [
     ...base,
     {
@@ -120,7 +120,7 @@ export function stackAfterCloseAllQuizScreens(stack: NavScreen[]): NavScreen[] {
   const qi = [...stack].reverse().findIndex((s) => QUIZ_SECTION_KINDS.has(s.kind as any));
   if (qi === -1) return stack.slice(0, stack.length - 1);
   const base = stack.slice(0, stack.length - qi - 1);
-  return base.length === 0 ? [{ kind: 'tab', tab: 'estudos' as NavTab }] : base;
+  return base.length === 0 ? [{ kind: 'tab', tab: 'clinica' as NavTab }] : base;
 }
 
 /** "Novo quiz" no resultado: volta ao seletor; `null` se não houver categoria. */

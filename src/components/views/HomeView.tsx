@@ -1,4 +1,5 @@
 ﻿import React, { useMemo, useState, useEffect } from 'react';
+import { GraduationCap } from 'lucide-react';
 import {
   useDataClientApp,
   useDataClientCourses,
@@ -6,18 +7,20 @@ import {
 } from '@/context/DataClientProvider';
 import { useNavValue, useStudyActions } from '@/context/shellNavContexts';
 import { ATTENTION_LIMIT } from '../../lib/homeMeta';
-import { resumoDoDia, saudacao, saudacaoTurno, dica } from '../../lib/voice';
+import { resumoDoDia, saudacao, saudacaoTurno, dica, frase, VAZIO } from '../../lib/voice';
 import { daysUntil } from '../../lib/diasAte';
 import { buildCalendarEntries, getTodaySchedule } from '../../lib/schedule';
 import { addDaysKey, todayKeyLocal } from '../../lib/dateBR';
 import { isCardDue } from '../../lib/fsrs';
 import HeroSection from './home/HeroSection';
 import { heroMascote } from './home/heroMascote';
+import { useFraseMotivacao } from '../../lib/useFraseMotivacao';
+import { useFraseRotativa } from '../../lib/useFraseRotativa';
 import TodayClasses from './home/TodayClasses';
 import AttentionSection, { type AttentionItem } from './home/AttentionSection';
 import WeekRhythmCard from './home/WeekRhythmCard';
-import QuickActions from './home/QuickActions';
 import CecinhoTip from './home/CecinhoTip';
+import { SectionTitle } from '../ui/SectionTitle';
 
 export const HomeView: React.FC = () => {
   const { profile, internshipLogs, tcc, thesisChapters, thesisMeetings, thesisTasks } =
@@ -25,12 +28,17 @@ export const HomeView: React.FC = () => {
   const { courses, tasks, exams } = useDataClientCourses();
   const { flashcards, sessions } = useDataClientStudy();
   const { streakStats, currentWeekProgress } = useStudyActions();
-  const { handleNavigate, openStreak, openStudy } = useNavValue();
+  const { handleNavigate, openStreak, openTccScreen } = useNavValue();
 
   // Um relógio só: saudação, data e arte do hero saem do mesmo instante.
   const agora = new Date();
   const greeting = saudacao(agora);
   const mascote = heroMascote(saudacaoTurno(agora), agora.getDate());
+
+  // Frase de motivação do dia — escolhida aleatoriamente no boot, sem repetir a última.
+  const fraseMotivacao = useFraseMotivacao();
+  // Frase de carinho pequena — rota a cada 10 s, sem repetir duas vezes seguidas.
+  const fraseCarcinho = useFraseRotativa(10_000);
 
   /**
    * Coreografia de abertura da Home (SPEC-M-028 D27): na primeira montagem da
@@ -63,6 +71,14 @@ export const HomeView: React.FC = () => {
 
   // Flashcards vencidos (revisão pendente)
   const dueCardsCount = useMemo(() => flashcards.filter((c) => isCardDue(c)).length, [flashcards]);
+
+  // Formação: TCC (capítulos prontos) — eixo principal que substitui as ações
+  // rápidas de estudo (SPEC-M-032 D8).
+  const tccPct = useMemo(() => {
+    if (thesisChapters.length === 0) return 0;
+    const done = thesisChapters.filter((c) => c.stage === 'pronto').length;
+    return Math.round((done / thesisChapters.length) * 100);
+  }, [thesisChapters]);
 
   // Aulas de hoje, ordenadas por hora (com o slot para exibir horário/sala)
   const todaySchedule = useMemo(() => getTodaySchedule(courses, new Date()), [courses]);
@@ -150,6 +166,8 @@ export const HomeView: React.FC = () => {
         greeting={greeting}
         name={profile.name}
         dayMessage={dayMessage}
+        fraseMotivacao={fraseMotivacao}
+        fraseCarcinho={fraseCarcinho?.texto ?? null}
         mascote={mascote}
       />
 
@@ -178,12 +196,22 @@ export const HomeView: React.FC = () => {
             onOpenStreak={openStreak}
           />
 
-          {/* 5. AÇÕES RÁPIDAS */}
-          <QuickActions
-            dueCardsCount={dueCardsCount}
-            onFocus={() => openStudy('focus')}
-            onReview={() => openStudy('revisar')}
-          />
+          {/* 5. SUA FORMAÇÃO — TCC (eixo principal, SPEC-M-032 D8) */}
+          <section className="space-y-3 px-0.5">
+            <SectionTitle icon={<GraduationCap className="w-4 h-4 text-ceci-brand-strong" />}>
+              sua formação
+            </SectionTitle>
+            <button
+              onClick={() => openTccScreen()}
+              className="w-full bg-surface-default hover:border-ceci-border-brand rounded-2xl p-5 text-left border border-ceci-border-default tap-interactive cursor-pointer space-y-2 shadow-sm min-h-[110px]"
+            >
+              <GraduationCap className="w-6 h-6 text-ceci-brand-strong" />
+              <p className="text-base font-bold font-display text-ceci-primary">meu tcc</p>
+              <p className="text-[11px] text-ceci-secondary">
+                {thesisChapters.length > 0 ? `${tccPct}% dos capítulos` : frase(VAZIO, 'tccComecarCurto')}
+              </p>
+            </button>
+          </section>
 
           {/* 6. DICA DA CECINHO */}
           <CecinhoTip tip={cecinhoTip} />
