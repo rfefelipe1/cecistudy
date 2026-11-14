@@ -7,6 +7,7 @@ import { MobileAppShell } from './shells/MobileAppShell';
 import { MobileOverlays } from './overlays/MobileOverlays';
 import { MotionPreferenceGate } from './components/motion/MotionPreferenceGate';
 import { MobileAppProvider } from '../apps/mobile/src/MobileAppProvider';
+import { GlimmThemeAnimationProvider } from './components/ui/glimm-theme-animation-provider';
 
 /**
  * Raiz da experiência web (PWA responsiva + nativo Capacitor Android/iOS).
@@ -20,13 +21,15 @@ export default function App() {
   return (
     <MotionConfig reducedMotion="user">
       <ErrorBoundary>
-        <MobileAppProvider>
-          <MotionPreferenceGate>
-            <BootSplash />
-            <MobileAppShell />
-            <MobileOverlays />
-          </MotionPreferenceGate>
-        </MobileAppProvider>
+        <GlimmThemeAnimationProvider>
+          <MobileAppProvider>
+            <MotionPreferenceGate>
+              <BootSplash />
+              <MobileAppShell />
+              <MobileOverlays />
+            </MotionPreferenceGate>
+          </MobileAppProvider>
+        </GlimmThemeAnimationProvider>
       </ErrorBoundary>
     </MotionConfig>
   );

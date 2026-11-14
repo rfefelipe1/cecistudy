@@ -12,8 +12,8 @@
  * verificador (`node contracts/verify-schema.mjs`).
  *
  * Referência de versões (ver `packages/data/src/schema.ts`):
- *   SCHEMA_VERSION      = 22   (versão do payload persistido/backup)
- *   USER_SCHEMA_VERSION = 1    (versão da base SQLite da usuária `cecistudy_user`)
+ *   SCHEMA_VERSION      = 23   (versão do payload persistido/backup)
+ *   USER_SCHEMA_VERSION = 5    (versão da base SQLite da usuária `cecistudy_user`)
  *   CATALOG_RELEASE     = ver `content/catalog-version.json` (catálogo estático)
  *
  * Dois bancos lógicos (web usa facades JS; nativo usa SQLite):
@@ -312,6 +312,41 @@ CREATE TABLE IF NOT EXISTS thesis_writing_log (
 );
 CREATE INDEX IF NOT EXISTS idx_thesis_writing_log_thesis ON thesis_writing_log(thesis_id);
 CREATE INDEX IF NOT EXISTS idx_thesis_writing_log_date ON thesis_writing_log(date);
+
+-- SPEC-037: estado leve do Cecinho Agent.
+CREATE TABLE IF NOT EXISTS assisted_task (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  assistance_state TEXT,
+  status TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_assisted_task_task ON assisted_task(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_conversation (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  updated_at TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_conversation_task ON agent_conversation(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_plan (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  status TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_plan_task ON agent_plan(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_artifact (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  path TEXT,
+  mime_type TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_artifact_task ON agent_artifact(task_id);
 
 CREATE TABLE IF NOT EXISTS achievement (
   id TEXT PRIMARY KEY,

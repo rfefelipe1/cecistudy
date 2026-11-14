@@ -10,7 +10,7 @@ import { legacyNotebookToLog, THESIS_ID, emptyThesisReminderPrefs } from '@cecis
  * incremente esta versão e registre a migração correspondente em `MIGRATIONS`.
  * O export/import carrega a versão junto; o app recusa/avisa dados de versão desconhecida.
  */
-export const SCHEMA_VERSION = 22;
+export const SCHEMA_VERSION = 23;
 
 /** Versão de schema da base da usuária (antigo scaffold SQLite, hoje mantida por compatibilidade de import). */
 export const USER_SCHEMA_VERSION = 1;
@@ -689,6 +689,21 @@ export const MIGRATIONS: Record<number, Migration> = {
         : {}),
     };
   },
+
+  /**
+   * 23 — Cecinho Agent (SPEC-037).
+   *
+   * As quatro coleções nascem vazias: assistência é opt-in, então dado antigo
+   * não tem o que converter. Pura e idempotente — rodar duas vezes devolve o
+   * mesmo objeto, e coleção que já existir é preservada.
+   */
+  23: (data) => ({
+    ...data,
+    assistedTasks: data.assistedTasks ?? [],
+    agentConversations: data.agentConversations ?? [],
+    agentPlans: data.agentPlans ?? [],
+    agentArtifacts: data.agentArtifacts ?? [],
+  }),
 };
 
 /**

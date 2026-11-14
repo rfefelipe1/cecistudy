@@ -29,7 +29,7 @@ const achievements = (over: Partial<ProfileAchievements> = {}): ProfileAchieveme
     sticker({ id: 'stk-2', emoji: '🌱', name: 'primeira tarefa', unlocked: false }),
   ],
   next: { label: 'rumo ao nível 5', progress: 40 },
-  streak: { current: 3, longest: 7, total: 20, alive: true },
+  streak: { current: 3, longest: 7, total: 20, alive: true, protectionUsed: false },
   ...over,
 });
 

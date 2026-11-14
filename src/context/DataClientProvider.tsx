@@ -13,6 +13,9 @@ import {
    Flashcard,
    FlashcardDeck,
    MaterialItem,
+   Material,
+   EixoTematico,
+   EstadoPessoal,
    InternshipLog,
    ThesisProject,
    ThesisChapter,
@@ -20,6 +23,10 @@ import {
    ThesisMeeting,
    ThesisTask,
    ThesisWritingLog,
+  AssistedTask,
+  AgentConversation,
+  AgentPlan,
+  AgentArtifact,
    Sticker,
    StudySession,
    Technique,
@@ -63,9 +70,10 @@ export interface ToastOptions {
 import { useSqliteState } from '../lib/useSqliteState';
 import { useStampedState } from '../lib/useStampedState';
 import { usePersistentState } from '../lib/usePersistentState';
+
 import type { ReminderSettings } from '../lib/reminderSettings';
 import { traceAsync } from '../lib/performance/perfMarks';
-import { erroDeSync, CELEBRACAO, frase } from '../lib/voice';
+import { erro, erroDeSync, CELEBRACAO, frase } from '../lib/voice';
 import { invalidatePendingWrites } from '../lib/db/writeQueue';
 import { useBackgroundSyncTriggers } from '../lib/sync/useBackgroundSyncTriggers';
 import { emptySyncIndex, maxStamp } from '../lib/sync/stamp';
@@ -74,7 +82,7 @@ import { mergeCatalogWithProgress } from '../lib/stickers';
 import { parseLegacySchedule } from '../lib/schedule';
 import { ensureApproaches, ensureQuestions } from '../lib/bootPreload';
 import { migrateSupervisionNotebook } from '../lib/migrations';
-import { exportAppDatabase } from '../lib/exportImport';
+import { exportAppDatabase, exportBackupZip } from '../lib/exportFile';
 import {
   applyDatabaseToSetters,
   snapshotFromState,
@@ -83,6 +91,15 @@ import {
   buildBackupPayload,
   importAppDatabase,
 } from '../lib/dataClient';
+import {
+  writeBackupZip,
+  importBackupZip,
+  domainLabel,
+  validateManifest,
+  type BackupManifest,
+} from '../lib/backupZip';
+import { SYNC_PROTOCOL_VERSION, hashContent } from '../lib/sync/provider';
+import type { SemesterMemory } from '../lib/semesterMemory';
 import { GitHubSyncProvider } from '../lib/sync/providers/github';
 import {
   SyncEngine,
@@ -94,8 +111,9 @@ import type { SyncManifest } from '../lib/sync/provider';
 import { getUserDb, clearUserData } from '../lib/db/userDb';
 import type { ThemeId } from '../lib/themes';
 import { MOTION_PREF_DEFAULT, type MotionPref } from '../lib/motion';
-import { DEFAULT_THEME_ID, applyTheme, getThemeById } from '../lib/themes';
+import { DEFAULT_THEME_ID, applyTheme, getActiveTheme, getThemeById } from '../lib/themes';
 import { applyThemeColorChrome } from '../lib/themeChrome';
+import { useGlimmThemeAnimation } from '../components/ui/glimm-theme-animation-provider';
 
 export type { ReminderSettings, ReminderCategories } from '../lib/reminderSettings';
 
@@ -183,6 +201,16 @@ export interface DataClientKnowledgeSlice {
   looseNotes: LooseNote[];
   setLooseNotes: React.Dispatch<React.SetStateAction<LooseNote[]>>;
   setLooseNotesRaw: React.Dispatch<React.SetStateAction<LooseNote[]>>;
+  /** Biblioteca (SPEC-034): catálogo de obras, eixos temáticos e estado pessoal. */
+  bibliotecas: Material[];
+  setBibliotecas: React.Dispatch<React.SetStateAction<Material[]>>;
+  setBibliotecasRaw: React.Dispatch<React.SetStateAction<Material[]>>;
+  eixosTematicos: EixoTematico[];
+  setEixosTematicos: React.Dispatch<React.SetStateAction<EixoTematico[]>>;
+  setEixosTematicosRaw: React.Dispatch<React.SetStateAction<EixoTematico[]>>;
+  estadoPessoal: EstadoPessoal[];
+  setEstadoPessoal: React.Dispatch<React.SetStateAction<EstadoPessoal[]>>;
+  setEstadoPessoalRaw: React.Dispatch<React.SetStateAction<EstadoPessoal[]>>;
 }
 
 export interface DataClientAppSlice {
@@ -216,6 +244,19 @@ export interface DataClientAppSlice {
   thesisWritingLogs: ThesisWritingLog[];
   setThesisWritingLogs: React.Dispatch<React.SetStateAction<ThesisWritingLog[]>>;
   setThesisWritingLogsRaw: React.Dispatch<React.SetStateAction<ThesisWritingLog[]>>;
+  // SPEC-037: estado leve do Cecinho Agent.
+  assistedTasks: AssistedTask[];
+  setAssistedTasks: React.Dispatch<React.SetStateAction<AssistedTask[]>>;
+  setAssistedTasksRaw: React.Dispatch<React.SetStateAction<AssistedTask[]>>;
+  agentConversations: AgentConversation[];
+  setAgentConversations: React.Dispatch<React.SetStateAction<AgentConversation[]>>;
+  setAgentConversationsRaw: React.Dispatch<React.SetStateAction<AgentConversation[]>>;
+  agentPlans: AgentPlan[];
+  setAgentPlans: React.Dispatch<React.SetStateAction<AgentPlan[]>>;
+  setAgentPlansRaw: React.Dispatch<React.SetStateAction<AgentPlan[]>>;
+  agentArtifacts: AgentArtifact[];
+  setAgentArtifacts: React.Dispatch<React.SetStateAction<AgentArtifact[]>>;
+  setAgentArtifactsRaw: React.Dispatch<React.SetStateAction<AgentArtifact[]>>;
   stickers: Sticker[];
   setStickers: React.Dispatch<React.SetStateAction<Sticker[]>>;
   setStickersRaw: React.Dispatch<React.SetStateAction<Sticker[]>>;
@@ -225,6 +266,9 @@ export interface DataClientAppSlice {
   setGcalEnabledState: React.Dispatch<React.SetStateAction<boolean>>;
   gcalMap: Record<string, string>;
   setGcalMap: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  /** Ajuda global do Cecinho (SPEC-037 T013); pref do aparelho, fora do backup. */
+  cecinhoHelpEnabled: boolean;
+  setCecinhoHelpEnabled: React.Dispatch<React.SetStateAction<boolean>>;
   themePref: ThemeId;
   setThemePref: React.Dispatch<React.SetStateAction<ThemeId>>;
   /** Preferência de movimento (SPEC-M-027 D9). Dado do aparelho, fora do backup. */
@@ -277,7 +321,7 @@ export interface DataClientAppSlice {
   resetApp: () => void;
   completeOnboarding: (profileUpdate: Partial<UserProfile>) => void;
   exportData: () => Promise<void>;
-  importData: (json: string) => void;
+  importData: (source: string | Blob | ArrayBuffer) => void;
   getSyncPayloadJson: () => Promise<string>;
   applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
   configureGithubSync: (cfg: { owner: string; repo: string; token: string }) => void;
@@ -335,6 +379,16 @@ export interface DataClientValue {
   materials: MaterialItem[];
   setMaterials: React.Dispatch<React.SetStateAction<MaterialItem[]>>;
   setMaterialsRaw: React.Dispatch<React.SetStateAction<MaterialItem[]>>;
+  /** Biblioteca (SPEC-034): catálogo de obras, eixos temáticos e estado pessoal. */
+  bibliotecas: Material[];
+  setBibliotecas: React.Dispatch<React.SetStateAction<Material[]>>;
+  setBibliotecasRaw: React.Dispatch<React.SetStateAction<Material[]>>;
+  eixosTematicos: EixoTematico[];
+  setEixosTematicos: React.Dispatch<React.SetStateAction<EixoTematico[]>>;
+  setEixosTematicosRaw: React.Dispatch<React.SetStateAction<EixoTematico[]>>;
+  estadoPessoal: EstadoPessoal[];
+  setEstadoPessoal: React.Dispatch<React.SetStateAction<EstadoPessoal[]>>;
+  setEstadoPessoalRaw: React.Dispatch<React.SetStateAction<EstadoPessoal[]>>;
 internshipLogs: InternshipLog[];
    setInternshipLogs: React.Dispatch<React.SetStateAction<InternshipLog[]>>;
    setInternshipLogsRaw: React.Dispatch<React.SetStateAction<InternshipLog[]>>;
@@ -357,6 +411,18 @@ internshipLogs: InternshipLog[];
   thesisWritingLogs: ThesisWritingLog[];
   setThesisWritingLogs: React.Dispatch<React.SetStateAction<ThesisWritingLog[]>>;
   setThesisWritingLogsRaw: React.Dispatch<React.SetStateAction<ThesisWritingLog[]>>;
+  assistedTasks: AssistedTask[];
+  setAssistedTasks: React.Dispatch<React.SetStateAction<AssistedTask[]>>;
+  setAssistedTasksRaw: React.Dispatch<React.SetStateAction<AssistedTask[]>>;
+  agentConversations: AgentConversation[];
+  setAgentConversations: React.Dispatch<React.SetStateAction<AgentConversation[]>>;
+  setAgentConversationsRaw: React.Dispatch<React.SetStateAction<AgentConversation[]>>;
+  agentPlans: AgentPlan[];
+  setAgentPlans: React.Dispatch<React.SetStateAction<AgentPlan[]>>;
+  setAgentPlansRaw: React.Dispatch<React.SetStateAction<AgentPlan[]>>;
+  agentArtifacts: AgentArtifact[];
+  setAgentArtifacts: React.Dispatch<React.SetStateAction<AgentArtifact[]>>;
+  setAgentArtifactsRaw: React.Dispatch<React.SetStateAction<AgentArtifact[]>>;
   stickers: Sticker[];
   setStickers: React.Dispatch<React.SetStateAction<Sticker[]>>;
   setStickersRaw: React.Dispatch<React.SetStateAction<Sticker[]>>;
@@ -392,6 +458,8 @@ questions: StudyQuestion[];
     setGcalEnabledState: React.Dispatch<React.SetStateAction<boolean>>;
     gcalMap: Record<string, string>;
     setGcalMap: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+    cecinhoHelpEnabled: boolean;
+    setCecinhoHelpEnabled: React.Dispatch<React.SetStateAction<boolean>>;
     themePref: ThemeId;
     setThemePref: React.Dispatch<React.SetStateAction<ThemeId>>;
     /** Preferência de movimento (SPEC-M-027 D9). Dado do aparelho, fora do backup. */
@@ -420,6 +488,8 @@ questions: StudyQuestion[];
     bookmarkedCourseIds: string[];
     setBookmarkedCourseIds: React.Dispatch<React.SetStateAction<string[]>>;
     setBookmarkedCourseIdsRaw: React.Dispatch<React.SetStateAction<string[]>>;
+    semesterMemories: SemesterMemory[];
+    setSemesterMemories: React.Dispatch<React.SetStateAction<SemesterMemory[]>>;
     looseNotes: LooseNote[];
     setLooseNotes: React.Dispatch<React.SetStateAction<LooseNote[]>>;
     setLooseNotesRaw: React.Dispatch<React.SetStateAction<LooseNote[]>>;
@@ -458,7 +528,7 @@ questions: StudyQuestion[];
     resetApp: () => void;
     completeOnboarding: (profileUpdate: Partial<UserProfile>) => void;
     exportData: () => Promise<void>;
-    importData: (json: string) => void;
+    importData: (source: string | Blob | ArrayBuffer) => void;
     getSyncPayloadJson: () => Promise<string>;
     applySyncedDatabase: (db: ReturnType<typeof emptyDatabase>) => void;
     configureGithubSync: (cfg: { owner: string; repo: string; token: string }) => void;
@@ -521,6 +591,10 @@ export function useDataClient(): DataClientValue {
   const { value: flashcards, set: setFlashcards, setRaw: setFlashcardsRaw } = useStampedState<Flashcard[]>('flashcards', [], syncIndex, setSyncIndex);
   const { value: decks, set: setDecks, setRaw: setDecksRaw } = useStampedState<FlashcardDeck[]>('decks', [], syncIndex, setSyncIndex);
   const { value: materials, set: setMaterials, setRaw: setMaterialsRaw } = useStampedState<MaterialItem[]>('materials', [], syncIndex, setSyncIndex);
+  // Biblioteca (SPEC-034): catálogo de obras, eixos temáticos e estado pessoal.
+  const { value: bibliotecas, set: setBibliotecas, setRaw: setBibliotecasRaw } = useStampedState<Material[]>('bibliotecas', [], syncIndex, setSyncIndex);
+  const { value: eixosTematicos, set: setEixosTematicos, setRaw: setEixosTematicosRaw } = useStampedState<EixoTematico[]>('eixosTematicos', [], syncIndex, setSyncIndex);
+  const { value: estadoPessoal, set: setEstadoPessoal, setRaw: setEstadoPessoalRaw } = useStampedState<EstadoPessoal[]>('estadoPessoal', [], syncIndex, setSyncIndex);
   // `F14`: a chave era `'internship'`, que **não é chave de registry**
   // (`collections.ts:105` declara `'internshipLogs'`). Consequência: no nativo,
   // `isUserCollectionKey('internship')` era `false`, então os logs nunca chegavam
@@ -539,6 +613,11 @@ export function useDataClient(): DataClientValue {
   const { value: thesisMeetings, set: setThesisMeetings, setRaw: setThesisMeetingsRaw } = useStampedState<ThesisMeeting[]>('thesisMeetings', [], syncIndex, setSyncIndex);
   const { value: thesisTasks, set: setThesisTasks, setRaw: setThesisTasksRaw } = useStampedState<ThesisTask[]>('thesisTasks', [], syncIndex, setSyncIndex);
   const { value: thesisWritingLogs, set: setThesisWritingLogs, setRaw: setThesisWritingLogsRaw } = useStampedState<ThesisWritingLog[]>('thesisWritingLogs', [], syncIndex, setSyncIndex);
+  // Cecinho Agent (SPEC-037): estado leve. O conteúdo pesado não passa aqui.
+  const { value: assistedTasks, set: setAssistedTasks, setRaw: setAssistedTasksRaw } = useStampedState<AssistedTask[]>('assistedTasks', [], syncIndex, setSyncIndex);
+  const { value: agentConversations, set: setAgentConversations, setRaw: setAgentConversationsRaw } = useStampedState<AgentConversation[]>('agentConversations', [], syncIndex, setSyncIndex);
+  const { value: agentPlans, set: setAgentPlans, setRaw: setAgentPlansRaw } = useStampedState<AgentPlan[]>('agentPlans', [], syncIndex, setSyncIndex);
+  const { value: agentArtifacts, set: setAgentArtifacts, setRaw: setAgentArtifactsRaw } = useStampedState<AgentArtifact[]>('agentArtifacts', [], syncIndex, setSyncIndex);
 
   // Dreno da MIGRATIONS[22] no boot (SPEC-012 §17.2 A1). O `migrateDatabase` tem
   // **um** chamador no repositório (`exportImport.ts:110` — import de backup);
@@ -711,29 +790,48 @@ export function useDataClient(): DataClientValue {
   // Integração com Google Calendar (apenas provas e tarefas; toggle próprio)
   const [gcalEnabled, setGcalEnabledState] = usePersistentState<boolean>('gcalEnabled', false);
   const [gcalMap, setGcalMap] = usePersistentState<Record<string, string>>('gcalMap', {});
+  // Ajuda global do Cecinho (SPEC-037 T013): sugestão, nunca interrupção.
+  const [cecinhoHelpEnabled, setCecinhoHelpEnabled] = usePersistentState<boolean>('cecinhoHelpEnabled', false);
 
   // Sistema de temas (TEM-001) — preferência persistida. O boot anti-flash
   // (initTheme em main.tsx) já aplica web; este efeito cobre a hidratação
   // assíncrona nativa e as trocas feitas pelo picker (com transição suave,
   // exceto no primeiro apply pós-montagem para não piscar o tema default).
-  const [themePref, setThemePref] = usePersistentState<ThemeId>('themePref', DEFAULT_THEME_ID);
+  // Tema vira dado do usuário (SPEC-M-030 D6): viaja no backup e é restaurado
+  // após reinstalação. Antes era namespace 'device' (ficava no aparelho).
+  const [themePref, setThemePref] = usePersistentState<ThemeId>(
+    'themePref',
+    DEFAULT_THEME_ID,
+    'user',
+  );
 
   // Preferência de movimento (SPEC-M-027 D9) — dado do aparelho, fora do backup.
   const [motionPref, setMotionPref] = usePersistentState<MotionPref>(
     'motionPref',
     MOTION_PREF_DEFAULT,
   );
-  const skipThemeTransitionRef = useRef(true);
+  const { play: playThemeAnimation } = useGlimmThemeAnimation();
   useEffect(() => {
     const theme = getThemeById(themePref);
-    applyTheme(theme, { transition: !skipThemeTransitionRef.current });
-    applyThemeColorChrome(theme);
-    skipThemeTransitionRef.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [themePref]);
+    const apply = () => {
+      applyTheme(theme, { transition: true });
+      applyThemeColorChrome(theme);
+    };
+    // O boot já aplicou o tema em `initTheme` (main.tsx): só anima troca real.
+    // Comparar com o tema ativo (em vez de um ref "primeira execução") também
+    // evita tocar a animação no duplo efeito do StrictMode em dev.
+    if (getActiveTheme().id === theme.id) {
+      applyTheme(theme);
+      applyThemeColorChrome(theme);
+      return;
+    }
+    // A troca de tema acompanha a banda do glimm; sem animação, `apply` roda na hora.
+    playThemeAnimation(apply);
+  }, [themePref, playThemeAnimation]);
 
   // Onboarding (primeiro acesso)
   const [onboarding, setOnboarding] = usePersistentState<import('../types').OnboardingState>('onboarding', emptyOnboarding, 'user');
+
   // Fase 3 — registry local de workspaces. O padrão é o Workspace Acadêmico.
   // (o estado de sessão — incluindo activeWorkspaceId — ficava no
   // DesktopSessionProvider em apps/desktop, legado removido 2026-09; aqui só o registry.)
@@ -774,6 +872,9 @@ export function useDataClient(): DataClientValue {
 
   // Favoritos de disciplinas (persistidos globalmente)
   const { value: bookmarkedCourseIds, set: setBookmarkedCourseIds, setRaw: setBookmarkedCourseIdsRaw } = useStampedState<string[]>('bookmarkedCourseIds', [], syncIndex, setSyncIndex);
+
+  // Memórias de semestre (SPEC-028)
+  const { value: semesterMemories, set: setSemesterMemories, setRaw: setSemesterMemoriesRaw } = useStampedState<SemesterMemory[]>('semesterMemories', [], syncIndex, setSyncIndex);
 
   // Notas avulsas (global — a tela de composição salva fora da biblioteca)
   const { value: looseNotes, set: setLooseNotes, setRaw: setLooseNotesRaw } = useStampedState<LooseNote[]>('looseNotes', [], syncIndex, setSyncIndex);
@@ -886,6 +987,10 @@ export function useDataClient(): DataClientValue {
         thesisMeetings: setThesisMeetingsRaw,
         thesisTasks: setThesisTasksRaw,
         thesisWritingLogs: setThesisWritingLogsRaw,
+        assistedTasks: setAssistedTasksRaw,
+        agentConversations: setAgentConversationsRaw,
+        agentPlans: setAgentPlansRaw,
+        agentArtifacts: setAgentArtifactsRaw,
         streakData: setStreakDataRaw,
         reminder: setReminderSettings,
         looseNotes: setLooseNotesRaw,
@@ -938,7 +1043,12 @@ export function useDataClient(): DataClientValue {
     showToast(frase(CELEBRACAO, 'cantinhoPronto'));
   };
 
-  /** Coleta todos os estados persistidos num payload versionado (backup). */
+  /** Coleta todos os estados persistidos e exporta um backup ZIP
+   * (cecistudy-backup-<yyyy-mm-dd>.zip) com manifest + pastas por domínio.
+   *
+   * SPEC-M-030 D1: export sempre em ZIP. O sync GitHub continua em JSON único
+   * (D7) — este export é só para backup local/remoto de arquivo.
+   */
   const exportData = async () => {
     const payload = await buildBackupPayload(snapshotFromState({
       profile, courses, classes, tasks, exams, authors, concepts, approaches,
@@ -947,24 +1057,87 @@ export function useDataClient(): DataClientValue {
       bookmarkedCourseIds, readingProgress, questions, techniques, quizSessions,
       academicTerms, readingSessions, readingHighlights, readingBookmarks,
       thesisChapters, thesisReferences, thesisMeetings, thesisTasks, thesisWritingLogs,
+      assistedTasks, agentConversations, agentPlans, agentArtifacts,
       onboarding, syncIndex,
     }));
-    await exportAppDatabase(payload);
+
+    // Monta o manifest com os campos do SyncManifest + específicos do ZIP (D4).
+    const manifest: BackupManifest = {
+      schemaVersion: SCHEMA_VERSION,
+      protocolVersion: SYNC_PROTOCOL_VERSION,
+      appVersion: APP_VERSION,
+      revision: syncCheckpoint.baseRevision,
+      deviceId,
+      workspaceScope: 'default',
+      parentRevision: null,
+      contentHash: hashContent(JSON.stringify(payload)),
+      createdAt: new Date().toISOString(),
+      tela: 'exportacao',
+      temPATgithub: githubSyncConfig !== null,
+      nomeUsuario: profile.name ?? '',
+      temaId: themePref,
+    };
+
+    // Cada chave do payload vira uma pasta de domínio (D3/D9); `themes` viaja à
+    // parte (D6). Passar o payload inteiro evita lista manual que esquece coleção
+    // nova e perde dado no export.
+    const saveFile = async (fileName: string, bytes: Uint8Array): Promise<string> => {
+      await exportBackupZip(bytes, fileName);
+      return fileName;
+    };
+
+    await writeBackupZip({ saveFile }, manifest, payload.payload, { temaId: themePref });
+    showToast(frase(CELEBRACAO, 'backupExportado'));
   };
 
-  /** Restaura um payload exportado (backup/migração), validando a versão do schema. */
-  const importData = (json: string) => {
+  /**
+   * Restaura um backup. Aceita JSON v2 (string) e ZIP novo (File/Blob/bytes).
+   * SPEC-M-030 D2: ZIP usa o pipeline com mínimo + on-demand; JSON continua no
+   * `importAppDatabase` de sempre.
+   */
+  const importData = (source: string | Blob | ArrayBuffer) => {
     void (async () => {
-      const db = await importAppDatabase(json);
-      if (!db) {
-        showToast(frase(CELEBRACAO, 'backupIncompativel'));
-        return;
-      }
       // Pendências pré-import não sobrevivem ao restore (spec-performance
       // F5.5) — invalida e aguarda o em andamento antes de aplicar.
       await invalidatePendingWrites();
-      applyDatabase(db);
-      showToast(frase(CELEBRACAO, 'backupRestaurado'));
+
+      if (typeof source === 'string') {
+        const db = await importAppDatabase(source);
+        if (!db) {
+          showToast(frase(CELEBRACAO, 'backupIncompativel'));
+          return;
+        }
+        applyDatabase(db);
+        showToast(frase(CELEBRACAO, 'backupRestaurado'));
+        return;
+      }
+
+      const bytes =
+        source instanceof ArrayBuffer ? new Uint8Array(source) : new Uint8Array(await source.arrayBuffer());
+      const isZip = bytes[0] === 0x50 && bytes[1] === 0x4b; // "PK"
+      if (!isZip) {
+        const db = await importAppDatabase(new TextDecoder().decode(bytes));
+        if (!db) {
+          showToast(frase(CELEBRACAO, 'backupIncompativel'));
+          return;
+        }
+        applyDatabase(db);
+        showToast(frase(CELEBRACAO, 'backupRestaurado'));
+        return;
+      }
+
+      const result = await importBackupZip(bytes, {
+        apply: (db) => applyDatabase(db),
+        applyTheme: (id) => setThemePref(id as ThemeId),
+        onDomainLoaded: (domain) =>
+          showToast(frase(CELEBRACAO, 'dominioCarregado', { dominio: domainLabel(domain) })),
+        onDomainError: (domain) =>
+          showToast(erro('dominioNaoCarregado', { dominio: domainLabel(domain) })),
+      });
+
+      showToast(
+        frase(CELEBRACAO, result.ok ? 'backupRestaurado' : 'backupIncompativel'),
+      );
     })();
   };
 
@@ -977,6 +1150,7 @@ export function useDataClient(): DataClientValue {
       bookmarkedCourseIds, readingProgress, questions, techniques, quizSessions,
       academicTerms, readingSessions, readingHighlights, readingBookmarks,
       thesisChapters, thesisReferences, thesisMeetings, thesisTasks, thesisWritingLogs,
+      assistedTasks, agentConversations, agentPlans, agentArtifacts,
       onboarding, syncIndex,
     }));
     return JSON.stringify(payload);
@@ -986,6 +1160,7 @@ export function useDataClient(): DataClientValue {
     bookmarkedCourseIds, readingProgress, questions, techniques, quizSessions,
     academicTerms, readingSessions, readingHighlights, readingBookmarks,
     thesisChapters, thesisReferences, thesisMeetings, thesisTasks, thesisWritingLogs,
+    assistedTasks, agentConversations, agentPlans, agentArtifacts,
     onboarding, syncIndex]);
 
   /** Aplica o banco mesclado pela sincronização (mesmo caminho do import). */
@@ -1228,6 +1403,15 @@ export function useDataClient(): DataClientValue {
       looseNotes,
       setLooseNotes,
       setLooseNotesRaw,
+      bibliotecas,
+      setBibliotecas,
+      setBibliotecasRaw,
+      eixosTematicos,
+      setEixosTematicos,
+      setEixosTematicosRaw,
+      estadoPessoal,
+      setEstadoPessoal,
+      setEstadoPessoalRaw,
     }),
     [
       authors, setAuthors, setAuthorsRaw,
@@ -1236,6 +1420,9 @@ export function useDataClient(): DataClientValue {
       savedBookIds, setSavedBookIds, setSavedBookIdsRaw,
       readingProgress, setReadingProgress, setReadingProgressRaw,
       looseNotes, setLooseNotes, setLooseNotesRaw,
+      bibliotecas, setBibliotecas, setBibliotecasRaw,
+      eixosTematicos, setEixosTematicos, setEixosTematicosRaw,
+      estadoPessoal, setEstadoPessoal, setEstadoPessoalRaw,
     ]
   );
 
@@ -1268,6 +1455,18 @@ export function useDataClient(): DataClientValue {
       thesisWritingLogs,
       setThesisWritingLogs,
       setThesisWritingLogsRaw,
+      assistedTasks,
+      setAssistedTasks,
+      setAssistedTasksRaw,
+      agentConversations,
+      setAgentConversations,
+      setAgentConversationsRaw,
+      agentPlans,
+      setAgentPlans,
+      setAgentPlansRaw,
+      agentArtifacts,
+      setAgentArtifacts,
+      setAgentArtifactsRaw,
       stickers,
       setStickers,
       setStickersRaw,
@@ -1277,6 +1476,8 @@ export function useDataClient(): DataClientValue {
       setGcalEnabledState,
       gcalMap,
       setGcalMap,
+      cecinhoHelpEnabled,
+      setCecinhoHelpEnabled,
       themePref,
       setThemePref,
       motionPref,
@@ -1333,6 +1534,10 @@ export function useDataClient(): DataClientValue {
       thesisMeetings, setThesisMeetings,
       thesisTasks, setThesisTasks,
       thesisWritingLogs, setThesisWritingLogs,
+      assistedTasks, setAssistedTasks, setAssistedTasksRaw,
+      agentConversations, setAgentConversations, setAgentConversationsRaw,
+      agentPlans, setAgentPlans, setAgentPlansRaw,
+      agentArtifacts, setAgentArtifacts, setAgentArtifactsRaw,
       stickers, setStickers, setStickersRaw,
       reminderSettings, setReminderSettings,
       gcalEnabled, setGcalEnabledState, gcalMap, setGcalMap,
@@ -1418,6 +1623,18 @@ export function useDataClient(): DataClientValue {
       thesisWritingLogs,
       setThesisWritingLogs,
       setThesisWritingLogsRaw,
+      assistedTasks,
+      setAssistedTasks,
+      setAssistedTasksRaw,
+      agentConversations,
+      setAgentConversations,
+      setAgentConversationsRaw,
+      agentPlans,
+      setAgentPlans,
+      setAgentPlansRaw,
+      agentArtifacts,
+      setAgentArtifacts,
+      setAgentArtifactsRaw,
       stickers,
       setStickers,
       setStickersRaw,
@@ -1453,6 +1670,8 @@ questions,
       setGcalEnabledState,
       gcalMap,
       setGcalMap,
+      cecinhoHelpEnabled,
+      setCecinhoHelpEnabled,
       themePref,
       setThemePref,
       motionPref,
@@ -1480,9 +1699,20 @@ questions,
       bookmarkedCourseIds,
       setBookmarkedCourseIds,
       setBookmarkedCourseIdsRaw,
+      semesterMemories,
+      setSemesterMemories,
       looseNotes,
       setLooseNotes,
       setLooseNotesRaw,
+      bibliotecas,
+      setBibliotecas,
+      setBibliotecasRaw,
+      eixosTematicos,
+      setEixosTematicos,
+      setEixosTematicosRaw,
+      estadoPessoal,
+      setEstadoPessoal,
+      setEstadoPessoalRaw,
       toast,
       showToast,
       deviceId,

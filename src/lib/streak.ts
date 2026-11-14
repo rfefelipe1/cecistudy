@@ -1,12 +1,15 @@
 /**
  * Lógica de streak de estudos — pura e testável.
  *
- * Regras do produto:
- * - A semana de estudos são os 5 dias úteis (seg–sex). Sáb/dom são descanso:
- *   não contam como dia ativo e não quebram a streak.
- * - A semana inicia na segunda-feira.
- * - Uma streak quebra quando um dia útil passa sem atividade.
- * - Se "hoje" ainda não tem atividade, a streak fica pendente (não quebra até o fim do dia).
+ * Regras do produto (atualizadas):
+ * - Qualquer dia da semana conta como dia de estudo (seg–dom). Não há mais
+ *   limitação a dias úteis.
+ * - A streak conta dias consecutivos com atividade.
+ * - A usuária tem 1 proteção (não acumulativa): pode faltar 1 dia sem registrar
+ *   e a streak não quebra. A proteção é consumida no 1º dia de furo; se faltar
+ *   outro dia antes de retomar, a streak zera.
+ * - Se "hoje" ainda não tem atividade, a streak fica pendente (não quebra até
+ *   o fim do dia).
  * - Datas são sempre `YYYY-MM-DD` em fuso local (evita o bug UTC do `toISOString`).
  */
 
@@ -29,10 +32,9 @@ function weekday(date: Date): number {
   return date.getDay();
 }
 
-/** Segunda-feira = 1, ..., Sexta-feira = 5. Fins de semana (0 e 6) não são dias de estudo. */
-export function isStudyDay(dateKey: string): boolean {
-  const wd = weekday(parseDateKey(dateKey));
-  return wd >= 1 && wd <= 5;
+/** Qualquer dia é dia de estudo (não há mais limitação a dias úteis). */
+export function isStudyDay(): boolean {
+  return true;
 }
 
 /** Chave YYYY-MM-DD do próximo dia a partir de `dateKey`. */
@@ -50,7 +52,6 @@ export function getWeekdayLabel(dateKey: string): string {
 
 /**
  * As 7 chaves (YYYY-MM-DD) da semana (seg a dom) que contém `reference`.
- * A semana de estudo usa apenas seg–sex.
  */
 export function getWeekDates(reference: Date | string): string[] {
   const d = typeof reference === 'string' ? parseDateKey(reference) : reference;
@@ -62,92 +63,114 @@ export function getWeekDates(reference: Date | string): string[] {
   return Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 }
 
+/** Número de dias corridos entre duas chaves YYYY-MM-DD (b > a). */
+function daysBetween(a: string, b: string): number {
+  const da = parseDateKey(a);
+  const db = parseDateKey(b);
+  return Math.round((db.getTime() - da.getTime()) / 86400000);
+}
+
 export interface StreakStats {
-  /** Dias de streak atual (contínuos nos dias úteis, ignorando fins de semana). */
+  /** Dias de streak atual (consecutivos com atividade, qualquer dia da semana). */
   current: number;
   /** Maior streak já alcançada. */
   longest: number;
-  /** Total de dias ativos (dias úteis com atividade, sem duplicar). */
+  /** Total de dias ativos (qualquer dia, sem duplicar). */
   total: number;
-  /** Se a streak está "viva": há atividade hoje ou ontem (ou em um fim de semana). */
+  /** Se a streak está "viva": há atividade hoje ou ontem (ou proteção ainda válida). */
   alive: boolean;
+  /** Se a proteção de 1 dia já foi consumida na corrente atual. */
+  protectionUsed: boolean;
 }
 
-/** True se entre `from` e `to` (exclusivo) só existem fins de semana (nenhum dia útil pulado). */
-function isConsecutiveStudyDays(from: string, to: string): boolean {
-  let cursor = addDays(from, 1);
-  while (cursor < to) {
-    if (isStudyDay(cursor)) return false;
-    cursor = addDays(cursor, 1);
+/**
+ * Caminha para trás a partir de `start` contando dias com atividade, usando no
+ * máximo 1 proteção (dia de furo sem atividade). Retorna a contagem e se a
+ * proteção foi consumida.
+ */
+function walkBackWithProtection(active: Set<string>, start: string): {
+  count: number;
+  protectionUsed: boolean;
+} {
+  let cursor = start;
+  let count = 0;
+  let protectionUsed = false;
+  // Limite de segurança (ex.: 5 anos) para evitar loop infinito.
+  for (let i = 0; i < 5 * 365; i++) {
+    if (active.has(cursor)) {
+      count++;
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    // Dia sem atividade: consome a proteção se ainda não usou.
+    if (!protectionUsed) {
+      protectionUsed = true;
+      cursor = addDays(cursor, -1);
+      continue;
+    }
+    break;
   }
-  return true;
+  return { count, protectionUsed };
 }
 
 /**
  * Calcula a streak a partir do conjunto de dias ativos.
- * `activeDays` pode ter qualquer data; fins de semana são ignorados.
+ * `activeDays` pode ter qualquer data (qualquer dia da semana).
  */
 export function computeStreak(activeDays: string[], todayKey: string): StreakStats {
   const active = new Set(activeDays);
 
-  const walkBack = (start: string): number => {
-    let cursor = start;
-    let count = 0;
-    // Limite de segurança (ex.: 5 anos) para evitar loop infinito
-    for (let i = 0; i < 5 * 365; i++) {
-      if (!isStudyDay(cursor)) {
-        // fim de semana: não conta nem quebra — pula
-        cursor = addDays(cursor, -1);
-        continue;
-      }
-      if (active.has(cursor)) {
-        count++;
-        cursor = addDays(cursor, -1);
-        continue;
-      }
-      break;
-    }
-    return count;
-  };
-
   // Streak atual: começa hoje se ativo; senão começa de ontem (pendente).
   let current = 0;
-  if (isStudyDay(todayKey) && active.has(todayKey)) {
-    current = walkBack(todayKey);
+  let protectionUsed = false;
+  if (active.has(todayKey)) {
+    const result = walkBackWithProtection(active, todayKey);
+    current = result.count;
+    protectionUsed = result.protectionUsed;
   } else {
     const yesterday = addDays(todayKey, -1);
-    if (isStudyDay(yesterday) && active.has(yesterday)) {
-      current = walkBack(yesterday);
-    } else if (!isStudyDay(todayKey) && !isStudyDay(yesterday)) {
-      // fim de semana (domingo): a streak permanece a da última sexta, se ainda não quebrou
-      const offset = weekday(parseDateKey(todayKey)) === 0 ? -2 : -1; // dom→sex -2, sáb→sex -1
-      const friday = addDays(todayKey, offset);
-      if (isStudyDay(friday) && active.has(friday)) {
-        current = walkBack(friday);
-      }
+    if (active.has(yesterday)) {
+      const result = walkBackWithProtection(active, yesterday);
+      current = result.count;
+      protectionUsed = result.protectionUsed;
     }
+    // senão: hoje e ontem sem atividade → current = 0 (não viva hoje).
   }
 
-  // Streak mais longa: maior sequência contínua nos dias úteis.
+  // Streak mais longa: maior sequência consecutiva com até 1 furo (proteção).
   let longest = 0;
-  const sorted = [...active].filter(isStudyDay).sort();
+  const sorted = [...active].sort();
   let run = 0;
-  for (let i = 0; i < sorted.length; i++) {
-    if (i === 0) {
+  let longestProtectionUsed = false;
+  let prev: string | null = null;
+  for (const d of sorted) {
+    if (prev === null) {
       run = 1;
     } else {
-      // consecutivo = só fins de semana entre as duas datas (ex.: sex→seg); qualquer dia útil pulado quebra.
-      run = isConsecutiveStudyDays(sorted[i - 1], sorted[i]) ? run + 1 : 1;
+      const diff = daysBetween(prev, d);
+      if (diff === 1) {
+        // dia consecutivo — continua a sequência.
+        run++;
+      } else if (diff === 2 && !longestProtectionUsed) {
+        // 1 dia de furo — consome a proteção, sequência continua.
+        longestProtectionUsed = true;
+        run++;
+      } else {
+        // quebrou (ou furo maior que 1, ou proteção já usada).
+        run = 1;
+        longestProtectionUsed = false;
+      }
     }
     longest = Math.max(longest, run);
+    prev = d;
   }
 
   const total = sorted.length;
 
-  // "viva": streak atual > 0 (ainda não quebrou; "hoje" pendente não zera).
+  // "viva": streak atual > 0.
   const alive = current > 0;
 
-  return { current, longest, total, alive };
+  return { current, longest, total, alive, protectionUsed };
 }
 
 export type WeekDayStatus = 'done' | 'today' | 'upcoming' | 'weekend';
@@ -160,8 +183,8 @@ export interface WeekDayCell {
 }
 
 /**
- * Progresso da semana atual para o card da Home: 7 células (seg–dom),
- * mas apenas seg–sex contam como dia de estudo.
+ * Progresso da semana atual: 7 células (seg–dom). Qualquer dia pode estar ativo.
+ * Fim de semana sem atividade fica como 'weekend' (apenas visual).
  */
 export function getWeekProgress(activeDays: string[], reference: Date | string): WeekDayCell[] {
   const active = new Set(activeDays);
@@ -169,12 +192,13 @@ export function getWeekProgress(activeDays: string[], reference: Date | string):
   const week = getWeekDates(reference);
 
   return week.map((dateKey) => {
-    if (!isStudyDay(dateKey))
-      return { dateKey, label: getWeekdayLabel(dateKey), status: 'weekend', active: false };
     if (active.has(dateKey))
       return { dateKey, label: getWeekdayLabel(dateKey), status: 'done', active: true };
     if (dateKey === todayKey)
       return { dateKey, label: getWeekdayLabel(dateKey), status: 'today', active: false };
+    const wd = weekday(parseDateKey(dateKey));
+    if (wd === 0 || wd === 6)
+      return { dateKey, label: getWeekdayLabel(dateKey), status: 'weekend', active: false };
     return { dateKey, label: getWeekdayLabel(dateKey), status: 'upcoming', active: false };
   });
 }
@@ -182,13 +206,13 @@ export function getWeekProgress(activeDays: string[], reference: Date | string):
 export interface HistoryWeek {
   /** Chave YYYY-MM-DD da segunda-feira que inicia a semana. */
   weekStart: string;
-  /** Os 5 dias úteis da semana (seg–sex), mais antigos para mais recentes. */
+  /** Os 5 dias (seg–sex) da semana, mais antigos para mais recentes. */
   days: { dateKey: string; label: string; active: boolean }[];
 }
 
 /**
- * Histórico das últimas `weeks` semanas (da semana atual para trás), usado na tela
- * de streak. Cada semana traz apenas os dias úteis (seg–sex), com flag de atividade.
+ * Histórico das últimas `weeks` semanas (da semana atual para trás), usado na
+ * tela de streak. Cada semana traz os 5 dias (seg–sex) com flag de atividade.
  * Retorna da semana mais antiga para a mais recente (para renderizar em coluna).
  */
 export function getRecentWeeks(activeDays: string[], todayKey: string, weeks = 8): HistoryWeek[] {

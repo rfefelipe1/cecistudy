@@ -206,6 +206,8 @@ export const VAZIO: Catalogo = {
   escritaVazio: 'registre suas sessões de escrita e acompanhe o ritmo até a entrega ♡',
   tccComecar:
     'comece pelo que dá identidade ao trabalho: um título, quem orienta e a pergunta que ele quer responder. o resto você preenche no caminho ♡',
+  /** Card do TCC na Home (SPEC-M-032 D8): convite curto, cabe no card. */
+  tccComecarCurto: 'bora começar ♡',
   tccLembretes:
     'o app avisa de capítulos, reuniões, entrega e banca — no ritmo que você escolher depois',
   /** Lembrete só toca no app instalado (SPEC-024 D18): no navegador é config sem efeito. */
@@ -220,13 +222,41 @@ export const VAZIO: Catalogo = {
   semLeituraParecida: 'ainda não tem leitura parecida por aqui ♡',
   calendarioVazio: 'nada marcado nos próximos dias — o calendário enche sozinho conforme você anota ♡',
   diaSemNada: 'nada marcado neste dia ♡',
+  /** Agenda (SPEC-035 D6): os três vazios que a tela precisa nomear. */
+  agendaVazia:
+    'sua agenda está livre por enquanto. quer adicionar uma tarefa ou um evento?',
+  agendaInboxVazia:
+    'sua inbox está limpinha ♡ quando surgir uma pendência, você pode guardar sem data e organizar depois.',
+  agendaSemResultadoFiltro:
+    'nada apareceu com esses filtros ♡ quer limpar algum filtro ou guardar uma nova tarefa?',
   /** Capítulo aberto sem referência vinculada (SPEC-024 T4.2). */
   capituloSemReferencia:
     'nenhuma referência vinculada ainda — o vínculo se faz na própria referência ♡',
+  /** Perfil: ajuda do seletor de abordagem (meta de atuação). */
+  perfilAbordagemAjuda: 'sua lista própria de abordagens para a meta de atuação',
   semAbordagensRegistradas: 'ainda não há abordagens registradas.',
   semDisciplinas: 'ainda não há disciplinas cadastradas. que tal criar a primeira?',
   semGrupos: 'ainda não há grupos. crie um depois ♡',
   semConceitosNoCantinho: 'ainda não há conceitos no cantinho.',
+
+  // --- Captura de memória (SPEC-M-032)
+  captureTitulo: 'capturar memória',
+  captureSubtitulo: 'guarde o que aconteceu pra não esquecer depois ♡',
+  captureLabelCategoria: 'categoria',
+  capturePlaceholderTitulo: 'conte brevemente o que aconteceu…',
+  captureLabelDescricao: 'descrição',
+  capturePlaceholderDescricao: 'detalhes opcionais',
+  captureLabelData: 'data',
+  captureDataSemData: 'sem data',
+  captureModoGuiado: 'responder por categorias',
+  captureAcaoSair: 'sair',
+  captureAcaoSalvar: 'guardar memória',
+
+  // --- Memórias de semestre (SPEC-M-032)
+  memoriasSubtitulo: 'suas memórias guardadas, por categoria',
+  vazioMemoriasTitulo: 'ainda não há memórias neste semestre',
+  vazioMemoriasDescricao: 'registre a primeira e ela aparece aqui ♡',
+  memoriasContexto: (p) => `${p.data} — ${p.n} memória${p.n !== 1 ? 's' : ''}`,
 
   // --- Perfil: o que cada row faz
   rowSync: 'enviar e puxar alterações com o repositório github.',
@@ -237,6 +267,13 @@ export const VAZIO: Catalogo = {
   // --- Estudos / leitura
   leitorSemRegistro:
     'abre o leitor e registra de onde saiu — o acompanhamento nasce daqui ♡',
+
+  // --- Cecinho Agent (SPEC-037)
+  cecinhoSemConversas:
+    'nenhuma tarefa com o cecinho por aqui ainda — quando quiser ajuda, é só chamar numa tarefa ♡',
+  cecinhoSemMensagens: 'a conversa começa quando você contar o que precisa ♡',
+  cecinhoSemPlano: 'ainda não tem plano por aqui — o cecinho monta um quando você pedir',
+  cecinhoSemArtefatos: 'os arquivos que o cecinho criar aparecem aqui ♡',
 };
 /**
  * As variantes do motor único (`D7`). Toda frase é **literal** — o gate lê o
@@ -287,6 +324,39 @@ export const DICA: Catalogo = {
 
   // --- Faculdade: a assinatura do cecinho no bloco de estágio
   faculdadePraticaAcompanha: 'guardo tudo com você, registro por registro ♡',
+
+  // --- Clínica: aviso de privacidade da lista de casos (SPEC-M-032 D11)
+  clinicaPrivacidade: 'só as iniciais ficam aqui — nada que identifique o caso ♡',
+
+  // --- Agenda: o recado do dia (SPEC-035 D6). O tom vem da carga derivada;
+  // a frase, daqui. Nunca as duas coisas no componente.
+  agendaAtrasadas: () => 'tem algumas coisinhas esperando. quer começar pela mais antiga?',
+  agendaProvaProxima: () => 'a prova está chegando. quer separar uma pequena revisão para hoje?',
+  agendaDiaCheio: () => 'o dia está cheio, então vamos por partes. comece pela próxima coisa importante.',
+  agendaInboxCheia: () => 'tem algumas ideias sem data. você pode organizar depois, sem perder nada por aqui.',
+  agendaDiaVazio: () => 'hoje está mais calminho. você pode guardar uma tarefa ou deixar esse espaço respirar.',
+  /** Dica de campo vazia na entrevista de memórias (SPEC-M-032). */
+  semTituloAinda: 'ainda sem título',
+
+  // --- Cecinho Agent (SPEC-037). Estados e ajudas da Central.
+  cecinhoCentralAjuda: 'aqui ficam as tarefas em que o cecinho está te ajudando',
+  cecinhoAjudaGlobal:
+    'o cecinho sugere ajuda nas tarefas de processo longo — ele pergunta antes de fazer qualquer coisa',
+  cecinhoPlanoAjuda: 'nada é criado antes de você confirmar — pode editar ou tirar etapas',
+  cecinhoPerguntaAjuda: 'pode responder "não sei" ou "depois" — o plano segue mesmo assim',
+  cecinhoStatusAnalisando: 'analisando a tarefa…',
+  cecinhoStatusPergunta: 'esperando sua resposta',
+  cecinhoStatusPlano: 'plano pronto para revisar',
+  cecinhoStatusArquivo: 'arquivo pronto',
+  cecinhoStatusSincronizando: 'sincronizando…',
+  cecinhoStatusConcluido: 'assistência concluída',
+  cecinhoStatusOcioso: 'sem novidades',
+  cecinhoBoasVindas:
+    'pode me contar o que você precisa nesta tarefa. eu pergunto antes de mexer em qualquer coisa ♡',
+  cecinhoAgendaNovidades: (p) => `o cecinho tem ${p.n} novidade${Number(p.n) !== 1 ? 's' : ''} para você`,
+  cecinhoAgendaAcompanhar: 'acompanhe aqui as tarefas em que o cecinho está te ajudando',
+  cecinhoAgendaSugestao: (p) =>
+    `o cecinho pode ajudar em "${p.titulo}" — quer chamar?`,
 };
 
 // ---------------------------------------------------------------------------
@@ -491,6 +561,13 @@ export const CONFIRMACAO: Catalogo = {
   resetarTitulo: 'resetar cantinho?',
   resetarDescricao: 'isso apaga todo o conteúdo do cantinho e não dá para desfazer. tem certeza?',
   resetarAviso: 'apaga todo o conteúdo e não dá para desfazer.',
+
+  // --- Cecinho Agent (SPEC-037)
+  cecinhoRecusarTitulo: 'recusar o plano?',
+  cecinhoRecusarDescricao: 'nada foi criado ainda — recusar só descarta a proposta.',
+  cecinhoRemoverTitulo: 'parar a ajuda nesta tarefa?',
+  cecinhoRemoverDescricao:
+    'a conversa e o plano saem da central; os arquivos já salvos continuam no aparelho.',
 };
 export const CELEBRACAO: Catalogo = {
   /**
@@ -521,6 +598,15 @@ export const CELEBRACAO: Catalogo = {
   sessaoDeLeituraGuardada: 'sessão de leitura guardada com carinho ♡',
   tccGuardado: 'tcc guardado ♡',
   listaCopiada: 'lista copiada ♡',
+
+  // --- Memórias de semestre (SPEC-M-032)
+  memoriaFelizPergunta: 'qual memória feliz desse semestre você quer guardar?',
+  memoriaEngracadaPergunta: 'qual memória engraçada desse semestre você quer guardar?',
+  memoriaAssustadoraPergunta: 'qual memória assustadora desse semestre você quer guardar?',
+  memoriaMemoravelPergunta: 'qual memória memorável desse semestre você quer guardar?',
+  memoriaPrimeira: 'sua primeira memória deste semestre',
+  memoriaGuardada: 'memória guardada ♡',
+  memoriaRemovida: 'memória removida ♡',
   /** Sumário de capítulos copiado (SPEC-024 T4.3). */
   sumarioCopiado: 'sumário copiado ♡',
   tarefaAtualizada: 'tarefa atualizada ♡',
@@ -531,6 +617,8 @@ export const CELEBRACAO: Catalogo = {
   preenchemosDaEstante: 'preenchemos com os dados da sua estante ♡',
   tarefaSalvaNaAgenda: 'tarefa salva e marcada na sua agenda ♡',
   provaSalvaNaAgenda: 'prova salva e marcada na sua agenda ♡',
+  /** SPEC-035 D5: tarefa criada sem data fica na inbox, e a usuária precisa saber. */
+  tarefaNaInbox: 'ficou na sua inbox para organizar depois ♡',
 
   // --- Faculdade
   registroApagado: 'registro apagado ♡',
@@ -580,6 +668,8 @@ export const CELEBRACAO: Catalogo = {
   cantinhoPronto: 'cantinho pronto — bora começar? ♡',
   backupIncompativel: 'ops, esse arquivo de backup não é compatível ♡',
   backupRestaurado: 'backup restaurado com carinho ♡',
+  /** Restauração ZIP on-demand: um toast por domínio (SPEC-M-030 D10). */
+  dominioCarregado: (p) => `carreguei ${p.dominio} ♡. pode seguir usando.`,
   sincronizado: 'sincronizado com carinho ♡',
   dadosEnviados: 'dados enviados para a nuvem ♡',
   planoDoDiaCompleto: (p) => `plano do dia completo! parabéns${p.nome ? `, ${p.nome}` : ''} 🎉`,
@@ -588,6 +678,14 @@ export const CELEBRACAO: Catalogo = {
   clientIdFaltando: 'configura o client id do google para usar a agenda ♡',
   projetoCriado: (p) => `projeto "${p.titulo}" criado ♡`,
   sessaoDeQuizGuardada: 'sessão de quiz guardada ♡',
+
+  // --- Cecinho Agent (SPEC-037)
+  cecinhoAtivado: 'cecinho chamado ♡',
+  cecinhoPlanoConfirmado: 'plano confirmado ♡',
+  cecinhoPlanoRecusado: 'plano recusado',
+  cecinhoRespostaEnviada: 'resposta enviada ♡',
+  cecinhoArtefatoGuardado: 'arquivo guardado ♡',
+  cecinhoAssistenciaRemovida: 'a ajuda nesta tarefa foi encerrada',
 };
 
 /**
@@ -669,6 +767,12 @@ export const NOTIFICACAO: Catalogo = {
     'no android, o sistema precisa liberar alarmes e lembretes para o aviso não atrasar. quer abrir essa configuração agora?',
   alarmeAbrir: 'abrir agora',
   alarmeDepois: 'agora não',
+
+  // --- Cecinho Agent (SPEC-037): sem conteúdo sensível no corpo.
+  cecinhoTitulo: 'cecistudy ♡ cecinho',
+  cecinhoPergunta: 'o cecinho tem uma pergunta para você',
+  cecinhoPlanoPronto: 'o plano da tarefa está pronto para revisar',
+  cecinhoArquivoPronto: 'o cecinho terminou um arquivo',
 };
 export const ONBOARDING: Catalogo = {
   /**
@@ -693,6 +797,22 @@ export const ONBOARDING: Catalogo = {
   boasVindasDescricao:
     'esse daqui é o seu cantinho. eu anoto suas aulas, leituras e provas, e cuido da sua jornada até o CRP — se quiser, pode me chamar de ceço.',
   comecar: 'bora?',
+  /** Entrada de restauração no primeiro acesso (SPEC-M-030 D2). */
+  jaTenhoBackup: 'já tenho um backup',
+  /** Preview do manifest no onboarding (SPEC-M-030 D2/T5.2). */
+  previewTitulo: 'backup encontrado ♡',
+  previewDescricao: (p) => `esse backup é da ${p.nome}. importa e a gente continua?`,
+  previewNome: 'nome',
+  previewTema: 'tema',
+  previewTela: 'tela',
+  previewData: 'data',
+  previewSchema: 'schema',
+  previewSync: 'sync GitHub',
+  previewSim: 'sim',
+  previewNao: 'não',
+  previewAviso: 'isso substitui o cadastro atual. se quiser guardar o que tem, faz um backup antes ♡',
+  previewCancelar: 'cancelar',
+  previewImportar: 'importar',
 
   quemEuChamo: 'como eu te chamo?',
   quemEuChamoDica: 'só o primeiro nome serve — é assim que eu vou te chamar por aqui',
@@ -855,7 +975,40 @@ export const ERRO: Record<string, ErroVoz> = {
   linkInvalido: {
     oQueAconteceu: 'não achei um link nesse texto',
     oQuePodeFazer: 'cola um endereço que comece com http',
-  },  /** Código desconhecido — nunca vaza a mensagem original. */
+  },
+  /** Um domínio do backup ZIP não pôde ser lido; o resto foi restaurado (D8). */
+  dominioNaoCarregado: {
+    oQueAconteceu: (p) => `não consegui ler ${p.dominio} do backup`,
+    oQuePodeFazer: 'o resto foi restaurado — siga usando normalmente',
+  },
+
+  // --- Cecinho Agent (SPEC-037)
+  cecinhoAtivar: {
+    oQueAconteceu: 'não consegui chamar o cecinho nesta tarefa',
+    oQuePodeFazer: 'tenta de novo daqui a pouco',
+  },
+  cecinhoResponder: {
+    oQueAconteceu: 'não consegui guardar sua resposta',
+    oQuePodeFazer: 'tenta enviar de novo',
+  },
+  cecinhoPlano: {
+    oQueAconteceu: 'não consegui guardar o plano',
+    oQuePodeFazer: 'tenta de novo em um instante',
+  },
+  cecinhoArquivo: {
+    oQueAconteceu: 'não consegui abrir esse arquivo',
+    oQuePodeFazer: 'confere se ele ainda está no aparelho e tenta de novo',
+  },
+  cecinhoSync: {
+    oQueAconteceu: 'o cecinho não conseguiu falar com o servidor agora',
+    oQuePodeFazer: 'a tarefa fica na fila e ele tenta de novo quando a conexão voltar',
+  },
+  cecinhoContextoGrande: {
+    oQueAconteceu: 'essa tarefa tem contexto demais para o cecinho analisar de uma vez',
+    oQuePodeFazer: 'divide em partes menores e chama de novo',
+  },
+
+  /** Código desconhecido — nunca vaza a mensagem original. */
   [FALLBACK]: {
     oQueAconteceu: 'não consegui fazer isso agora',
     oQuePodeFazer: 'tenta de novo daqui a pouco',

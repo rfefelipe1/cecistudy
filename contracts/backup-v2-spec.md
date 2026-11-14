@@ -6,10 +6,16 @@
 > tem o formato dele, em `src-tauri/migrations/` do `cecistudy-desktop`; a
 > tradução entre os dois formatos é Rust, no desktop.
 >
-> Fonte da verdade no código: `packages/data/src/exportImport.ts` (envelope),
+> **Desde 2026-11-08 (`SPEC-M-030`):** o export local passou a ser **ZIP**
+> (`cecistudy-backup-<yyyy-mm-dd>.zip`) com `manifest.json`, `themes.json` e
+> subpastas por domínio. O import aceita ZIP novo e JSON v2 antigo. O sync
+> GitHub continua no envelope JSON único (`SPEC-M-030` D7).
+>
+> Fonte da verdade no código: `packages/data/src/exportImport.ts` (envelope v2),
 > `packages/data/src/persistentData.ts` (payload), `packages/data/src/backupSchema.ts`
-> (validação Zod), `packages/data/src/schema.ts` (versões/migrações).
-> Fixtures: `contracts/golden/`. Status: **aprovada** (2026-09-10).
+> (validação Zod), `packages/data/src/schema.ts` (versões/migrações),
+> `src/lib/backupZip/` (ZIP), `src/lib/exportFile.ts` (plataforma).
+> Fixtures: `contracts/golden/`. Status: **aprovada** (2026-09-10, estendida 2026-11-08).
 
 ## 1. Envelope
 

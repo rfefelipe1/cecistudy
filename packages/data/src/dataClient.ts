@@ -45,6 +45,10 @@ import type {
   ReadingSession,
   ReadingHighlight,
   ReadingBookmark,
+  AssistedTask,
+  AgentConversation,
+  AgentPlan,
+  AgentArtifact,
 } from '@/types';
 import { emptyDatabase } from '@/data/empty';
 import {
@@ -83,7 +87,11 @@ export type ArrayCollectionKey =
   | 'thesisReferences'
   | 'thesisMeetings'
   | 'thesisTasks'
-  | 'thesisWritingLogs';
+  | 'thesisWritingLogs'
+  | 'assistedTasks'
+  | 'agentConversations'
+  | 'agentPlans'
+  | 'agentArtifacts';
 
 type ElementOf<K extends keyof PersistedStateSnapshot> =
   PersistedStateSnapshot[K] extends Array<infer U> ? U : never;
@@ -150,6 +158,10 @@ export const repositories = {
   thesisMeetings: createRepository('thesisMeetings'),
   thesisTasks: createRepository('thesisTasks'),
   thesisWritingLogs: createRepository('thesisWritingLogs'),
+  assistedTasks: createRepository('assistedTasks'),
+  agentConversations: createRepository('agentConversations'),
+  agentPlans: createRepository('agentPlans'),
+  agentArtifacts: createRepository('agentArtifacts'),
 } as const;
 
 /** Mapa de setters do contexto para aplicação de um banco persistido. */
@@ -178,6 +190,10 @@ export interface DataClientSetters {
   thesisMeetings: (v: ThesisMeeting[]) => void;
   thesisTasks: (v: ThesisTask[]) => void;
   thesisWritingLogs: (v: ThesisWritingLog[]) => void;
+  assistedTasks: (v: AssistedTask[]) => void;
+  agentConversations: (v: AgentConversation[]) => void;
+  agentPlans: (v: AgentPlan[]) => void;
+  agentArtifacts: (v: AgentArtifact[]) => void;
   streakData: (v: StreakData) => void;
   reminder: (v: PersistedStateSnapshot['reminder']) => void;
   looseNotes: (v: LooseNote[]) => void;
@@ -232,6 +248,10 @@ export function applyDatabaseToSetters(
   setters.thesisMeetings(db.thesisMeetings ?? []);
   setters.thesisTasks(db.thesisTasks ?? []);
   setters.thesisWritingLogs(db.thesisWritingLogs ?? []);
+  setters.assistedTasks(db.assistedTasks ?? []);
+  setters.agentConversations(db.agentConversations ?? []);
+  setters.agentPlans(db.agentPlans ?? []);
+  setters.agentArtifacts(db.agentArtifacts ?? []);
   setters.streakData(db.streakData);
   setters.reminder(db.reminder);
   setters.looseNotes(db.looseNotes as LooseNote[]);

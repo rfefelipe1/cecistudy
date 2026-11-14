@@ -78,8 +78,26 @@ describe('schema — migração 11 → 12 (escopo de workspace)', () => {
     },
   };
 
-  it('SCHEMA_VERSION é 22', () => {
-    expect(SCHEMA_VERSION).toBe(22);
+  it('SCHEMA_VERSION é 23', () => {
+    expect(SCHEMA_VERSION).toBe(23);
+  });
+
+  it('MIGRATIONS[23] — Cecinho Agent: coleções novas nascem vazias e preserva o resto', () => {
+    const migrate = MIGRATIONS[23];
+    const before = { profile: { name: 'Ceci' }, tasks: [{ id: 't1', title: 'x' }] };
+    const after = migrate(before);
+    expect(after).toMatchObject({
+      profile: { name: 'Ceci' },
+      tasks: [{ id: 't1', title: 'x' }],
+      assistedTasks: [],
+      agentConversations: [],
+      agentPlans: [],
+      agentArtifacts: [],
+    });
+    // Idempotente: rodar de novo não muda nada.
+    expect(migrate(after)).toEqual(after);
+    // Determinística: nada de relógio dentro da migração.
+    expect(migrate.toString()).not.toMatch(/new Date\(|Date\.now/);
   });
 
   it('nenhum Date dentro da MIGRATIONS[22] (F15: determinismo, nunca "agora")', () => {

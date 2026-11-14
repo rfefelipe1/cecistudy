@@ -4,11 +4,14 @@
 // Concentra o que estava espalhado: o progresso da graduação aparece **uma vez**
 // (aqui — SPEC-013 I2) e o CTA de virar semestre aparece **uma vez**
 // (SPEC-013 I3). O `ordinal` e o `totalSemesters` continuam coisas diferentes
-// (SPEC-008 D3): o ordinal é o fato, corrigível por id; o total é um palpite que
-// se ajusta aqui; o teto do ordinal é `MAX_TERM_ORDINAL`, e passar do total é
-// **aviso**, nunca bloqueio.
+// (SPEC-008 D3): o ordinal é o fato, corrigível pelo lápis ao lado do título; o
+// total é um palpite que se ajusta aqui; o teto do ordinal é
+// `MAX_TERM_ORDINAL`, e passar do total é **aviso**, nunca bloqueio.
+//
+// Card compacto: o próprio semestre ativo é o título (sem repetir "sua jornada"
+// nem "semestre atual"); a correção é um botão de ícone discreto.
 import React, { useEffect, useState } from 'react';
-import { GraduationCap, Minus, Pencil, Plus, Sparkles, X } from 'lucide-react';
+import { Minus, Pencil, Plus, Sparkles, X } from 'lucide-react';
 import type { ProfileJourney } from '../../../lib/profileViewModel';
 import { MAX_TERM_ORDINAL } from '../../../lib/termScope';
 import JourneyRail from './JourneyRail';
@@ -61,16 +64,9 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
 
   return (
     <section
-      aria-labelledby="perfil-jornada-titulo"
-      className="rounded-3xl p-5 bg-surface-default border border-ceci-border-default shadow-sm space-y-4"
+      aria-label="sua jornada"
+      className="rounded-3xl p-4 bg-surface-default border border-ceci-border-default shadow-sm space-y-3"
     >
-      <div className="flex items-center gap-2">
-        <GraduationCap className="w-4 h-4 text-ceci-brand" aria-hidden="true" />
-        <h2 id="perfil-jornada-titulo" className="font-display font-bold text-xl text-ceci-primary">
-          sua jornada
-        </h2>
-      </div>
-
       {!journey.hasActiveTerm ? (
         <div className="space-y-3">
           <p className="text-xs text-ceci-secondary">
@@ -87,25 +83,19 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
         </div>
       ) : (
         <>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <span className="inline-flex items-center rounded-full bg-surface-rose border border-ceci-border-brand px-2.5 py-0.5 text-[11px] font-semibold text-ceci-brand-strong">
-                semestre atual
-              </span>
-              <p className="mt-1.5 font-display text-xl font-bold text-ceci-primary">
-                {journey.activeTermLabel ?? `${journey.currentOrdinal}º semestre`}
-              </p>
-            </div>
-
-            {editing ? null : (
+          {/* O semestre ativo é o título do card; o lápis corrige o ordinal. */}
+          <div className="flex items-center justify-between gap-2">
+            <p className="font-display text-lg font-bold text-ceci-primary">
+              {journey.activeTermLabel ?? `${journey.currentOrdinal}º semestre`}
+            </p>
+            {!editing && (
               <button
                 type="button"
                 onClick={() => setEditing(true)}
                 aria-label={`corrigir semestre atual (${journey.currentOrdinal}º)`}
-                className="touch-target shrink-0 inline-flex items-center gap-1.5 rounded-full border border-ceci-border-default px-3 text-xs font-semibold text-ceci-secondary hover:bg-surface-muted cursor-pointer"
+                className="touch-target shrink-0 p-1.5 rounded-full text-ceci-secondary hover:bg-surface-muted cursor-pointer"
               >
                 <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                corrigir
               </button>
             )}
           </div>
@@ -178,9 +168,6 @@ const JourneyNow: React.FC<JourneyNowProps> = ({
                   style={{ width: `${journey.percent}%` }}
                 />
               </div>
-              <p className="text-[11px] text-ceci-secondary">
-                {journey.currentOrdinal}º de {journey.totalSemesters} semestres
-              </p>
             </div>
           )}
 

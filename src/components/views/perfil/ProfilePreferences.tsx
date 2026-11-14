@@ -28,9 +28,10 @@ import {
 } from '../../../lib/motion';
 import type { ProfilePreferences as ProfilePreferencesVm } from '../../../lib/profileViewModel';
 import { checkExactAlarmStatus, openExactAlarmSettings, supportsExactAlarmPrompt } from '../../../lib/notifications';
-import { NOTIFICACAO, VAZIO, frase } from '../../../lib/voice';
+import { DICA, NOTIFICACAO, VAZIO, frase } from '../../../lib/voice';
 import { Modal } from '../../ui/Modal';
 import { SegmentedControl } from '../../ui/SegmentedControl';
+import { TimePickerSheet } from '../../ui/time-picker-sheet';
 import PreferenceRow from './PreferenceRow';
 import ThemePickerCard from './ThemePickerCard';
 
@@ -42,6 +43,9 @@ interface ProfilePreferencesProps {
   motionPref: MotionPref;
   onUpdateReminder: (settings: ReminderSettings) => void;
   onSetGcalEnabled: (enabled: boolean) => void;
+  /** Ajuda global do Cecinho (SPEC-037 T013). */
+  cecinhoHelpEnabled: boolean;
+  onSetCecinhoHelp: (enabled: boolean) => void;
   onThemeSelect: (id: ThemeId) => void;
   onMotionPrefSelect: (pref: MotionPref) => void;
 }
@@ -61,6 +65,8 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
   motionPref,
   onUpdateReminder,
   onSetGcalEnabled,
+  cecinhoHelpEnabled,
+  onSetCecinhoHelp,
   onThemeSelect,
   onMotionPrefSelect,
 }) => {
@@ -185,12 +191,10 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
               <label htmlFor="perfil-lembrete-horario" className="text-[11px] text-ceci-secondary">
                 horário:
               </label>
-              <input
-                id="perfil-lembrete-horario"
-                type="time"
+              <TimePickerSheet
                 value={preferences.reminderTime}
-                onChange={(e) => requestChange({ time: e.target.value })}
-                className="bg-surface-default border border-ceci-border-default focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand rounded-xl px-2.5 py-1 text-sm text-ceci-primary"
+                onChange={(v) => requestChange({ time: v })}
+                placeholder="--:--"
               />
               <span className="text-[11px] text-ceci-tertiary">no horário local</span>
             </div>
@@ -213,6 +217,17 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
           </div>
         ) : null}
       </div>
+
+      <PreferenceRow
+        icon={<Sparkles className="w-4 h-4" />}
+        label="ajuda do cecinho ♡"
+        description={frase(DICA, 'cecinhoAjudaGlobal')}
+        ariaLabel={`ajuda do cecinho, ${cecinhoHelpEnabled ? 'ligada' : 'desligada'}`}
+        toggle={{
+          checked: cecinhoHelpEnabled,
+          onChange: () => onSetCecinhoHelp(!cecinhoHelpEnabled),
+        }}
+      />
 
       <PreferenceRow
         icon={<CalendarDays className="w-4 h-4" />}
@@ -277,7 +292,14 @@ const ProfilePreferences: React.FC<ProfilePreferencesProps> = ({
           <h2 id="perfil-tema-titulo" className="sr-only">
             trocar tema
           </h2>
-          <ThemePickerCard currentTheme={themePref} onSelect={onThemeSelect} />
+          <ThemePickerCard
+            currentTheme={themePref}
+            onSelect={(id) => {
+              onThemeSelect(id);
+              // Fecha o sheet para a transição do glimm aparecer na tela.
+              setThemeSheetOpen(false);
+            }}
+          />
           <button
             type="button"
             onClick={() => setThemeSheetOpen(false)}

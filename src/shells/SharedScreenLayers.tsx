@@ -2,7 +2,7 @@ import React, { Suspense, lazy, memo, useEffect } from 'react';
 import { CELEBRACAO, frase } from '../lib/voice';
 import { useMobileApp } from '@/context/mobileApp';
 import { isUnknownSlideKind } from '@/context/slideKeys';
-import type { NavScreen } from '@/types/navigation';
+import type { NavScreen, NavTab } from '@/types/navigation';
 import { ViewSkeleton } from '../components/ui/Skeleton';
 import { requestPrefetch, prefetchOnIntent } from '@/lib/performance/screenPrefetch';
 
@@ -14,8 +14,13 @@ const loadHomeView = () =>
   import('../components/views/HomeView').then((m) => ({ default: m.HomeView }));
 const loadFaculdadeView = () =>
   import('../components/views/FaculdadeView').then((m) => ({ default: m.FaculdadeView }));
-const loadEstudosView = () =>
-  import('../components/views/EstudosView').then((m) => ({ default: m.EstudosView }));
+// A aba Clínica é o workspace clínico (visão geral + casos + supervisão) e usa
+// o mesmo módulo do diário de estágio: uma tela, duas portas de entrada
+// (SPEC-M-032 D1/D7).
+const loadClinicaView = () =>
+  import('../components/views/InternshipDiaryView').then((m) => ({
+    default: m.InternshipDiaryView,
+  }));
 const loadBibliotecaView = () =>
   import('../components/views/BibliotecaView').then((m) => ({ default: m.BibliotecaView }));
 const loadPerfilView = () =>
@@ -24,6 +29,14 @@ const loadStreakView = () =>
   import('../components/views/StreakView').then((m) => ({ default: m.StreakView }));
 const loadSyncScreen = () =>
   import('../components/sync/SyncScreen').then((m) => ({ default: m.SyncScreen }));
+const loadSyncLocalInstructions = () =>
+  import('../components/sync/SyncLocalInstructions').then((m) => ({
+    default: m.SyncLocalInstructions,
+  }));
+const loadSyncRemoteInstructions = () =>
+  import('../components/sync/SyncRemoteInstructions').then((m) => ({
+    default: m.SyncRemoteInstructions,
+  }));
 const loadComposeNoteView = () =>
   import('../components/views/ComposeNoteView').then((m) => ({ default: m.ComposeNoteView }));
 const loadClassNoteDetailWizard = () =>
@@ -89,14 +102,20 @@ const loadTccView = () =>
   import('../components/views/TccView').then((m) => ({ default: m.TccView }));
 const loadCalendarScreen = () =>
   import('../components/views/CalendarScreen').then((m) => ({ default: m.CalendarScreen }));
+const loadCecinhoCenterScreen = () =>
+  import('../agent/ui/CecinhoCenterScreen').then((m) => ({ default: m.CecinhoCenterScreen }));
+const loadCecinhoTaskChat = () =>
+  import('../agent/ui/CecinhoTaskChat').then((m) => ({ default: m.CecinhoTaskChat }));
 
 const HomeView = memo(lazy(loadHomeView));
 const FaculdadeView = memo(lazy(loadFaculdadeView));
-const EstudosView = memo(lazy(loadEstudosView));
+const ClinicaView = memo(lazy(loadClinicaView));
 const BibliotecaView = memo(lazy(loadBibliotecaView));
 const PerfilView = memo(lazy(loadPerfilView));
 const StreakView = lazy(loadStreakView);
 const SyncScreen = lazy(loadSyncScreen);
+const SyncLocalInstructions = lazy(loadSyncLocalInstructions);
+const SyncRemoteInstructions = lazy(loadSyncRemoteInstructions);
 const ComposeNoteView = lazy(loadComposeNoteView);
 const ClassNoteDetailWizard = lazy(loadClassNoteDetailWizard);
 const ClassNoteDetailScreen = lazy(loadClassNoteDetailScreen);
@@ -124,6 +143,8 @@ const InternshipDiaryView = lazy(loadInternshipDiaryView);
 const InternshipCaseView = lazy(loadInternshipCaseView);
 const TccView = lazy(loadTccView);
 const CalendarScreen = lazy(loadCalendarScreen);
+const CecinhoCenterScreen = lazy(loadCecinhoCenterScreen);
+const CecinhoTaskChat = lazy(loadCecinhoTaskChat);
 
 /** Fallback discreto enquanto um chunk de view carrega (primeira visita à aba). */
 export const ViewFallback = () => <ViewSkeleton rows={5} />;
@@ -138,11 +159,13 @@ export const ViewFallback = () => <ViewSkeleton rows={5} />;
 export type ScreenKey =
   | 'home'
   | 'faculdade'
-  | 'estudos'
+  | 'clinica'
   | 'biblioteca'
   | 'perfil'
   | 'streak'
   | 'sync'
+  | 'sync-local'
+  | 'sync-remote'
   | 'composeNote'
   | 'classNoteDetailWizard'
   | 'classNoteDetail'
@@ -163,17 +186,21 @@ export type ScreenKey =
   | 'internshipDiary'
   | 'internshipCase'
   | 'tcc'
-  | 'calendar';
+  | 'calendar'
+  | 'cecinhoCenter'
+  | 'cecinhoTask';
 
 /** Factories dos chunks — reutilizadas pelo lazy e pelo prefetch com política. */
 const SCREEN_CHUNK_LOADERS: Record<ScreenKey, () => Promise<unknown>> = {
   home: loadHomeView,
   faculdade: loadFaculdadeView,
-  estudos: loadEstudosView,
+  clinica: loadClinicaView,
   biblioteca: loadBibliotecaView,
   perfil: loadPerfilView,
   streak: loadStreakView,
   sync: loadSyncScreen,
+  'sync-local': loadSyncLocalInstructions,
+  'sync-remote': loadSyncRemoteInstructions,
   composeNote: loadComposeNoteView,
   classNoteDetailWizard: loadClassNoteDetailWizard,
   classNoteDetail: loadClassNoteDetailScreen,
@@ -195,6 +222,8 @@ const SCREEN_CHUNK_LOADERS: Record<ScreenKey, () => Promise<unknown>> = {
   internshipCase: loadInternshipCaseView,
   tcc: loadTccView,
   calendar: loadCalendarScreen,
+  cecinhoCenter: loadCecinhoCenterScreen,
+  cecinhoTask: loadCecinhoTaskChat,
 };
 
 /**
@@ -246,9 +275,20 @@ function useUnknownSlideKindWarning(kind: NavScreen['kind'] | undefined): void {
  * (curso, notas, templo, streak, quiz, study…). A pilha no AppContext é a
  * fonte da verdade.
  */
-export const SlideContent: React.FC = () => {
+interface SlideContentProps {
+  /** Sobrescreve a aba ativa para renderização (preview de arrasto na navbar).
+   *  Quando definido, não navega — só mostra o conteúdo de outra aba. */
+  activeTabOverride?: NavTab;
+}
+
+export const SlideContent: React.FC<SlideContentProps> = ({
+  activeTabOverride,
+}) => {
   const app = useMobileApp();
-  const activeTab = app.activeTab;
+  // Durante o arrasto da navbar, a tela de preview mostra o conteúdo de outra
+  // aba sem chamar `handleNavigate` — evita o remount do `SlideScreen` e o
+  // "piscar" de múltiplas entradas/saídas do `AnimatePresence`.
+  const activeTab = activeTabOverride ?? app.activeTab;
 
   useUnknownSlideKindWarning(app.navigationStack[app.navigationStack.length - 1]?.kind);
 
@@ -261,6 +301,14 @@ export const SlideContent: React.FC = () => {
       ) : app.isSyncScreenOpen ? (
         <Suspense fallback={<ViewFallback />}>
           <SyncScreen />
+        </Suspense>
+      ) : app.isSyncLocalScreenOpen ? (
+        <Suspense fallback={<ViewFallback />}>
+          <SyncLocalInstructions />
+        </Suspense>
+      ) : app.isSyncRemoteScreenOpen ? (
+        <Suspense fallback={<ViewFallback />}>
+          <SyncRemoteInstructions />
         </Suspense>
       ) : app.isQuizGroupDetailOpen ? (
         <Suspense fallback={<ViewFallback />}>
@@ -364,14 +412,21 @@ export const SlideContent: React.FC = () => {
       ) : (
         <>
           <Suspense fallback={<ViewFallback />}>
-            {activeTab === 'home' && (app.isCalendarScreenOpen ? <CalendarScreen /> : <HomeView />)}
+            {activeTab === 'home' &&
+              (app.isCecinhoTaskOpen && app.cecinhoTaskId ? (
+                <CecinhoTaskChat taskId={app.cecinhoTaskId} />
+              ) : app.isCecinhoCenterOpen ? (
+                <CecinhoCenterScreen />
+              ) : app.isCalendarScreenOpen ? (
+                <CalendarScreen />
+              ) : app.isTccScreenOpen ? (
+                <TccView />
+              ) : (
+                <HomeView />
+              ))}
             {activeTab === 'faculdade' &&
               (app.isCalendarScreenOpen ? (
                 <CalendarScreen />
-              ) : app.isInternshipCaseOpen ? (
-                <InternshipCaseView />
-              ) : app.isInternshipDiaryOpen ? (
-                <InternshipDiaryView />
               ) : app.isClassNoteDetailOpen ? (
                 <ClassNoteDetailScreen />
               ) : app.isRepertorioItemOpen ? (
@@ -379,7 +434,14 @@ export const SlideContent: React.FC = () => {
               ) : (
                 <FaculdadeView course={app.focusedCourse} />
               ))}
-            {activeTab === 'estudos' && (app.isTccScreenOpen ? <TccView /> : <EstudosView />)}
+            {activeTab === 'clinica' &&
+              (app.isInternshipCaseOpen ? (
+                <InternshipCaseView />
+              ) : app.isInternshipDiaryOpen ? (
+                <InternshipDiaryView />
+              ) : (
+                <ClinicaView />
+              ))}
             {activeTab === 'biblioteca' && (
               <BibliotecaView
                 mode={

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Sparkles,
@@ -19,6 +19,7 @@ import { DEFAULT_TOTAL_SEMESTERS } from '@/data/schema';
 import { cn } from '../../lib/utils';
 import { PillGroup } from '../ui/PillGroup';
 import { ToggleRow } from '../ui/ToggleRow';
+import { Modal } from '../ui/Modal';
 import { pickProfilePhoto } from '../../lib/photo';
 import { ONBOARDING, frase } from '../../lib/voice';
 import {
@@ -66,7 +67,7 @@ const PERMISSION_CARDS: {
 ];
 
 export const OnboardingScreen: React.FC = () => {
-  const { completeOnboarding } = useMobileApp();
+  const { completeOnboarding, importData } = useMobileApp();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [semester, setSemester] = useState(1);
@@ -74,6 +75,60 @@ export const OnboardingScreen: React.FC = () => {
   const [university, setUniversity] = useState('');
   const [targetCareer, setTargetCareer] = useState('');
   const [photoUrl, setPhotoUrl] = useState('');
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [previewManifest, setPreviewManifest] = useState<{
+    nomeUsuario: string;
+    temaId: string;
+    tela: string;
+    temPATgithub: boolean;
+    createdAt: string;
+    schemaVersion: number;
+  } | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.name.toLowerCase().endsWith('.zip')) {
+      try {
+        const arrayBuffer = await file.arrayBuffer();
+        const JSZip = (await import('jszip')).default;
+        const zip = await JSZip.loadAsync(arrayBuffer);
+        const manifestFile = zip.files['manifest.json'];
+        if (manifestFile) {
+          const text = await manifestFile.async('string');
+          const manifest = JSON.parse(text);
+          if (manifest && typeof manifest === 'object' && manifest.nomeUsuario) {
+            setPreviewManifest({
+              nomeUsuario: manifest.nomeUsuario,
+              temaId: manifest.temaId,
+              tela: manifest.tela,
+              temPATgithub: manifest.temPATgithub,
+              createdAt: manifest.createdAt,
+              schemaVersion: manifest.schemaVersion,
+            });
+            setPreviewFile(file);
+          }
+        }
+      } catch {
+        // Se falhar a leitura do manifest, importa direto sem preview
+        importData(file);
+      }
+    } else {
+      // JSON v2: importa direto (o provider já valida)
+      importData(file);
+    }
+    event.target.value = '';
+  };
+
+  const confirmImport = () => {
+    if (previewFile) {
+      importData(previewFile);
+      setPreviewManifest(null);
+      setPreviewFile(null);
+    }
+  };
 
   const canProceedName = name.trim().length > 0;
 
@@ -143,15 +198,108 @@ export const OnboardingScreen: React.FC = () => {
               <p className="text-sm text-ceci-secondary leading-relaxed max-w-xs mx-auto">
                 {frase(ONBOARDING, 'boasVindasDescricao')}
               </p>
-              <div className="pt-4">
+              <div className="pt-4 flex flex-col items-center gap-3">
                 <button
                   onClick={() => setStep(1)}
                   className="inline-flex items-center gap-2 bg-ceci-primary hover:bg-ceci-primary-hover text-ceci-on-primary px-7 py-3.5 rounded-full text-sm font-semibold shadow-xs transition-colors cursor-pointer"
                 >
                   {frase(ONBOARDING, 'comecar')} <ArrowRight className="w-4 h-4" />
                 </button>
+                {/* Restauração no primeiro acesso (SPEC-M-030 D2). */}
+                <button
+                  onClick={() => importInputRef.current?.click()}
+                  className="text-xs text-ceci-secondary underline underline-offset-2 cursor-pointer"
+                >
+                  {frase(ONBOARDING, 'jaTenhoBackup')}
+                </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".zip,.json"
+                  className="sr-only"
+                  data-testid="onboarding-import-input"
+                  onChange={handleFileSelect}
+                />
               </div>
             </motion.div>
+          )}
+
+          {/* Preview do manifest do backup ZIP (SPEC-M-030 D2/T5.2). */}
+          {previewManifest && (
+            <Modal
+              open={true}
+              onClose={() => setPreviewManifest(null)}
+              closeOnBackdrop={false}
+            >
+              <div className="w-full max-w-sm bg-surface-default rounded-2xl shadow-floating p-6 space-y-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <span className="w-10 h-10 rounded-2xl bg-surface-rose border border-ceci-border-brand flex items-center justify-center text-ceci-brand-strong font-display font-bold text-xl">
+                    C
+                  </span>
+                  <span className="font-display font-bold text-xl text-ceci-primary">
+                    cecistudy <span className="text-ceci-brand-strong">♡</span>
+                  </span>
+                </div>
+                <h3 className="font-display font-bold text-lg text-ceci-primary text-center">
+                  {frase(ONBOARDING, 'previewTitulo')}
+                </h3>
+                <p className="text-sm text-ceci-secondary text-center">
+                  {frase(ONBOARDING, 'previewDescricao', { nome: previewManifest.nomeUsuario })}
+                </p>
+                <div className="space-y-2 text-xs border-t border-ceci-border-subtle pt-3">
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewNome')}</span>
+                    <span className="font-mono text-ceci-primary">{previewManifest.nomeUsuario}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewTema')}</span>
+                    <span className="font-mono text-ceci-primary">{previewManifest.temaId}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewTela')}</span>
+                    <span className="font-mono text-ceci-primary">{previewManifest.tela}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewData')}</span>
+                    <span className="font-mono text-ceci-primary">
+                      {new Date(previewManifest.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewSchema')}</span>
+                    <span className="font-mono text-ceci-primary">v{previewManifest.schemaVersion}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-ceci-secondary">{frase(ONBOARDING, 'previewSync')}</span>
+                    <span className="font-mono text-ceci-primary">
+                      {previewManifest.temPATgithub ? frase(ONBOARDING, 'previewSim') : frase(ONBOARDING, 'previewNao')}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-ceci-muted text-center">
+                  {frase(ONBOARDING, 'previewAviso')}
+                </p>
+                <div className="flex gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPreviewManifest(null);
+                      setPreviewFile(null);
+                    }}
+                    className="flex-1 py-3 rounded-2xl text-sm font-semibold text-ceci-secondary bg-surface-default border border-ceci-border-default cursor-pointer"
+                  >
+                    {frase(ONBOARDING, 'previewCancelar')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmImport}
+                    className="flex-1 py-3 rounded-2xl text-sm font-semibold text-ceci-on-brand bg-ceci-brand cursor-pointer"
+                  >
+                    {frase(ONBOARDING, 'previewImportar')}
+                  </button>
+                </div>
+              </div>
+            </Modal>
           )}
 
           {step === 1 && (

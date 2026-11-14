@@ -148,6 +148,9 @@ export const BARRA_APARECE: Record<NavScreen['kind'], boolean> = {
   'quiz-play': false,
   // Calendário empilhado: tem seu próprio rodapé (SPEC-024 D4).
   calendar: false,
+  // Central do Cecinho: tela própria com cabeçalho e barra de ações (SPEC-037).
+  cecinhoCenter: false,
+  cecinhoTask: false,
   // Desktop: sem barra contextual (o rodapé é outro).
   'knowledge-graph': false,
   projects: false,
@@ -165,6 +168,8 @@ export const BARRA_APARECE: Record<NavScreen['kind'], boolean> = {
   tcc: true,
   stickers: true,
   sync: true,
+  'sync-local': true,
+  'sync-remote': true,
   termHistory: true,
   approach: true,
   families: true,
@@ -472,25 +477,6 @@ export function buildContextBarConfig(input: ContextBarConfigInput): ContextBarC
   // Perfil > histórico de períodos: somente voltar (sem ação principal)
   if (currentScreen.kind === 'termHistory') {
     return { ...base, primaryActions: [] };
-  }
-
-  /* ------------------------------------------------------------------ */
-  // Streak: o **mesmo destino** do botão da tela ("bora estudar?" →
-  // estudos › sessões). Antes a barra ia para a revisão de flashcards — outra
-  // coisa, com o mesmo rótulo.
-  if (currentScreen.kind === 'streak') {
-    return {
-      ...base,
-      primaryActions: [
-        {
-          id: 'ir-para-estudar',
-          label: 'ir para estudar',
-          ariaLabel: 'ir para estudar, como o botão da tela',
-          Icon: ArrowRightCircle,
-          onSelect: () => handleNavigate('estudos', 'sessoes'),
-        },
-      ],
-    };
   }
 
   // Demais telas auxiliares sem ação principal cadastrada: somente voltar.

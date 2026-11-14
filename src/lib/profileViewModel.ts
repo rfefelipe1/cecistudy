@@ -56,9 +56,12 @@ export interface ProfileIdentity {
   subtitle: string;
   quote: string;
   photoUrl?: string;
+  coverPhotoUrl?: string;
   initials: string;
   level: number;
   title: string;
+  approach: string;
+  university: string;
 }
 
 export type ProfileJourneyStatus = 'past' | 'current' | 'future';
@@ -263,6 +266,8 @@ export function deriveProfileViewModel(input: ProfileViewModelInput): ProfileVie
       initials: initialsOf(profile.name),
       level,
       title,
+      approach: profile.targetCareer ?? '',
+      university: profile.university,
     },
     journey: {
       currentOrdinal,

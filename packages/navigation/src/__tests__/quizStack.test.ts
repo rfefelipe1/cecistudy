@@ -31,24 +31,24 @@ const CONFIG: QuizConfig = {
   count: 1,
 };
 
-const estudosTab: NavScreen = { kind: 'tab', tab: 'estudos' };
+const clinicaTab: NavScreen = { kind: 'tab', tab: 'clinica' };
 const homeTab: NavScreen = { kind: 'tab', tab: 'home' };
 
 describe('quizStack', () => {
   it('abre a categoria a partir de outra aba (base = estudos)', () => {
     const next = stackAfterOpenQuizCategory([homeTab]);
-    expect(next).toEqual([estudosTab, { kind: 'quiz-category' }]);
+    expect(next).toEqual([clinicaTab, { kind: 'quiz-category' }]);
   });
 
   it('abre a categoria sobre a aba estudos sem duplicar a tab', () => {
-    const next = stackAfterOpenQuizCategory([estudosTab]);
-    expect(next).toEqual([estudosTab, { kind: 'quiz-category' }]);
+    const next = stackAfterOpenQuizCategory([clinicaTab]);
+    expect(next).toEqual([clinicaTab, { kind: 'quiz-category' }]);
   });
 
   it('abre loading empilhando sobre a categoria (base = estudos)', () => {
-    const next = stackAfterOpenQuizLoading([estudosTab, { kind: 'quiz-category' }], CONFIG);
+    const next = stackAfterOpenQuizLoading([clinicaTab, { kind: 'quiz-category' }], CONFIG);
     expect(next).toEqual([
-      estudosTab,
+      clinicaTab,
       { kind: 'quiz-category' },
       { kind: 'quiz-loading', config: CONFIG },
     ]);
@@ -56,13 +56,13 @@ describe('quizStack', () => {
 
   it('abre o jogo com base na categoria existente', () => {
     const next = stackAfterOpenQuizPlay(
-      [estudosTab, { kind: 'quiz-category' }],
+      [clinicaTab, { kind: 'quiz-category' }],
       [QUESTION],
       CONFIG,
       1000,
     );
     expect(next).toEqual([
-      estudosTab,
+      clinicaTab,
       { kind: 'quiz-category' },
       {
         kind: 'quiz-play',
@@ -77,13 +77,13 @@ describe('quizStack', () => {
   });
 
   it('abre o jogo criando a categoria quando ausente', () => {
-    const next = stackAfterOpenQuizPlay([estudosTab], [QUESTION], CONFIG, 1);
+    const next = stackAfterOpenQuizPlay([clinicaTab], [QUESTION], CONFIG, 1);
     expect(next.map((s) => s.kind)).toEqual(['tab', 'quiz-category', 'quiz-play']);
   });
 
   it('resultado substitui o jogo na pilha e mantém a categoria (P2-5)', () => {
     const play = stackAfterOpenQuizPlay(
-      [estudosTab, { kind: 'quiz-category' }],
+      [clinicaTab, { kind: 'quiz-category' }],
       [QUESTION],
       CONFIG,
       1000,
@@ -101,7 +101,7 @@ describe('quizStack', () => {
 
   it('back do resultado volta à categoria, não ao jogo (P1-2)', () => {
     const result = stackAfterOpenQuizResult(
-      stackAfterOpenQuizPlay([estudosTab, { kind: 'quiz-category' }], [QUESTION], CONFIG, 1000),
+      stackAfterOpenQuizPlay([clinicaTab, { kind: 'quiz-category' }], [QUESTION], CONFIG, 1000),
       { answers: [], config: CONFIG, startTime: 1000, correctCount: 1, totalCount: 1 },
     );
     const next = stackAfterCloseQuizResult(result);
@@ -109,13 +109,13 @@ describe('quizStack', () => {
   });
 
   it('back do resultado sem categoria apenas desempilha', () => {
-    const next = stackAfterCloseQuizResult([estudosTab, { kind: 'quiz-result' } as NavScreen]);
-    expect(next).toEqual([estudosTab]);
+    const next = stackAfterCloseQuizResult([clinicaTab, { kind: 'quiz-result' } as NavScreen]);
+    expect(next).toEqual([clinicaTab]);
   });
 
   it('novo quiz mantém a categoria', () => {
     const next = stackAfterNewQuizFromResult([
-      estudosTab,
+      clinicaTab,
       { kind: 'quiz-category' },
       { kind: 'quiz-result' } as NavScreen,
     ]);
@@ -123,7 +123,7 @@ describe('quizStack', () => {
   });
 
   it('novo quiz sem categoria retorna null (chamador abre o seletor)', () => {
-    expect(stackAfterNewQuizFromResult([estudosTab])).toBeNull();
+    expect(stackAfterNewQuizFromResult([clinicaTab])).toBeNull();
   });
 
   it('fecha todo o fluxo de quiz voltando à tela anterior ao quiz', () => {
@@ -137,6 +137,6 @@ describe('quizStack', () => {
 
   it('fecha todo o fluxo para a aba estudos quando não há base', () => {
     const next = stackAfterCloseAllQuizScreens([{ kind: 'quiz-category' }]);
-    expect(next).toEqual([estudosTab]);
+    expect(next).toEqual([clinicaTab]);
   });
 });

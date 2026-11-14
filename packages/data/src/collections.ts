@@ -150,6 +150,14 @@ export const COLLECTIONS = [
   { key: 'thesisMeetings', kind: 'array', table: 'thesis_meeting', syncable: true },
   { key: 'thesisTasks', kind: 'array', table: 'thesis_task', syncable: true },
   { key: 'thesisWritingLogs', kind: 'array', table: 'thesis_writing_log', syncable: true },
+  // SPEC-037: estado leve do Cecinho Agent. Também no **fim** (mesmo motivo de
+  // `academicTerms`): nada aqui é lido por outra coleção. O conteúdo pesado
+  // (conversa completa, artefatos, versões) não entra no payload — mora no
+  // workspace de arquivos por tarefa.
+  { key: 'assistedTasks', kind: 'array', table: 'assisted_task', syncable: true },
+  { key: 'agentConversations', kind: 'array', table: 'agent_conversation', syncable: true },
+  { key: 'agentPlans', kind: 'array', table: 'agent_plan', syncable: true },
+  { key: 'agentArtifacts', kind: 'array', table: 'agent_artifact', syncable: true },
 ] as const satisfies readonly CollectionSpec[];
 
 /** União das chaves persistidas (ex.: `'courses' | 'decks' | …`). */

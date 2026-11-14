@@ -1,0 +1,11 @@
+{
+  "name": "@cecistudy/agent-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent Gateway do Cecinho Agent (SPEC-037 D11): fila de jobs, contexto mínimo, NVIDIA NIM pool.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test"
+  }
+}

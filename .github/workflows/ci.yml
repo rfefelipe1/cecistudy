@@ -61,8 +61,8 @@ jobs:
       - run: npm ci
       - run: npm run verify:domain
 
-  # camada 2 — UI, integração, build e conteúdo: porta de entrada de staging/main
-  gate-full:
+  # camada 2a — tipo, testes (ci), fronteiras, voz, contrato
+  gate-testes:
     if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -73,7 +73,36 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - run: npm run verify
+      - run: npm run verify:fast
+
+  # camada 2b — build web + mobile + relatório de bundle
+  gate-builds:
+    if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:web
+      - run: npm run bundle:report
+      - run: npm run build:mobile
+
+  # camada 2c — contrato de banco, catálogo de conteúdo e auditoria de deps
+  gate-conteudo:
+    if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
       - run: npm run db:verify
       - run: npm run content:check
       # informativo enquanto houver vulnerabilidade conhecida sem upgrade seguro;
@@ -118,7 +147,7 @@ jobs:
 
   ci-ok:
     if: always()
-    needs: [pr-title, gate-domain, gate-full, android-debug]
+    needs: [pr-title, gate-domain, gate-testes, gate-builds, gate-conteudo, android-debug]
     runs-on: ubuntu-latest
     steps:
       - name: agrega os checks

@@ -37,6 +37,8 @@ const renderPreferences = (vm: ProfilePreferencesVm) => {
       motionPref="sistema"
       onUpdateReminder={onUpdateReminder}
       onSetGcalEnabled={() => {}}
+      cecinhoHelpEnabled={false}
+      onSetCecinhoHelp={() => {}}
       onThemeSelect={() => {}}
       onMotionPrefSelect={onMotionPrefSelect}
     />

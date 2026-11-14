@@ -18,5 +18,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "exclude": ["node_modules", "dist", "android", "ios", "docs/archive", "apps/rn-expo"]
+  "exclude": ["node_modules", "dist", "android", "ios", "docs/archive", "apps/rn-expo", "agent-gateway"]
 }

@@ -26,11 +26,8 @@ describe('datas', () => {
     expect(toDateKey(parseDateKey(FRI))).toBe(FRI);
   });
 
-  it('isStudyDay reconhece seg–sex e ignora fim de semana', () => {
-    expect(isStudyDay(MON)).toBe(true);
-    expect(isStudyDay(FRI)).toBe(true);
-    expect(isStudyDay(SAT)).toBe(false);
-    expect(isStudyDay(SUN)).toBe(false);
+  it('isStudyDay reconhece qualquer dia da semana (sem limitação a úteis)', () => {
+    expect(isStudyDay()).toBe(true);
   });
 
   it('addDays soma/subtrai dias', () => {
@@ -54,7 +51,13 @@ describe('datas', () => {
 
 describe('computeStreak', () => {
   it('começa zerada sem dias ativos', () => {
-    expect(computeStreak([], FRI)).toEqual({ current: 0, longest: 0, total: 0, alive: false });
+    expect(computeStreak([], FRI)).toEqual({
+      current: 0,
+      longest: 0,
+      total: 0,
+      alive: false,
+      protectionUsed: false,
+    });
   });
 
   it('conta 1 quando só hoje está ativo', () => {
@@ -63,55 +66,49 @@ describe('computeStreak', () => {
     expect(stats.alive).toBe(true);
   });
 
-  it('conta a sequência de seg–sex ativa', () => {
+  it('conta a sequência de dias consecutivos ativos', () => {
     expect(computeStreak([WED, THU, FRI], FRI).current).toBe(3);
   });
 
   it('mantém a streak pendente quando ontem esteve ativo e hoje ainda não', () => {
-    // hoje (sex) sem atividade, ontem (qui) ativo → streak viva
     expect(computeStreak([TUE, WED, THU], FRI).current).toBe(3);
   });
 
-  it('quebra a streak quando um dia útil foi pulado', () => {
-    // seg–qua ativos, qui pulado, hoje sex sem atividade → quebrada
+  it('zera a corrente quando hoje e ontem não tiveram atividade', () => {
     expect(computeStreak([MON, TUE, WED], FRI).current).toBe(0);
   });
 
-  it('preserva a streak no sábado quando sexta esteve ativa', () => {
-    expect(computeStreak([THU, FRI], SAT).current).toBe(2);
+  it('conta fins de semana como dias ativos (não só úteis)', () => {
+    expect(computeStreak([THU, FRI, SAT], SAT).current).toBe(3);
   });
 
-  it('preserva a streak no domingo quando sexta esteve ativa', () => {
-    expect(computeStreak([WED, THU, FRI], SUN).current).toBe(3);
+  it('usa a proteção para pular 1 dia sem quebrar a corrente', () => {
+    // hoje (dom) sem atividade, ontem (sáb) ativo, sexta pulada, quinta ativa
+    // proteção consome o furo de sexta → corrente = sábado + quinta = 2
+    expect(computeStreak([THU, SAT], SUN).current).toBe(2);
   });
 
-  it('quebra no fim de semana se sexta foi pulada', () => {
-    expect(computeStreak([TUE, WED, THU], SAT).current).toBe(0);
-  });
-
-  it('atravessa o fim de semana (sex→seg conta como consecutivo)', () => {
-    expect(computeStreak([FRI, NEXT_MON], NEXT_MON).current).toBe(2);
-  });
-
-  it('ignora fins de semana no total, no longest e na streak atual', () => {
-    // qua–sex ativos + sáb/dom no meio + seg seguinte → fins de semana não contam nem quebram
-    const stats = computeStreak([WED, THU, FRI, SAT, SUN, NEXT_MON], NEXT_MON);
-    expect(stats.total).toBe(4);
-    expect(stats.longest).toBe(4);
-    expect(stats.current).toBe(4);
+  it('não começa a corrente quando nem hoje nem ontem tiveram atividade', () => {
+    expect(computeStreak([FRI], SUN).current).toBe(0);
   });
 
   it('deduplica dias repetidos', () => {
     expect(computeStreak([FRI, FRI, FRI], FRI).total).toBe(1);
   });
 
-  it('longest considera a maior sequência, ignorando quebras antigas', () => {
-    // seg-ter-qua (3) ... sex (1) → longest 3
-    expect(computeStreak([MON, TUE, WED, FRI], FRI).longest).toBe(3);
+  it('longest conta todos os dias, incluindo fins de semana', () => {
+    // qua–dom todos ativos → 5 dias consecutivos
+    expect(computeStreak([WED, THU, FRI, SAT, SUN], SUN).longest).toBe(5);
   });
 
-  it('longest atravessa fins de semana', () => {
-    expect(computeStreak([WED, THU, FRI, NEXT_MON, '2026-08-18'], FRI).longest).toBe(5);
+  it('longest usa a proteção para unir 2 blocos separados por 1 dia', () => {
+    // seg–qua (3) + furo qui (proteção) + sex (1) → 4
+    expect(computeStreak([MON, TUE, WED, FRI], FRI).longest).toBe(4);
+  });
+
+  it('longest não acumula proteções: 2 furos quebram a sequência', () => {
+    // seg–ter (2) + furo qua (proteção) + qui (1) + furo sex (2º furo → quebra) → longest 3
+    expect(computeStreak([MON, TUE, THU], THU).longest).toBe(3);
   });
 });
 

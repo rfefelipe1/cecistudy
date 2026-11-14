@@ -41,6 +41,10 @@ import {
   ReadingSession,
   ReadingHighlight,
   ReadingBookmark,
+  AssistedTask,
+  AgentConversation,
+  AgentPlan,
+  AgentArtifact,
 } from '../types';
 import { emptySyncIndex } from '../lib/sync/stamp';
 import { DEFAULT_TOTAL_SEMESTERS } from '../data/schema';
@@ -114,6 +118,11 @@ export interface EmptyDatabase {
     thesisMeetings: ThesisMeeting[];
     thesisTasks: ThesisTask[];
     thesisWritingLogs: ThesisWritingLog[];
+    /** Cecinho Agent (SPEC-037): estado leve; o conteúdo mora no workspace. */
+    assistedTasks: AssistedTask[];
+    agentConversations: AgentConversation[];
+    agentPlans: AgentPlan[];
+    agentArtifacts: AgentArtifact[];
    /** Carimbos de alteração p/ sincronização entre dispositivos (Fase Sync). */
    syncIndex: SyncIndex;
 }
@@ -155,6 +164,10 @@ stickers: lockedStickerCatalog(),
     thesisMeetings: [],
     thesisTasks: [],
     thesisWritingLogs: [],
+    assistedTasks: [],
+    agentConversations: [],
+    agentPlans: [],
+    agentArtifacts: [],
     syncIndex: emptySyncIndex(),
   };
 }
