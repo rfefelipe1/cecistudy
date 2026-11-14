@@ -1,0 +1,159 @@
+name: ci
+
+# Gate por camada. O que roda depende de onde o PR vai cair:
+#   dev        → domínio (rápido): tipos, testes puros, fronteiras, voz, contrato
+#   staging /  → completo: UI + integração + build web/mobile + catálogo
+#   main
+# `ci-ok` é o único required check — o nome não muda quando um job é refatorado.
+
+on:
+  pull_request:
+    branches: [dev, staging, main]
+  push:
+    branches: [dev, staging, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pull-requests: read
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        with:
+          # `merge` porque as promoções dev→staging→main usam esse título.
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+            merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # camada 1 — domínio: é o gate de toda feature
+  gate-domain:
+    # `env` não está disponível em `if:` de job; por isso a expressão usa só `github`.
+    if: github.base_ref == 'dev' || (github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:domain
+
+  # camada 2a — tipo, testes (ci), fronteiras, voz, contrato
+  gate-testes:
+    if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run verify:fast
+
+  # camada 2b — build web + mobile + relatório de bundle
+  gate-builds:
+    if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:web
+      - run: npm run bundle:report
+      - run: npm run build:mobile
+
+  # camada 2c — contrato de banco, catálogo de conteúdo e auditoria de deps
+  gate-conteudo:
+    if: github.base_ref != 'dev' && !(github.event_name == 'push' && github.ref_name == 'dev')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run db:verify
+      - run: npm run content:check
+      # informativo enquanto houver vulnerabilidade conhecida sem upgrade seguro;
+      # volta a obrigatório no T5.5 (SPEC-026 D11).
+      - run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+  # compila nativo só quando o nativo muda (esta máquina não tem JDK/SDK)
+  android-debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - id: f
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            android:
+              - 'android/**'
+              - 'capacitor.config.ts'
+              - 'package.json'
+              - 'package-lock.json'
+      - if: steps.f.outputs.android == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - if: steps.f.outputs.android == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+      - if: steps.f.outputs.android == 'true'
+        run: npm ci
+      - if: steps.f.outputs.android == 'true'
+        run: npm run build
+      - if: steps.f.outputs.android == 'true'
+        run: npx cap sync android
+      - if: steps.f.outputs.android == 'true'
+        run: cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+
+  ci-ok:
+    if: always()
+    needs: [pr-title, gate-domain, gate-testes, gate-builds, gate-conteudo, android-debug]
+    runs-on: ubuntu-latest
+    steps:
+      - name: agrega os checks
+        run: |
+          echo '${{ toJSON(needs) }}'
+          if echo '${{ toJSON(needs.*.result) }}' | grep -Eq '"(failure|cancelled)"'; then
+            echo "::error::algum check falhou"
+            exit 1
+          fi

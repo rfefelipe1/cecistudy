@@ -1,0 +1,133 @@
+// Domínio: perfil, streak, stickers, TCC e sincronização (MOD-001 / B.3).
+
+export interface UserProfile {
+  /** Escopo de workspace (Fase 3). Perfil é por workspace. */
+  workspaceId?: string;
+  name: string;
+  semester: number;
+  totalSemesters: number;
+  university: string;
+  targetCareer: string;
+  dailyQuote: string;
+  stickersCollected: number;
+  /** XP por categoria de sticker (sistema de níveis). Opcional — retrocompatível com perfis salvos antes dos níveis. */
+  categoryXp?: Record<Sticker['category'], number>;
+  /** Foto de perfil (data URL). Vazia quando não definida. */
+  photoUrl?: string;
+  /**
+   * Autorização para a voz tratar a usuária **pelo nome** (`SPEC-C-014` D8).
+   *
+   * Padrão fechado: `undefined`/`false` = a voz fala com "você". Opcional de
+   * propósito — não exige backfill nem bump de `SCHEMA_VERSION`, porque
+   * `userProfileSchema` do backup é `passthrough`. O interruptor mora na tela de
+   * Perfil.
+   */
+  nomeAutorizado?: boolean;
+  /**
+   * Meta total de horas de estágio (`SPEC-009 D2`).
+   *
+   * Inteiro de 1 a 5000. **Ausente = sem meta**, e é assim que a tela trata:
+   * aparece só o "definir meta". Opcional de propósito — não exige backfill, e o
+   * `userProfileSchema` do backup é `passthrough`, então o campo atravessa sem
+   * precisar de migração.
+   */
+  internshipGoalHours?: number;
+}
+
+export interface StreakData {
+  /** Dias (YYYY-MM-DD, fuso local) em que houve pelo menos uma ação de estudo que conta. */
+  activeDays: string[];
+}
+
+export interface Sticker {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  name: string;
+  emoji: string;
+  description: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+  category: 'faculdade' | 'estudo' | 'leituras' | 'jornada';
+  /** Condição de desbloqueio (lida do catálogo em `src/data/stickerCatalog.ts`). */
+  condition?: StickerCondition;
+}
+
+/** Raridade de um sticker — determina o XP concedido ao desbloquear. */
+export type StickerRarity = 'semente' | 'broto' | 'raiz' | 'copa' | 'floresta';
+
+/** Regra de desbloqueio de um sticker (conquista), avaliada contra o estado do app. */
+export type StickerCondition =
+  | { type: 'reading-done' }
+  | { type: 'profile-set' }
+  | { type: 'flashcards-reviewed'; min: number }
+  | { type: 'internship-first' }
+  | { type: 'streak'; min: number }
+  | { type: 'degree-half' }
+  | { type: 'concepts-with-authors'; min: number }
+  | { type: 'tcc-done' }
+  | { type: 'sessions'; min: number }
+  | { type: 'class-notes'; min: number }
+  | { type: 'pages-read'; min: number }
+  | { type: 'tasks-done'; min: number }
+  | { type: 'saved-books'; min: number }
+  | { type: 'exams-added'; min: number }
+  | { type: 'exams-done'; min: number }
+  | { type: 'concepts-known'; min: number }
+  | { type: 'authors-known'; min: number }
+  | { type: 'materials-added'; min: number }
+  | { type: 'courses'; min: number }
+  | { type: 'flashcards-count'; min: number }
+  | { type: 'questions-created'; min: number }
+  | { type: 'techniques-used'; min: number }
+  | { type: 'study-minutes'; min: number }
+  | { type: 'streak-total'; min: number }
+  | { type: 'streak-longest'; min: number }
+  | { type: 'reading-count'; min: number }
+  | { type: 'reading-in-progress'; min: number }
+  | { type: 'loose-notes'; min: number }
+  | { type: 'internship-hours'; min: number }
+  | { type: 'internship-logs'; min: number }
+  | { type: 'tcc-created' }
+  | { type: 'tcc-chapters-done'; min: number }
+  | { type: 'penultimate-semester' }
+  | { type: 'graduation' }
+  | { type: 'streak-week'; min: number }
+  | { type: 'streak-month'; min: number }
+  | { type: 'flashcard-streak' }
+  | { type: 'questions-mastered'; min: number }
+  | { type: 'techniques-explored'; min: number }
+  | { type: 'thesis-words'; min: number }
+  | { type: 'thesis-meetings'; min: number }
+  | { type: 'thesis-refs-cited'; min: number };
+
+// SPEC-012: o tipo do singleton `tcc` é `ThesisProject`, do domínio
+// (`packages/domain/.../thesis.ts`, reexportado pelo barrel `@/types`).
+// O antigo `TccData` — com `chapters` e `references` dentro — foi absorvido pela
+// `MIGRATIONS[22]`: capítulos e referências viraram coleções próprias com id
+// estável. Não existe alias: o nome novo é o vocabulário do domínio.
+
+/** Estado de onboarding (primeiro acesso). */
+export interface OnboardingState {
+  completed: boolean;
+  completedAt?: string;
+}
+
+/**
+ * Índice de sincronização entre dispositivos (pareamento P2P).
+ *
+ * Os timestamps de alteração NÃO vivem nas entidades — vivem aqui, num mapa
+ * paralelo mantido automaticamente pela camada de persistência
+ * (`useStampedState`). Isso evita tocar em ~20 interfaces e mantém o formato
+ * dos backups compatível (o índice viaja junto como campo opcional).
+ *
+ * - `stamps`: última alteração por coleção (LWW para valores únicos, ex.: profile).
+ * - `records`: última alteração por registro (`[coleção][id]`), para merge LWW por item.
+ * - `tombstones`: deleções propagáveis (`[coleção][id]`) — impedem que um registro
+ *   apagado num dispositivo "ressuscite" vindo do outro.
+ */
+export interface SyncIndex {
+  stamps: Record<string, number>;
+  records: Record<string, Record<string, number>>;
+  tombstones: Record<string, Record<string, number>>;
+}

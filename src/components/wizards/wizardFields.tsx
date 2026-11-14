@@ -1,0 +1,241 @@
+import React from 'react';
+import { cn } from '../../lib/utils';
+import { daysBetween, localDateKey, todayKeyLocal } from '../../lib/dateBR';
+
+/** Rótulo de campo discreto dos wizards (o destaque é o headline do passo). */
+export const FieldLabel: React.FC<{ children: React.ReactNode; htmlFor?: string }> = ({
+  children,
+  htmlFor,
+}) => (
+  <label
+    htmlFor={htmlFor}
+    className="block text-[11px] font-semibold text-ceci-tertiary mb-1.5 uppercase tracking-wider"
+  >
+    {children}
+  </label>
+);
+
+/** Microlinha de ajuda abaixo de um campo: explica o que colocar ali. */
+export const FieldHint: React.FC<{ children: React.ReactNode; className?: string }> = ({
+  children,
+  className,
+}) => (
+  <p className={cn('text-[11px] text-ceci-tertiary leading-relaxed mt-1.5', className)}>
+    {children}
+  </p>
+);
+
+/** Campo completo dos wizards: rótulo + controle + hint explicativo opcional. */
+export const Field: React.FC<{
+  label?: string;
+  htmlFor?: string;
+  hint?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ label, htmlFor, hint, children }) => (
+  <div>
+    {label && <FieldLabel htmlFor={htmlFor}>{label}</FieldLabel>}
+    {children}
+    {hint && <FieldHint>{hint}</FieldHint>}
+  </div>
+);
+
+/** Input "chunky": fundo sólido suave, cantos grandes, bastante respiro interno. */
+const inputClass =
+  'w-full bg-surface-input border border-transparent rounded-2xl px-4 py-4 text-sm text-ceci-primary placeholder-ceci-faded focus:outline-none focus:ring-2 focus:ring-ceci-brand/30 focus:border-ceci-brand transition-shadow';
+
+export const TextInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input {...props} className={cn(inputClass, props.className)} />
+);
+
+export const TextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
+  <textarea {...props} className={cn(inputClass, 'resize-none leading-relaxed', props.className)} />
+);
+
+export const DateInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input type="date" {...props} className={cn(inputClass, 'text-sm', props.className)} />
+);
+
+/** Seletor de hora nativo (HH:MM). */
+export const TimeInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input type="time" {...props} className={cn(inputClass, 'text-sm', props.className)} />
+);
+
+const isoDay = (offsetDays: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().split('T')[0];
+};
+
+/**
+ * Campo de data com atalhos explícitos ("hoje", "amanhã", "sem data") — §4.6:
+ * nunca preencher hoje silenciosamente; o campo começa vazio e os atalhos são
+ * escolhas intencionais da usuária.
+ */
+export const DateField: React.FC<{
+  label?: string;
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}> = ({ label, id, value, onChange, placeholder }) => {
+  const chipBase =
+    'px-3 py-1.5 rounded-full border text-[11px] font-semibold tap-interactive cursor-pointer transition active:scale-95';
+  return (
+    <div>
+      {label && <FieldLabel htmlFor={id}>{label}</FieldLabel>}
+      <DateInput id={id} value={value} onChange={(e) => onChange(e.target.value)} />
+      <div className="flex flex-wrap gap-1.5 mt-1.5">
+        <button
+          type="button"
+          onClick={() => onChange(isoDay(0))}
+          className={`${chipBase} ${
+            value === isoDay(0)
+              ? 'bg-surface-rose border-ceci-border-brand text-ceci-brand-strong'
+              : 'bg-surface-default border-ceci-border-default text-ceci-secondary hover:bg-surface-muted'
+          }`}
+        >
+          hoje
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(isoDay(1))}
+          className={`${chipBase} ${
+            value === isoDay(1)
+              ? 'bg-surface-rose border-ceci-border-brand text-ceci-brand-strong'
+              : 'bg-surface-default border-ceci-border-default text-ceci-secondary hover:bg-surface-muted'
+          }`}
+        >
+          amanhã
+        </button>
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className={`${chipBase} bg-surface-default border-ceci-border-default text-status-danger-strong hover:bg-surface-rose`}
+          >
+            sem data
+          </button>
+        )}
+        {!value && placeholder && (
+          <span className="text-[11px] text-ceci-faded self-center">{placeholder}</span>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/** Input numérico com teclado numérico no mobile. */
+export const NumberInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
+  <input inputMode="numeric" {...props} className={cn(inputClass, 'text-sm', props.className)} />
+);
+
+/**
+ * Campo de **prazo** — diferente do `DateField`.
+ *
+ * O `DateField` faz pergunta de calendário ("hoje?", "amanhã?"), que é a
+ * pergunta certa quando se marca algo que acontece amanhã e a errada quando se
+ * marca *entrega final* e *banca*: ninguém entrega o TCC amanhã, e um atalho
+ * chamado "amanhã" ali só empurra a data para o lugar errado com um toque.
+ * Aqui os atalhos são horizontais — "1 mês", "3 meses", "6 meses", "ano que
+ * vem" — e a data volta em linguagem natural, porque "faltam 40 dias" é o que
+ * a pessoa quer saber, não "14/11/2026".
+ */
+export const DeadlineField: React.FC<{
+  label?: string;
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+}> = ({ label, id, value, onChange }) => {
+  const chipBase =
+    'px-3 py-1.5 rounded-full border text-[11px] font-semibold tap-interactive cursor-pointer transition active:scale-95';
+  const today = todayKeyLocal();
+
+  const preset = (months: number) => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + months);
+    return localDateKey(d);
+  };
+  const nextYear = () => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 1);
+    return localDateKey(d);
+  };
+
+  const presets = [
+    { label: '1 mês', key: () => preset(1) },
+    { label: '3 meses', key: () => preset(3) },
+    { label: '6 meses', key: () => preset(6) },
+    { label: 'ano que vem', key: nextYear },
+  ];
+
+  // Eco do prazo: passado vira alerta, hoje vira "hoje", o resto conta os dias.
+  let echo: { text: string; cls: string } | null = null;
+  if (value) {
+    const days = daysBetween(today, value);
+    if (days < 0) {
+      echo = { text: `passou há ${Math.abs(days)} dias`, cls: 'text-status-danger-strong' };
+    } else if (days === 0) {
+      echo = { text: 'é hoje', cls: 'text-status-warning-strong' };
+    } else {
+      echo = { text: `faltam ${days} dias`, cls: 'text-ceci-secondary' };
+    }
+  }
+
+  return (
+    <div>
+      {label && <FieldLabel htmlFor={id}>{label}</FieldLabel>}
+      <DateInput id={id} value={value} onChange={(e) => onChange(e.target.value)} />
+      <div className="flex flex-wrap gap-1.5 mt-1.5">
+        {presets.map((p) => {
+          const k = p.key();
+          return (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => onChange(k)}
+              className={cn(
+                chipBase,
+                value === k
+                  ? 'bg-surface-rose border-ceci-border-brand text-ceci-brand-strong'
+                  : 'bg-surface-default border-ceci-border-default text-ceci-secondary hover:bg-surface-muted',
+              )}
+            >
+              {p.label}
+            </button>
+          );
+        })}
+        {value && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            className={cn(
+              chipBase,
+              'bg-surface-default border-ceci-border-default text-status-danger-strong hover:bg-surface-rose',
+            )}
+          >
+            sem data
+          </button>
+        )}
+      </div>
+      {echo && <p className={cn('text-[11px] mt-1.5 font-medium', echo.cls)}>{echo.text}</p>}
+    </div>
+  );
+};
+
+interface ReviewCardProps {
+  rows: { label: string; value: string }[];
+}
+
+/** Card de revisão no último step do wizard: mostra o resumo antes de guardar. */
+export const ReviewCard: React.FC<ReviewCardProps> = ({ rows }) => (
+  <div className="bg-surface-default rounded-2xl border border-ceci-border-default shadow-2xs divide-y divide-ceci-border-subtle">
+    {rows.map((r) => (
+      <div key={r.label} className="px-4 py-3">
+        <p className="text-[10px] font-bold uppercase tracking-wider text-ceci-tertiary mb-0.5">
+          {r.label}
+        </p>
+        <p className="text-sm text-ceci-primary leading-snug">{r.value || '—'}</p>
+      </div>
+    ))}
+  </div>
+);

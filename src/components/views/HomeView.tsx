@@ -1,0 +1,206 @@
+﻿import React, { useMemo, useState, useEffect } from 'react';
+import { GraduationCap } from 'lucide-react';
+import {
+  useDataClientApp,
+  useDataClientCourses,
+  useDataClientStudy,
+} from '@/context/DataClientProvider';
+import { useNavValue } from '@/context/shellNavContexts';
+import { ATTENTION_LIMIT } from '../../lib/homeMeta';
+import { resumoDoDia, saudacao, saudacaoTurno, dica, frase, VAZIO } from '../../lib/voice';
+import { daysUntil } from '../../lib/diasAte';
+import { buildCalendarEntries, getTodaySchedule } from '../../lib/schedule';
+import { addDaysKey, todayKeyLocal } from '../../lib/dateBR';
+import { isCardDue } from '../../lib/fsrs';
+import HeroSection from './home/HeroSection';
+import { heroMascote } from './home/heroMascote';
+import { useFraseMotivacao } from '../../lib/useFraseMotivacao';
+import { useFraseRotativa } from '../../lib/useFraseRotativa';
+import TodayClasses from './home/TodayClasses';
+import AttentionSection, { type AttentionItem } from './home/AttentionSection';
+import CecinhoTip from './home/CecinhoTip';
+import { SectionTitle } from '../ui/SectionTitle';
+
+export const HomeView: React.FC = () => {
+  const { profile, internshipLogs, tcc, thesisChapters, thesisMeetings, thesisTasks } =
+    useDataClientApp();
+  const { courses, tasks, exams } = useDataClientCourses();
+  const { flashcards, sessions } = useDataClientStudy();
+  const { handleNavigate, openTccScreen } = useNavValue();
+
+  // Um relógio só: saudação, data e arte do hero saem do mesmo instante.
+  const agora = new Date();
+  const greeting = saudacao(agora);
+  const mascote = heroMascote(saudacaoTurno(agora), agora.getDate());
+
+  // Frase de motivação do dia — escolhida aleatoriamente no boot, sem repetir a última.
+  const fraseMotivacao = useFraseMotivacao();
+  // Frase de carinho pequena — rota a cada 10 s, sem repetir duas vezes seguidas.
+  const fraseCarcinho = useFraseRotativa(10_000);
+
+  /**
+   * Coreografia de abertura da Home (SPEC-M-028 D27): na primeira montagem da
+   * aba, hero e até os itens de atenção entram uma vez. Nas voltas, nada acima
+   * da dobra anima. Usa estado (não `useRef`) para não reanimar a cada volta.
+   */
+  const [abertura, setAbertura] = useState(true);
+  useEffect(() => setAbertura(false), []);
+
+  const formattedDate = agora
+    .toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    })
+    .toLowerCase();
+
+  // Provas nos próximos 14 dias (filtro real de data)
+  const pendingExamsIn14Days = useMemo(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const limit = new Date(today);
+    limit.setDate(today.getDate() + 14);
+    return (exams || []).filter((e) => {
+      if (e.completed) return false;
+      const d = e.date ? new Date(`${e.date}T00:00:00`) : null;
+      return d && !Number.isNaN(d.getTime()) && d >= today && d <= limit;
+    });
+  }, [exams]);
+
+  // Flashcards vencidos (revisão pendente)
+  const dueCardsCount = useMemo(() => flashcards.filter((c) => isCardDue(c)).length, [flashcards]);
+
+  // Formação: TCC (capítulos prontos) — eixo principal que substitui as ações
+  // rápidas de estudo (SPEC-M-032 D8).
+  const tccPct = useMemo(() => {
+    if (thesisChapters.length === 0) return 0;
+    const done = thesisChapters.filter((c) => c.stage === 'pronto').length;
+    return Math.round((done / thesisChapters.length) * 100);
+  }, [thesisChapters]);
+
+  // Aulas de hoje, ordenadas por hora (com o slot para exibir horário/sala)
+  const todaySchedule = useMemo(() => getTodaySchedule(courses, new Date()), [courses]);
+
+  // Frase do dia — conteúdo real derivado das pendências
+  const dayMessage = useMemo(() => {
+    const pendingTasks = tasks.filter((t) => !t.completed).length;
+    return resumoDoDia({
+      tarefasPendentes: pendingTasks,
+      provasPendentes: pendingExamsIn14Days.length,
+    });
+  }, [tasks, pendingExamsIn14Days]);
+
+  /**
+   * "O que precisa da sua atenção hoje" — agora vem do agregador (SPEC-024
+   * D13/D4): prova, tarefa, prazo do TCC e pendência de estágio, todos na mesma
+   * ordem por data e com o teto de 5. Tarefa **sem prazo** não tem `DateKey` e
+   * por isso fica de fora do agregador; ela continua no fim da lista, como antes.
+   *
+   * `from` olha 14 dias para trás para as atrasadas entrarem primeiro.
+   */
+  const attentionAll = useMemo<AttentionItem[]>(() => {
+    const today = todayKeyLocal();
+    const comData: AttentionItem[] = buildCalendarEntries({
+      courses,
+      exams,
+      tasks,
+      thesis: tcc,
+      chapters: thesisChapters,
+      thesisTasks,
+      meetings: thesisMeetings,
+      internshipLogs,
+      studySessions: sessions,
+      from: addDaysKey(today, -14),
+      to: addDaysKey(today, 14),
+    })
+      .filter(
+        (e) =>
+          e.kind === 'tarefa' || e.kind === 'prova' || e.kind === 'tcc' || e.kind === 'estagio',
+      )
+      .map((entry) => ({ kind: 'calendar' as const, entry }));
+
+    const semPrazo: AttentionItem[] = tasks
+      .filter((t) => !t.completed && !t.dueDate)
+      .map((t) => ({ kind: 'task' as const, id: t.id }));
+
+    return [...comData, ...semPrazo];
+  }, [
+    courses,
+    exams,
+    tasks,
+    tcc,
+    thesisChapters,
+    thesisTasks,
+    thesisMeetings,
+    internshipLogs,
+    sessions,
+  ]);
+
+  const attentionItems = attentionAll.slice(0, ATTENTION_LIMIT);
+
+  const remainingAttention = Math.max(0, attentionAll.length - attentionItems.length);
+
+  // Dica contextual do cecinho (derivada do estado real do dia)
+  // `SPEC-M-018 D7`: o componente monta o contexto; quem escreve é a voz.
+  const cecinhoTip = useMemo(() => {
+    const proximaProva =
+      [...pendingExamsIn14Days].sort((a, b) => a.date.localeCompare(b.date))[0]?.date ?? null;
+    return dica({
+      cartoesVencidos: dueCardsCount,
+      tarefasPendentes: tasks.filter((t) => !t.completed).length,
+      provasPendentes: pendingExamsIn14Days.length,
+      diasAteProva: proximaProva ? daysUntil(proximaProva) : null,
+      tituloProva: proximaProva,
+    });
+  }, [dueCardsCount, tasks, pendingExamsIn14Days]);
+
+  return (
+    <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-6 pb-1">
+      {/* 1. HERO — saudação + data + frase do dia */}
+      <HeroSection
+        entrada={abertura}
+        formattedDate={formattedDate}
+        greeting={greeting}
+        name={profile.name}
+        dayMessage={dayMessage}
+        fraseMotivacao={fraseMotivacao}
+        fraseCarcinho={fraseCarcinho?.texto ?? null}
+        mascote={mascote}
+      />
+
+      {/* Desktop (≥ lg): coluna única — facul, atenção, TCC, dica (sem o card de ritmo da home) */}
+      <div className="lg:grid lg:grid-cols-12 lg:gap-6 lg:items-start">
+        <div className="lg:col-span-12 space-y-6">
+          {/* 2. HOJE NA FACUL */}
+          <TodayClasses
+            todaySchedule={todaySchedule}
+            onOpenCourse={(id) => handleNavigate('faculdade', undefined, id)}
+          />
+
+          {/* 3. SUA ATENÇÃO HOJE */}
+          <AttentionSection items={attentionItems} remainingCount={remainingAttention} />
+
+          {/* 4. SUA FORMAÇÃO — TCC (eixo principal, SPEC-M-032 D8) */}
+          <section className="space-y-3 px-0.5">
+            <SectionTitle icon={<GraduationCap className="w-4 h-4 text-ceci-brand-strong" />}>
+              sua formação
+            </SectionTitle>
+            <button
+              onClick={() => openTccScreen()}
+              className="w-full bg-surface-default hover:border-ceci-border-brand rounded-2xl p-5 text-left border border-ceci-border-default tap-interactive cursor-pointer space-y-2 shadow-sm min-h-[110px]"
+            >
+              <GraduationCap className="w-6 h-6 text-ceci-brand-strong" />
+              <p className="text-base font-bold font-display text-ceci-primary">meu tcc</p>
+              <p className="text-[11px] text-ceci-secondary">
+                {thesisChapters.length > 0 ? `${tccPct}% dos capítulos` : frase(VAZIO, 'tccComecarCurto')}
+              </p>
+            </button>
+          </section>
+
+          {/* 5. DICA DA CECINHO */}
+          <CecinhoTip tip={cecinhoTip} />
+        </div>
+      </div>
+    </div>
+  );
+};

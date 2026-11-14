@@ -1,0 +1,847 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Tailwind v4 auto-detecta conteúdo em todo o projeto, inclusive .md de docs
+   (ex.: desktop/LAYOUT-SPEC.md cita classes utilitários `var(--ds-*)`). Isso
+   gera utilitários órfãos no bundle web. Exclui markdown da varredura. */
+@source not "../**/*.md";
+@source not "../**/*.mdx";
+
+/* Fontes explícitas de classes — independentes do cwd do build. Os builds dos
+   workspaces apps/* rodam com cwd próprio, então a detecção automática do
+   Tailwind v4 não enxergaria src/** e geraria CSS sem utilitários. Força o
+   escopo aqui, relativo a este CSS. */
+@source "../src/**/*.{ts,tsx}";
+@source "../apps/**/*.{ts,tsx}";
+
+@theme {
+   /* cecistudy DESIGN SYSTEM PRIMITIVE TOKENS */
+
+   /* ROSE (identity, action, personal afeto) */
+   --color-rose-50: #FFF5F7;
+   --color-rose-100: #FFE9EE;
+   --color-rose-200: #FFD3DD;
+   --color-rose-300: #FFB8C7;
+   --color-rose-400: #F596AA;
+   --color-rose-500: #E97891;
+   --color-rose-600: #D85F79;
+   --color-rose-700: #B94862;
+   --color-rose-800: #963B51;
+   --color-rose-900: #71303F;
+
+   /* BLUE (knowledge, academic context) */
+   --color-blue-50: #F3F9FC;
+   --color-blue-100: #E6F2F7;
+   --color-blue-200: #CEE7F0;
+   --color-blue-300: #ADD4E2;
+   --color-blue-400: #83BCD0;
+   --color-blue-500: #609FB8;
+   --color-blue-600: #4A879F;
+   --color-blue-700: #396D82;
+   --color-blue-800: #2F596A;
+   --color-blue-900: #284955;
+
+   /* CREAM (my space, main canvas atmosphere) */
+   --color-cream-50: #FFFCF8;
+   --color-cream-100: #FFF8F1;
+   --color-cream-200: #FFF1E5;
+   --color-cream-300: #F9E7D5;
+   --color-cream-400: #EFD5BE;
+   --color-cream-500: #DEC0A4;
+
+   /* BEIGE (support, editorial, context) */
+   --color-beige-50: #FAF8F5;
+   --color-beige-100: #F3EEE8;
+   --color-beige-200: #E8DFD5;
+   --color-beige-300: #D9CDC0;
+   --color-beige-400: #C6B6A5;
+   --color-beige-500: #AD9986;
+   --color-beige-600: #927D6B;
+   --color-beige-700: #756354;
+
+   /* GREEN (conclusion, completion, success) */
+   --color-green-50: #F2FAF5;
+   --color-green-100: #DDF3E5;
+   --color-green-200: #C2E8D0;
+   --color-green-300: #A8D8B9;
+   --color-green-400: #8BC7A2;
+   --color-green-500: #72B98D;
+   --color-green-600: #5A9F76;
+   --color-green-700: #43805B;
+   --color-green-800: #356647;
+   --color-green-900: #2A513A;
+
+   /* YELLOW (attention, warning) */
+   --color-yellow-50: #FFF9ED;
+   --color-yellow-100: #FFF0CC;
+   --color-yellow-200: #FCE4A8;
+   --color-yellow-300: #F3D48B;
+   --color-yellow-400: #E8C36D;
+   --color-yellow-500: #DCAF55;
+   --color-yellow-600: #BD913C;
+   --color-yellow-700: #96702B;
+   --color-yellow-800: #765824;
+   --color-yellow-900: #5E471F;
+
+   /* RED (error, problem) */
+   --color-red-50: #FFF5F4;
+   --color-red-100: #FFE2DF;
+   --color-red-200: #FACCC8;
+   --color-red-300: #F1AAA4;
+   --color-red-400: #E89189;
+   --color-red-500: #D97A72;
+   --color-red-600: #C5665E;
+   --color-red-700: #A8514B;
+   --color-red-800: #843F3A;
+   --color-red-900: #68332F;
+
+   /* SEMANTIC SHORTCUT ALIASES FOR TAILWIND UTILITIES */
+   /* Tema rosa-claro aquecido ("cozy academia"): superfícies em papel quente,
+      sombras com temperatura de cacau e atmosfera de abajur (F1/F3). */
+   --color-canvas: #FFF9F0;
+   --color-surface-default: #FFFDF8;
+   --color-surface-subtle: #FFF3E7;
+   --color-surface-muted: #F7F1EA;
+   --color-surface-rose: #FFEFF3;
+   --color-surface-blue: #F1F7FA;
+   --color-surface-input: #FBF5EF;
+   --color-surface-warm: #FFF6E9;
+
+   --color-ceci-primary: #3B3233;
+   --color-ceci-secondary: #6B5F5E;
+   --color-ceci-tertiary: #8E7F7B;
+   --color-ceci-muted: #A99A94;
+   --color-ceci-brand: #D4617C;
+   --color-ceci-brand-strong: #AF465F;
+   --color-ceci-academic: #4A879F;
+   --color-ceci-academic-strong: #396D82;
+
+   --color-ceci-border-subtle: #F0E6DD;
+   --color-ceci-border-default: #E7DACF;
+   --color-ceci-border-strong: #D8C7BA;
+   --color-ceci-border-brand: #FFD0DB;
+   --color-ceci-border-academic: #CEE7F0;
+
+   /* TEM-001 — texto sobre preenchimentos (inverte junto com o tema para
+      dark não perder legibilidade: `bg-ceci-primary text-ceci-on-primary`).
+      O `ceci-primary` é usado como texto E como fundo de botão — o `on-*`
+      desacopla as duas funções quando o tema escurece/clareia. */
+   --color-ceci-on-primary: #FFFFFF;
+   --color-ceci-on-brand: #FFFFFF;
+   --color-ceci-on-academic: #FFFFFF;
+
+   /* TEM-001 — glass (liquid-glass-nav/pill/fab). `color-mix` com branco fixo
+      quebra em dark; estes tokens carregam o grau do vidro por tema. */
+   --color-glass-hairline: rgba(255, 255, 255, 0.5);
+   --color-glass-pill-start: rgba(255, 255, 255, 0.9);
+   --color-glass-pill-end: rgba(255, 255, 255, 0.5);
+   --color-glass-pill-border: rgba(255, 255, 255, 0.7);
+
+   /* TEM-001 (dark polish) — família de status theme-aware. O tom base é o
+      preenchimento (`bg-status-success`) e o `-strong` é o texto/borda sobre
+      superfície. `-surface`/`-border` derivam do base misturado ao
+      `surface-default`, então acompanham claro/escuro sem 6 valores por tema. */
+   --color-status-success: #427E5B;
+   --color-status-success-strong: #2D6A4F;
+   --color-status-success-on: #FFFFFF;
+   --color-status-success-surface: color-mix(in srgb, var(--color-status-success) 12%, var(--color-surface-default));
+   --color-status-success-border: color-mix(in srgb, var(--color-status-success) 38%, var(--color-surface-default));
+   --color-status-danger: #B2554D;
+   --color-status-danger-strong: #A8514B;
+   --color-status-danger-on: #FFFFFF;
+   --color-status-danger-surface: color-mix(in srgb, var(--color-status-danger) 12%, var(--color-surface-default));
+   --color-status-danger-border: color-mix(in srgb, var(--color-status-danger) 38%, var(--color-surface-default));
+   --color-status-warning: #8A6524;
+   --color-status-warning-strong: #725016;
+   --color-status-warning-on: #FFFFFF;
+   --color-status-warning-surface: color-mix(in srgb, var(--color-status-warning) 12%, var(--color-surface-default));
+   --color-status-warning-border: color-mix(in srgb, var(--color-status-warning) 38%, var(--color-surface-default));
+
+   /* TEM-001 — leitor (ReaderModeModal): temas FIXOS do leitor (papel/
+      sépia/noturno), independentes do tema do app — não invertem no dark. */
+   --color-reader-paper-bg: #FAF8F5;
+   --color-reader-paper-text: #40383A;
+   --color-reader-paper-border: rgba(64, 56, 58, 0.10);
+   --color-reader-paper-soft: rgba(64, 56, 58, 0.06);
+   --color-reader-sepia-bg: #FFFDF0;
+   --color-reader-sepia-text: #756354;
+   --color-reader-sepia-border: rgba(117, 99, 84, 0.16);
+   --color-reader-sepia-soft: rgba(117, 99, 84, 0.08);
+   --color-reader-dark-bg: #2A2527;
+   --color-reader-dark-text: #E9E2DE;
+   --color-reader-dark-border: rgba(233, 226, 222, 0.12);
+   --color-reader-dark-soft: rgba(233, 226, 222, 0.07);
+
+   /* Atmosfera — glows de "abajur" aplicados na camada de canvas (F3) */
+   --color-canvas-glow-rose: #FFE9E6;
+   --color-canvas-glow-amber: #FFE6C4;
+
+   /* ORPHAN HEX → SEMANTIC TOKENS (migração A.2) */
+   --color-surface-paper: #FFFDF0;
+   --color-surface-sun: #FFF8CC;
+   --color-surface-mint: #F2F8F4;
+   --color-surface-mint-soft: #EAF5ED;
+   --color-surface-gold: #FFF8E9;
+   --color-ceci-border-mint: #D1E8D9;
+   --color-ceci-border-peach: #FFE2CC;
+   --color-ceci-border-gold: #F1DFB3;
+   --color-amber-bg: #FEF3C7;
+   --color-amber-border: #FDE68A;
+   --color-amber-text: #D97706;
+   --color-gold: #8C7338;
+   --color-success-deep: #2D6A4F;
+   --color-success-leaf: #518265;
+   --color-ceci-faded: #BEB4B6;
+   --color-ceci-primary-hover: #2D2728;
+   --color-ceci-ink: #282022;
+   --color-ceci-brand-hover: #A03B52;
+   --color-ceci-brand-soft: #EA718F;
+   --color-ceci-text-soft: #524B4D;
+
+   /* CAPAS DE LIVRO & HEROS DE ARTE — "capa física", invariante ao tema
+      (como os tokens fixos do leitor, TEM-001 B.5): a arte/clara + tinta escura
+      se comportam igual em todos os temas, para que a capa não "lambe" no dark. */
+   --color-cover-base: #FFFFFF;
+   --color-cover-ink: #3B3233;
+
+   /* FOCO IMERSIVO (EST-002) — chrome preto da sessão landscape full-screen */
+   --color-focus-bg: #0B0B0C;
+   --color-focus-primary: #FFFFFF;
+   --color-focus-muted: #9E9EA3;
+   --color-focus-track: rgba(255, 255, 255, 0.14);
+   --color-focus-accent: #E97891;
+
+   /* FONTS */
+   --font-sans: 'SF Pro Text', ui-sans-serif, system-ui, sans-serif;
+   --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, sans-serif;
+   --font-serif: 'DM Serif Display', Georgia, serif;
+   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+   /* RADIUS */
+   --radius-xs: 6px;
+   --radius-sm: 8px;
+   --radius-md: 12px;
+   --radius-lg: 16px;
+   --radius-xl: 20px;
+   --radius-2xl: 24px;
+   --radius-3xl: 32px;
+
+   /* SHADOWS — base cacau (temperatura). `--color-shadow-rgb` (o runtime
+      temático, TEM-001) e `--color-shadow-brand-rgb` são setados inline no
+      root por applyTheme. `--shadow-rgb` segue como ALIAS de compat para as
+      referências espalhadas (.paper-card, glass-fab, sombras de quiz) —
+      assim tudo muda junto com o tema sem reescrever 8 arquivos. */
+   --color-shadow-rgb: 122, 88, 72;
+   --color-shadow-brand-rgb: 175, 70, 95;
+   --shadow-rgb: var(--color-shadow-rgb);
+   --shadow-xs: 0 1px 2px rgba(var(--shadow-rgb), 0.05);
+   --shadow-sm: 0 2px 8px rgba(var(--shadow-rgb), 0.06);
+   --shadow-md: 0 6px 18px rgba(var(--shadow-rgb), 0.08);
+   --shadow-lg: 0 12px 32px rgba(var(--shadow-rgb), 0.10);
+   --shadow-xl: 0 20px 48px rgba(var(--shadow-rgb), 0.14);
+   --shadow-floating: 0 8px 28px rgba(var(--shadow-rgb), 0.14);
+   --shadow-floating-strong: 0 8px 30px rgba(var(--shadow-rgb), 0.28);
+   --shadow-brand: 0 4px 16px rgba(var(--color-shadow-brand-rgb), 0.38);
+   --shadow-brand-soft: 0 4px 14px rgba(var(--color-shadow-brand-rgb), 0.28);
+
+   /* BARRA CONTEXTUAL (SPEC-022 D5) — a geometria mora em UM lugar: a peça,
+      o painel de expansão e o espaço reservado pelo conteúdo leem daqui.
+      Antes o 44 px estava hardcoded em duas classes e o conteúdo reservava
+      6rem para uma peça de 44 px (sobrando 36 px de faixa vazia). */
+   --contextual-bar-height: 44px;
+   --contextual-bar-gap: 12px;
+   --contextual-bar-margin: 16px;
+   --contextual-bar-space: calc(var(--contextual-bar-height) + var(--contextual-bar-margin));
+}
+
+/* TEM-001 — transição suave de troca de tema (classe aplicada/removida por
+   applyTheme durante a troca explícita; nunca no boot). Mantém a transição
+   mínima (cor/borda/sombra) para não interferir em animações de layout.
+   Honor do prefers-reduced-motion: sem transição quando o usuário pede. */
+@media (prefers-reduced-motion: no-preference) {
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition:
+      background-color 0.45s ease,
+      color 0.45s ease,
+      border-color 0.45s ease,
+      box-shadow 0.45s ease,
+      fill 0.45s ease,
+      stroke 0.45s ease !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ceci-primary);
+  }
+
+  /* Atmosfera "cozy academia" (F3): luz de abajur atrás do conteúdo —
+     rosa-quente no topo-esquerda, âmbar na base-direita. Camada fixa,
+     sem interação; opacidade baixa para não roubar legibilidade. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      radial-gradient(58% 42% at 10% -4%, var(--color-canvas-glow-rose), transparent 68%),
+      radial-gradient(60% 48% at 102% 104%, var(--color-canvas-glow-amber), transparent 70%);
+  }
+}
+
+/* ===== Utilities ===== */
+
+/* Cozy Academic Card Styling aligned with Design Tokens */
+.journal-card {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-surface-default),
+    var(--color-surface-warm)
+  );
+  background-color: var(--color-surface-default);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-ceci-border-default);
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease;
+}
+
+.journal-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-ceci-border-strong);
+}
+
+/* "Paper card" — o card-cocoon (papel quente com luz de abajur no topo).
+   Receita usada nos blocos de conteúdo: gradiente papel → quente, borda
+   marrom-latente e sombra cacau em duas camadas (toque suave + respiro). */
+.paper-card {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-surface-default),
+    var(--color-surface-warm)
+  );
+  background-color: var(--color-surface-default);
+  border-radius: 20px;
+  border: 1px solid var(--color-ceci-border-default);
+  box-shadow:
+    0 2px 8px rgba(var(--shadow-rgb), 0.06),
+    0 10px 30px rgba(var(--shadow-rgb), 0.05);
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .paper-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 4px 12px rgba(var(--shadow-rgb), 0.08),
+      0 16px 40px rgba(var(--shadow-rgb), 0.08);
+    border-color: var(--color-ceci-border-strong);
+  }
+}
+
+/* Transição de propriedades específicas p/ elementos interativos (iOS-like, sem jank) */
+.tap-interactive {
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Press states iOS-like: feedback de toque consistente */
+.press-card {
+  transition: transform 0.15s ease;
+}
+.press-card:active {
+  transform: scale(0.97);
+}
+
+/* Movimento reduzido: mata as transições CSS desses elementos quando o perfil
+   está reduzido. O wrapper `data-motion` vem do `MotionProfileProvider`. */
+[data-motion='reduced'] .press-card,
+[data-motion='reduced'] .tap-interactive,
+[data-motion='reduced'] .card-lift {
+  transition: none !important;
+}
+
+/* ============================================================ */
+/* MOVIMENTO AMBIENTE (SPEC-M-027 D13)                          */
+/* Deriva lenta de elemento pequeno, só transform. CSS puro:     */
+/* roda no compositor, sem rAF e sem JS por frame. A duração vem */
+/* do token (`TOKENS.ambient.duration`, via style inline);       */
+/* pausar usa `animation-play-state`, que NÃO reinicia a fase.   */
+/* ============================================================ */
+@keyframes ambient-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -4px, 0) rotate(-1.5deg);
+  }
+}
+
+.ambient {
+  animation-name: ambient-float;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.ambient-paused {
+  animation-play-state: paused;
+}
+
+/* Coreografia de abertura da Home (SPEC-M-028 D27): roda uma vez, só na
+   primeira montagem da aba. Aplica via classe `home-hero-entrada`. */
+@keyframes homeHeroEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-hero-entrada {
+  animation: homeHeroEntrada 0.6s ease-out forwards;
+}
+
+/* Entrada do estado de recarga do seletor de quiz (sem framer-motion). */
+@keyframes quizReloadEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quiz-reload-entrada {
+  animation: quizReloadEntrada 0.4s ease-out forwards;
+}
+
+/* Varredura micro de brilho do toggle — keyframe curto, sem JS por frame. */
+@keyframes sweep {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 0.7;
+    transform: translateX(0);
+  }
+}
+
+/* Lift de cards/capas apenas com mouse — evita sticky-hover e animação no toque */
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift,
+  .card-lift {
+    transition:
+      transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px) scale(1.01);
+  }
+  .card-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+/* Paper Texture Background */
+.paper-texture {
+  background-image: radial-gradient(var(--color-ceci-border-brand) 0.6px, transparent 0.6px);
+  background-size: 18px 18px;
+  background-color: var(--color-canvas);
+}
+
+/* ThreeUI shader frame (3d-paper): o palco onde a cena Three.js preenche */
+.shader-frame {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Cute Badge Styling */
+.cute-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: transform 0.15s ease;
+}
+
+.cute-badge:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* Serifa acadêmica de afeto (DM Serif Display) — momentos-chave:
+   saudações, empty states e citações. Uso deliberado e esparso (F5). */
+.font-serif-academic {
+  font-family: var(--font-serif);
+  letter-spacing: 0;
+}
+
+/* Touch Targets Ensure 44px min */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Seções/shelves pesadas da biblioteca: conteúdo offscreen não paga layout/paint.
+   `contain-intrinsic-size: auto N` lembra o último tamanho renderizado (fallback p/ não renderizado). */
+.cv-shelf {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 280px;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-beige-200);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-ceci-border-brand);
+}
+
+
+
+/* ============================================================ */
+/* LIQUID GLASS — efeito "vidro líquido" morphing (Apple-like) */
+/* Aplicado nas barras de navegação (HeaderNav + BottomNav).     */
+/* Combinado com SVG filters feDisplacementMap (inline no App).  */
+/* ============================================================ */
+
+/* Keyframes de scale p/ sincronizar morph com troca de seleção */
+@keyframes scaleToggle {
+  0% { scale: 1 1; }
+  50% { scale: 1.1 1; }
+  100% { scale: 1 1; }
+}
+@keyframes scaleToggle2 {
+  0% { scale: 1 1; }
+  50% { scale: 1.2 1; }
+  100% { scale: 1 1; }
+}
+@keyframes scaleToggle3 {
+  0% { scale: 1 1; }
+  50% { scale: 1.1 1; }
+  100% { scale: 1 1; }
+}
+
+/* Container glass — usado no <header> e no <nav> do bottom nav.
+   `color-mix` = Canvas 75% + transparente; borda branca translúcida;
+   backdrop-blur + saturate fazem o "frosted" (vidro fosco puro em CSS,
+   sem filtro SVG — barato, robusto e idêntico entre navegadores). */
+.liquid-glass-nav {
+  background-color: color-mix(in srgb, var(--color-surface-rose) 72%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: color-mix(in srgb, var(--color-surface-default) 60%, transparent);
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Pill ativo do bottom nav — vidro mais denso (topo branco) p/ destacar
+   a aba selecionada. Gradiente estático: o indicador precisa ser SEMPRE
+   visível, sem depender de filtros. */
+.liquid-glass-pill {
+  background-image: linear-gradient(
+    to bottom,
+    var(--color-glass-pill-start),
+    var(--color-glass-pill-end)
+  );
+  border-color: var(--color-glass-pill-border);
+  box-shadow:
+    var(--shadow-xs),
+    inset 0 1px 0 var(--color-glass-hairline);
+}
+
+/* FAB — vidro fosco na cor da marca: mesma receita do container
+   (blur + saturate sobre fundo translúcido), mas com o rosa
+   ceci-brand-strong no lugar do canvas + highlights internos de vidro. */
+.liquid-glass-fab {
+  background-color: color-mix(in srgb, var(--color-ceci-brand-strong) 85%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border-color: color-mix(in srgb, white 45%, transparent);
+  box-shadow:
+    inset 0 1px 0 var(--color-glass-hairline),
+    inset 0 -1px 0 rgba(var(--shadow-rgb), 0.15);
+}
+
+/* Leitor (ReaderModeModal) — temas fixos do leitor, independentes do tema
+   do app (TEM-001 B.5). Cada classe carrega as variáveis --reader-bg/--text/
+   --border/--soft que os elementos internos reutilizam (bordas, hover, corpo). */
+.reader-paper {
+  --reader-bg: var(--color-reader-paper-bg);
+  --reader-text: var(--color-reader-paper-text);
+  --reader-border: var(--color-reader-paper-border);
+  --reader-soft: var(--color-reader-paper-soft);
+  background-color: var(--reader-bg);
+  color: var(--reader-text);
+}
+
+.reader-sepia {
+  --reader-bg: var(--color-reader-sepia-bg);
+  --reader-text: var(--color-reader-sepia-text);
+  --reader-border: var(--color-reader-sepia-border);
+  --reader-soft: var(--color-reader-sepia-soft);
+  background-color: var(--reader-bg);
+  color: var(--reader-text);
+}
+
+.reader-dark {
+  --reader-bg: var(--color-reader-dark-bg);
+  --reader-text: var(--color-reader-dark-text);
+  --reader-border: var(--color-reader-dark-border);
+  --reader-soft: var(--color-reader-dark-soft);
+  background-color: var(--reader-bg);
+  color: var(--reader-text);
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================ */
+/* FOCO IMERSIVO — sessão de foco full-screen (EST-002)         */
+/* Camada preta por cima de tudo (z-45, abaixo dos modais z-50) */
+/* ============================================================ */
+.focus-immersive {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background-color: var(--color-focus-bg);
+  color: var(--color-focus-primary);
+  padding:
+    calc(env(safe-area-inset-top, 0px) + 1.25rem)
+    calc(env(safe-area-inset-right, 0px) + 1.5rem)
+    calc(env(safe-area-inset-bottom, 0px) + 1.25rem)
+    calc(env(safe-area-inset-left, 0px) + 1.5rem);
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.focus-immersive button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.focus-top {
+  width: 100%;
+  max-width: 30rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.focus-top-label {
+  font-family: var(--font-display);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--color-focus-primary);
+  letter-spacing: -0.01em;
+}
+
+.focus-exit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-focus-track);
+  color: var(--color-focus-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.focus-exit:hover {
+  color: var(--color-focus-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.focus-preset-row {
+  width: 100%;
+  max-width: 30rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.focus-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid var(--color-focus-track);
+  color: var(--color-focus-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.focus-pill:hover {
+  color: var(--color-focus-primary);
+}
+
+.focus-pill-active {
+  background-color: var(--color-focus-primary);
+  border-color: var(--color-focus-primary);
+  color: var(--color-focus-bg);
+}
+
+/* Variante usada como botão do Picker de minutos customizados (sobrepõe o
+   estilo claro padrão do Picker dentro do chrome escuro). */
+.focus-pill-static {
+  background-color: transparent;
+  border-color: var(--color-focus-track);
+  justify-content: center;
+}
+
+.focus-clock-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(62vw, 264px);
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+.focus-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.focus-clock {
+  font-family: var(--font-mono);
+  font-size: clamp(2.75rem, 9vw, 4.25rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-focus-primary);
+  line-height: 1;
+}
+
+.focus-toggle {
+  margin-top: 0.625rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--color-focus-accent);
+}
+
+.focus-bottom {
+  width: 100%;
+  max-width: 30rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.focus-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.focus-save {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 1.125rem;
+  border-radius: 9999px;
+  background-color: var(--color-focus-accent);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.focus-save:active {
+  transform: scale(0.96);
+}
+
+.focus-reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  border: 1px solid var(--color-focus-track);
+  color: var(--color-focus-muted);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.focus-reset:hover {
+  color: var(--color-focus-primary);
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+.focus-hint {
+  max-width: 22rem;
+  text-align: center;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--color-focus-muted);
+}

@@ -1,0 +1,384 @@
+/**
+ * Fábrica de variantes de tela (SPEC-007 §5.3).
+ *
+ * Uma única função decide para onde **cada** camada da pilha vai, a partir de
+ * uma única verdade (`NavIntent`). A regra que resolve o problema difícil — "a
+ * tela que sai vai para onde?" — é que a direção de saída é a **mesma** `dir`
+ * da entrada, com o sinal trocado:
+ *
+ * ```
+ * entering.x = +dir * W        exiting.x = -dir * W
+ * ```
+ *
+ * |          | quem entra (topo) | quem sai (topo)  |
+ * |----------|-------------------|-------------------|
+ * | push (+1)| de `+W` (direita) | para `-W` (esquerda) |
+ * | pop (-1) | de `-W` (esquerda) | para `+W` (direita) |
+ *
+ * E a **posição de descanso é função da profundidade** (§D3): uma camada `depth`
+ * níveis abaixo do topo fica em `x = -depth * PARALLAX * W`. Consequência: a
+ * tela-base não tem enter/exit próprios em push/pop — ela só anima
+ * `frente → atrás` e `atrás → frente`, e pilha de 3 funciona sem caso especial.
+ */
+
+import type { TargetAndTransition, Variants } from 'framer-motion';
+import { consumeMotionIntent, type NavIntent } from './intent';
+import type { MotionProfile } from './profile';
+import { prefersReducedMotion } from './reduced';
+import { BASE_D, BASE_T, EASE, PARALLAX, SHADE_MAX_OPACITY } from './tokens';
+
+export interface ScreenTargets {
+  front: TargetAndTransition;
+  behind: (depth: number) => TargetAndTransition;
+  enter: (intent: NavIntent) => TargetAndTransition;
+  exit: (intent: NavIntent) => TargetAndTransition;
+  shade: (intent: NavIntent) => TargetAndTransition;
+}
+
+/** Distância mínima que a tela percorre ao sair depois de um gesto de borda. */
+const GESTURE_EXIT_TRAVEL_PX = 90;
+
+/**
+ * Alvos de uma camada da pilha.
+ *
+ * @param width  largura de referência do palco (px). Fato de layout, medido pelo wrapper.
+ * @param profile perfil de movimento (cheio ou reduzido).
+ */
+export function createScreenTargets(width: number, profile: MotionProfile): ScreenTargets {
+  const { d, reduced } = profile;
+
+  // Sob movimento reduzido, TODO alvo é 0 — e é escrito **explícito**,
+  // não omitido: se a tela parou a meio caminho em x=400 (ou y=8 na troca de
+  // aba) e o perfil virou reduzido, omitir a propriedade deixaria o transform
+  // travado onde estava.
+  if (reduced) {
+    const fadeIn: TargetAndTransition = {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      transition: { duration: d.replace, ease: EASE.standard },
+    };
+    const fadeOut: TargetAndTransition = {
+      x: 0,
+      y: 0,
+      opacity: 0,
+      transition: { duration: d.replace, ease: EASE.exit },
+    };
+    return {
+      front: fadeIn,
+      behind: () => fadeIn,
+      enter: () => fadeIn,
+      exit: () => fadeOut,
+      // Sem dim: o conteúdo de baixo segue legível, sem escurecer nada.
+      shade: () => ({ opacity: 0, transition: { duration: 0 } }),
+    };
+  }
+
+  return {
+    /** No topo, em repouso. */
+    // `opacity: 1` explícito, e pelo mesmo motivo do bloco `reduced` acima: o alvo
+    // de repouso precisa declarar a propriedade que a entrada mexe. `enter` de
+    // `tab`/`replace` nasce em `opacity: 0`; se `front` omitisse `opacity`, o alvo
+    // `animate` também omitiria, e o framer-motion só anima as keys **presentes**
+    // no alvo — a tela ficaria transparente para sempre, com o fundo do app
+    // aparecendo por baixo. Era o bug de "troco de aba e a tela some".
+    front: {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      transition: { duration: d.screenRest, ease: EASE.standard },
+    },
+
+    /** `depth` níveis abaixo do topo. */
+    behind: (depth: number) => ({
+      // `-0` vira `translateX(-0px)` e quebra igualdade por `Object.is`; depth 0 é
+      // a própria frente, então devolvemos `0` limpo.
+      x: depth === 0 ? 0 : -depth * PARALLAX * width,
+      opacity: 1,
+      transition: { duration: d.screenRest, ease: EASE.standard },
+    }),
+
+    // `opacity: 1` explícito: um push **não pode fazer fade**. Sumir enquanto
+    // desliza é o maior sinal de "web app fingindo ser nativo".
+    enter: (intent: NavIntent) =>
+      // Container transform (SPEC-M-028 D24/D46): a tela não desliza e o destino
+      // materializa por baixo do clone do card. Quem conta a história é a camada.
+      intent.morph
+        ? { x: 0, opacity: 0 }
+        : intent.kind === 'push' || intent.kind === 'pop'
+          ? {
+              x: intent.dir * width,
+              opacity: 1,
+              transition: { duration: d.screenEnter, ease: EASE.enter },
+            }
+          : intent.kind === 'tab' && intent.dir !== 0
+            ? // Aba arrastada na navbar: abas são **irmãs**, não hierarquia.
+              // Viajar uma viewport é a gramática de push/pop e lê como virar
+              // página — só o conteúdo materializa por cima do fundo parado.
+              {
+                x: 0,
+                y: 8,
+                opacity: 0,
+                transition: { duration: d.replace, ease: EASE.standard },
+              }
+            : {
+                x: 0,
+                opacity: 0,
+                transition: { duration: d.replace, ease: EASE.standard },
+              },
+
+    exit: (intent: NavIntent) => {
+      if (intent.morph) {
+        return { x: 0, opacity: 0, transition: { duration: d.screenExit, ease: EASE.exit } };
+      }
+      // Pop vindo do gesto de borda: parte do ponto onde o dedo soltou.
+      if (intent.kind === 'pop' && intent.fromGesture) {
+        return {
+          x: [intent.gestureX, intent.gestureX + Math.max(GESTURE_EXIT_TRAVEL_PX, width * 0.4)],
+          opacity: [1, 0],
+          transition: { duration: d.screenExit, ease: EASE.exit },
+        };
+      }
+      if (intent.kind === 'push' || intent.kind === 'pop') {
+        return {
+          x: -intent.dir * width,
+          opacity: 1,
+          transition: { duration: d.screenExit, ease: EASE.exit },
+        };
+      }
+      // Aba arrastada: a que sai só esmaece, sem viajar.
+      if (intent.kind === 'tab' && intent.dir !== 0) {
+        return {
+          x: 0,
+          y: 0,
+          opacity: 0,
+          transition: { duration: d.replace, ease: EASE.exit },
+        };
+      }
+      return { x: 0, opacity: 0, transition: { duration: d.replace, ease: EASE.exit } };
+    },
+
+    shade: (intent: NavIntent) =>
+      intent.morph
+        ? { opacity: 0, transition: { duration: 0 } }
+        : intent.kind === 'push' || intent.kind === 'pop'
+          ? { opacity: 1, transition: { duration: d.shade, ease: EASE.standard } }
+          : { opacity: 0, transition: { duration: d.replace, ease: EASE.standard } },
+  };
+}
+
+/**
+ * `Variants` para o wrapper declarativo (`SlideScreen`), mantendo a API de
+ * rótulos (`initial`/`animate`/`exit`) já usada hoje.
+ *
+ * A largura é fixada na criação; `custom` carrega o `NavIntent` **completo**
+ * (não um escalar) para a variante `exit` ler a direção fresca — a instância que
+ * sai tem props congeladas do último render (ver §5.4).
+ */
+export function createScreenVariants(width: number, profile: MotionProfile): Variants {
+  const targets = createScreenTargets(width, profile);
+  return {
+    initial: (intent: NavIntent) => targets.enter(intent),
+    animate: (intent: NavIntent) =>
+      intent.morph
+        ? // O destino materializa na mesma duração do clone: no fim do morph a
+          // página está inteira e o clone já saiu.
+          { x: 0, opacity: 1, transition: { duration: profile.d.morph, ease: EASE.enter } }
+        : intent.kind === 'push' || intent.kind === 'pop'
+          ? // `behind()` pode virar `front` e `front()` pode virar `behind()` na mesma
+            // camada (a tela-base troca de papel em push e pop). Se qualquer um dos dois
+            // dissesse `opacity`, a troca de papel devolveria a camada para o valor herdado
+            // do papel anterior — e o sintoma seria "depois de navegar, some tudo". Por isso
+            // o par é reescrito, e não só `front`: os dois alvos declaram `opacity`.
+            { ...targets.front, transition: { duration: profile.d.screenRest, ease: EASE.standard } }
+          : { ...targets.front },
+    exit: () => targets.exit(consumeMotionIntent()),
+  };
+}
+
+/** Rótulo do alvo de repouso de uma camada pela profundidade. */
+export const screenDepthLabel = (depth: number): 'front' | 'behind' =>
+  depth > 0 ? 'behind' : 'front';
+
+// ---------------------------------------------------------------------------
+// Presets nomeados (SPEC-007 §D6)
+// ---------------------------------------------------------------------------
+
+/**
+ * `step` — deslocamento curto e local: sub-tab de curso, passo de wizard,
+ * questão de quiz. Não é o mesmo que `screen` porque é curto e local (passo é
+ * curto; tela é longa e espacial). Consolidar as 3 físicas locais que existiam
+ * (48px / 48px / 40px) em um preset só.
+ */
+export const stepVariants: Variants = {
+  initial: (dir: number = 1) => ({ x: dir * 40, opacity: 0 }),
+  animate: { x: 0, opacity: 1, transition: { duration: BASE_D.step, ease: EASE.standard } },
+  exit: (dir: number = 1) => ({
+    x: dir * -40,
+    opacity: 0,
+    transition: { duration: BASE_D.stepExit, ease: EASE.exit },
+  }),
+};
+
+/**
+ * `tab` — troca de aba (pares). Sem slide: a usuária não pode ver a outra aba
+ * saindo, e um wrap de `AnimatePresence` aqui custaria um render de subárvore
+ * inteira a cada toque.
+ */
+export const tabContent: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: BASE_D.tab, ease: EASE.standard } },
+  exit: { opacity: 0, transition: { duration: BASE_D.tab, ease: EASE.exit } },
+};
+
+/**
+ * `overlay` — compose / wizards / detalhe e transformação de nota.
+ * Fade + scale curto. Substitui `overlayVariants` do `motion.ts` legado, que era
+ * idêntico e será re-exportado daqui.
+ */
+export const overlayVariants: Variants = {
+  initial: { opacity: 0, scale: 0.985, y: 6 },
+  animate: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { duration: BASE_D.overlay, ease: EASE.standard },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.99,
+    y: 4,
+    transition: { duration: BASE_D.overlay, ease: EASE.exit },
+  },
+};
+
+/** `chrome` — header, bottom-nav, FAB. Preset compartilhado de opacidade. */
+export const chromeFade: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: BASE_D.navBar, ease: EASE.standard } },
+  exit: { opacity: 0, transition: { duration: BASE_D.navBar, ease: EASE.exit } },
+};
+
+/** Toast — fade + slide curto, entra por baixo e sai por cima. */
+export const toastVariants: Variants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0, transition: { duration: BASE_D.toast, ease: EASE.standard } },
+  exit: { opacity: 0, y: -8, transition: { duration: BASE_D.micro, ease: EASE.exit } },
+};
+
+/**
+ * `listItem` — item de lista entrando/saindo. **Nunca** `height: 0` (força
+ * reflow de todos os irmãos seguintes durante toda a animação); o irmão fecha a
+ * lacuna por `layout="position"`.
+ */
+export const listItemVariants: Variants = {
+  initial: { opacity: 0, y: 8, scale: 0.985 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: BASE_D.listItem, ease: EASE.standard },
+  },
+  exit: {
+    opacity: 0,
+    scale: 0.97,
+    transition: { duration: BASE_D.listItem, ease: EASE.exit },
+  },
+};
+
+/**
+ * `reveal` — item que entra quando cruza o viewport (SPEC-M-027 D6).
+ *
+ * Mesmo alvo do `listItem`, com o atraso do índice capado em `listStaggerCap`.
+ * O atraso é **por item**, não por container: cada item entra no seu próprio
+ * momento de scroll, então não existe um `animate` de lista para pendurar
+ * `delayChildren`. `custom` carrega o índice.
+ */
+export const revealVariants: Variants = {
+  initial: listItemVariants.initial,
+  animate: (index: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: BASE_D.listItem,
+      ease: EASE.standard,
+      delay: Math.min(index, BASE_D.listStaggerCap) * BASE_D.listStagger,
+    },
+  }),
+};
+
+/** Opacidade do dim sobre a camada coberta (orçamento de contraste WCAG 1.4.3). */
+export const SHADE_OPACITY = SHADE_MAX_OPACITY;
+
+/**
+ * `sheet` — painéis de modal por posição (`Modal.tsx`). Comporta a folha
+ * inferior arrastável, então o preset `bottom` anima `y` em `100%` e deixa a
+ * decisão de commit para o `onDragEnd` do componente.
+ *
+ * Migrado de `src/lib/motion.ts`. O `iOS_SPRING` legado (`stiffness: 320`) foi
+ * trocado pelo token `BASE_T.sheet` (`stiffness: 420`): mesma família, um dono.
+ *
+ * ⚠️ Este preset **não** passa pelo perfil reduzido — é um componente de UI
+ * compartilhada, não uma camada da pilha. Ele lê `prefersReducedMotion()`
+ * diretamente, como fazia antes da migração.
+ */
+export const sheetVariants: Record<'center' | 'top' | 'bottom', Variants> = {
+  center: {
+    initial: () => (prefersReducedMotion() ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 10 }),
+    animate: () =>
+      prefersReducedMotion()
+        ? { opacity: 1, transition: { duration: BASE_D.replace, ease: EASE.standard } }
+        : { opacity: 1, scale: 1, y: 0, transition: BASE_T.sheet },
+    exit: () =>
+      prefersReducedMotion()
+        ? { opacity: 0, transition: { duration: BASE_D.replace, ease: EASE.exit } }
+        : {
+            opacity: 0,
+            scale: 0.97,
+            y: 8,
+            transition: { duration: BASE_D.replace, ease: EASE.exit },
+          },
+  },
+  top: {
+    initial: () => (prefersReducedMotion() ? { opacity: 0 } : { opacity: 0, y: -28 }),
+    animate: () =>
+      prefersReducedMotion()
+        ? { opacity: 1, transition: { duration: BASE_D.replace, ease: EASE.standard } }
+        : { opacity: 1, y: 0, transition: BASE_T.sheet },
+    exit: () =>
+      prefersReducedMotion()
+        ? { opacity: 0, transition: { duration: BASE_D.replace, ease: EASE.exit } }
+        : { opacity: 0, y: -20, transition: { duration: BASE_D.replace, ease: EASE.exit } },
+  },
+  bottom: {
+    initial: () => (prefersReducedMotion() ? { y: '100%', opacity: 0 } : { y: '100%' }),
+    animate: () =>
+      prefersReducedMotion()
+        ? { y: 0, transition: { duration: BASE_D.sheet, ease: EASE.standard } }
+        : { y: 0, transition: BASE_T.sheet },
+    exit: () => ({
+      y: '100%',
+      transition: { duration: BASE_D.sheet, ease: EASE.exit },
+    }),
+  },
+};
+
+/**
+ * `headerSwap` — troca de modo do header (brand ↔ detalhe).
+ *
+ * **Crossfade curto e propositalmente mais rápido que o slide da tela** (SPEC-007
+ * anti-padrão 11: header e tela não devem animar a mesma coisa). O slide da tela
+ * é de tela cheia (`screenEnter` = 0.26s); se o header fizesse um crossfade do
+ * mesmo tamanho, os dois sinais se sobrepõem e vira um borrão. Com
+ * `BASE_D.replace`, o header lê como "o conteúdo trocou" e o movimento fica sendo
+ * o da tela.
+ *
+ * O `custom` (direction) é aceito e ignorado — mantém a API compatível com quem
+ * passa `direction` para o `HeaderNav`.
+ */
+export const headerSwapVariants: Variants = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: BASE_D.replace, ease: EASE.standard } },
+  exit: { opacity: 0, transition: { duration: BASE_D.replace, ease: EASE.exit } },
+};

@@ -1,0 +1,586 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CELEBRACAO, frase } from '../lib/voice';
+import type { Exam, Sticker, Task } from '../types';
+import { resolveActiveTerm, type Workspace } from '../core/domain';
+import { DEFAULT_WORKSPACE_ID } from '../data/schema';
+import type { DataClientValue, ReminderSettings } from './DataClientProvider';
+import { useDataActions, type DataActions, type DataActionGroups } from './dataActions';
+import { useWorkspaceActions, type WorkspaceActions } from './workspaceActions';
+import { computeStreak, getWeekProgress, isStudyDay, toDateKey } from '../lib/streak';
+import type { StreakStats, WeekDayCell } from '../lib/streak';
+import { applyStickerUnlocks, countUnlocked, mergeCatalogWithProgress, type StickerState } from '../lib/stickers';
+import { stickerDefinitionFor } from '../data/stickerCatalog';
+import { categoryXpOrDefault, generalTitle, levelFor, levelTitle, XP_BY_RARITY } from '../lib/levels';
+import { celebrate } from '../lib/celebrate';
+import { hapticSuccess } from '../lib/haptics';
+import { storage } from '../lib/storage';
+import {
+  cancelClassReminders,
+  syncFamily,
+} from '../lib/notifications';
+import { normalizeReminderSettings } from '../lib/reminderSettings';
+import { connectGcal, disconnectGcal, syncExam, syncTask, unsyncEvent } from '../lib/gcal';
+
+/**
+ * Valor compartilhado entre as cascas (spec 07): o que independe da navegação
+ * por app — dados (DataClient) + workspace ativo + streak + stickers + handlers
+ * comuns (bookmark, lembrete, agenda Google, livros salvos) + as camadas de
+ * ações (`useDataActions`/`useWorkspaceActions`). Os providers de cada plataforma
+ * consomem este hook + o motor de navegação para montar o `AppContextValue`.
+ */
+export interface SharedAppValue {
+  data: DataClientValue;
+  currentWorkspaceId: string;
+  currentWorkspace: Workspace;
+  streakStats: StreakStats;
+  currentWeekProgress: WeekDayCell[];
+  toggleBookmarkCourse: (courseId: string) => void;
+  registerActivity: () => void;
+  updateReminder: (settings: ReminderSettings) => void;
+  setGcalEnabled: (on: boolean) => Promise<boolean>;
+  gcalSyncExam: (exam: Exam, op: 'upsert' | 'delete') => Promise<void>;
+  gcalSyncTask: (task: Task, op: 'upsert' | 'delete') => Promise<void>;
+  toggleSaveBook: (bookId: string) => void;
+  updateReadingProgress: (bookId: string, readPages: number) => void;
+  /** Snapshot do estado usado para avaliar as condições dos stickers (barras de progresso da UI). */
+  stickerState: StickerState | null;
+  dataActions: DataActions & DataActionGroups;
+  workspaceActions: WorkspaceActions;
+}
+
+export function useSharedAppValue(data: DataClientValue): SharedAppValue {
+  const {
+    workspaces,
+    setWorkspaces,
+    relations,
+    setRelations,
+    suggestions,
+    setSuggestions,
+    associationPolicies,
+    setAssociationPolicies,
+    projects,
+    setProjects,
+    outputs,
+    setOutputs,
+    profile,
+    setProfile,
+    courses,
+    setCourses,
+    classes,
+    setClasses,
+    tasks,
+    setTasks,
+    exams,
+    setExams,
+    authors,
+    setAuthors,
+    concepts,
+    setConcepts,
+    readings,
+    setReadings,
+    flashcards,
+    setFlashcards,
+    materials,
+    setMaterials,
+    internshipLogs,
+    setInternshipLogs,
+    sessions,
+    setSessions,
+    quizSessions,
+    setQuizSessions,
+    academicTerms,
+    setAcademicTerms,
+    readingSessions,
+    setReadingSessions,
+    readingHighlights,
+    setReadingHighlights,
+    readingBookmarks,
+    setReadingBookmarks,
+    techniques,
+    setTechniques,
+    stickers,
+    setStickers,
+    tcc,
+    setTcc,
+    // SPEC-012: coleções do TCC (stickers + UI transição).
+    thesisChapters,
+    setThesisChapters,
+    thesisReferences,
+    thesisMeetings,
+    thesisTasks,
+    thesisWritingLogs,
+    savedBookIds,
+    setSavedBookIds,
+    readingProgress,
+    setReadingProgress,
+    looseNotes,
+    setLooseNotes,
+    streakData,
+    setStreakData,
+    reminderSettings,
+    setReminderSettings,
+    gcalEnabled,
+    setGcalEnabledState,
+    gcalMap,
+    setGcalMap,
+    setBookmarkedCourseIds,
+    showToast,
+  } = data;
+
+  // ---------- Sincronização com a nuvem (GitHub provider) ----------
+
+  // workspace ativo (compartilhado): tagueia os registros de domínio. No desktop,
+  // a sessão visual espelha esse ponteiro (session.activeWorkspaceId) para fins de UI.
+  const [currentWorkspaceId, setCurrentWorkspaceId] = useState<string>(
+    workspaces[0]?.id ?? DEFAULT_WORKSPACE_ID,
+  );
+  const currentWorkspace = workspaces.find((w) => w.id === currentWorkspaceId) ?? workspaces[0];
+
+  // Streak — derivados (a data é calculada uma vez por sessão; o app entende
+  // "qual dia é" por aqui). Memoizados: só recomputam quando os dias ativos mudam.
+  const todayKey = useMemo(() => toDateKey(new Date()), []);
+
+  // D12: master + categorias. O on/off antigo do TCC (`reminderPrefs.enabled`)
+  // vira a categoria `thesis` na primeira leitura, sem migração de schema.
+  const effectiveReminder = useMemo(
+    () => normalizeReminderSettings(reminderSettings, tcc?.reminderPrefs?.enabled),
+    [reminderSettings, tcc?.reminderPrefs?.enabled]
+  );
+  const remindersOn = effectiveReminder.enabled;
+  const reminderCategories = effectiveReminder.categories;
+
+  // D11: o resumo é materializado a partir dos dados do dia; o adaptador só
+  // compõe a voz. Nada aqui lê relógio.
+  const summarySnapshot = useMemo(
+    () => ({
+      courses: courses.map((c) => ({ name: c.name, schedule: c.schedule })),
+      exams: exams.map((e) => ({ title: e.title, date: e.date })),
+      tasks: tasks.map((t) => ({ title: t.title, dueDate: t.dueDate, completed: t.completed })),
+      thesis: {
+        chapters: thesisChapters.map((ch) => ({ title: ch.title, dueDate: ch.dueDate, stage: ch.stage })),
+        tasks: thesisTasks.map((t) => ({
+          title: t.title,
+          dueDate: t.dueDate,
+          completed: t.status === 'resolvida',
+        })),
+      },
+    }),
+    [courses, exams, tasks, thesisChapters, thesisTasks]
+  );
+
+  const streakStats = useMemo(
+    () => computeStreak(streakData.activeDays, todayKey),
+    [streakData.activeDays, todayKey]
+  );
+  const currentWeekProgress = useMemo(
+    () => getWeekProgress(streakData.activeDays, todayKey),
+    [streakData.activeDays, todayKey]
+  );
+
+  // Stickers: reconcilia o catálogo com o progresso persistido (uma vez, ao iniciar)
+  useEffect(() => {
+    setStickers((prev) => mergeCatalogWithProgress(prev));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Janela de boot: enquanto o app "acorda" (hidratação assíncrona no nativo), conquistas
+  // desbloqueadas por reconhecimento do estado persistido são aplicadas em silêncio —
+  // só celebramos (confete/vibração/toast) desbloqueios que acontecem em sessão.
+  const bootWindowRef = useRef(true);
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      bootWindowRef.current = false;
+    }, 2500);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  // Stickers: avalia desbloqueios (conquistas) quando o estado de estudo muda.
+  // `applyStickerUnlocks` devolve a mesma referência quando nada muda — sem loop.
+  const [stickerState, setStickerState] = useState<StickerState | null>(null);
+  useEffect(() => {
+    const state = {
+      profile,
+      // `termOrdinal` vem do **período ativo**, não de `profile.semester`
+      // (SPEC-008 F4.8): as conquistas de jornada acompanhavam o número legado.
+      termOrdinal: resolveActiveTerm(academicTerms)?.ordinal ?? profile.semester,
+      readings,
+      flashcards,
+      sessions,
+      classes,
+      tasks,
+      exams,
+      authors,
+      materials,
+      courses,
+      quizSessions,
+      techniques,
+      internshipLogs,
+      currentStreak: streakStats.current,
+      streakTotal: streakStats.total,
+      streakLongest: streakStats.longest,
+      tcc,
+      // SPEC-012: coleções do TCC para as condições `thesis-*` e o D4 do `tcc-done`.
+      thesisChapters,
+      thesisReferences,
+      thesisMeetings,
+      thesisWritingLogs,
+      savedBookIds,
+      concepts,
+      looseNotes,
+    };
+    setStickerState(state);
+    const { updated, newlyUnlocked } = applyStickerUnlocks(stickers, state, todayKey);
+    const hasRealNewUnlock = newlyUnlocked.some((item) => !stickers.some((existing) => existing.id === item.id && existing.unlocked));
+
+    // XP retroativo único: perfis salvos antes dos níveis (sem categoryXp) ganham
+    // o XP dos stickers já desbloqueados assim que a hidratação termina — silencioso.
+    if (!bootWindowRef.current && profile.categoryXp === undefined) {
+      const retro: Record<Sticker['category'], number> = { faculdade: 0, estudo: 0, leituras: 0, jornada: 0 };
+      let added = false;
+      for (const s of stickers) {
+        if (!s.unlocked) continue;
+        const def = stickerDefinitionFor(s.id);
+        if (def) {
+          retro[def.category] += XP_BY_RARITY[def.rarity];
+          added = true;
+        }
+      }
+      if (added) {
+        setProfile((p) => (p.categoryXp === undefined ? { ...p, categoryXp: retro } : p));
+      }
+    }
+
+    if (newlyUnlocked.length > 0 && hasRealNewUnlock) {
+      const before = categoryXpOrDefault(profile);
+      const gained = newlyUnlocked.reduce<Record<Sticker['category'], number>>(
+        (acc, item) => {
+          const def = stickerDefinitionFor(item.id);
+          if (def) acc[def.category] += XP_BY_RARITY[def.rarity];
+          return acc;
+        },
+        { faculdade: 0, estudo: 0, leituras: 0, jornada: 0 }
+      );
+      const after: Record<Sticker['category'], number> = {
+        faculdade: before.faculdade + gained.faculdade,
+        estudo: before.estudo + gained.estudo,
+        leituras: before.leituras + gained.leituras,
+        jornada: before.jornada + gained.jornada,
+      };
+      setStickers(updated);
+      setProfile((p) => ({
+        ...p,
+        stickersCollected: countUnlocked(updated),
+        categoryXp: after,
+      }));
+      if (!bootWindowRef.current) {
+        celebrate('sticker-unlocked');
+        hapticSuccess();
+        showToast(
+          `conquista desbloqueada: ${newlyUnlocked[0].emoji} ${newlyUnlocked[0].name} ♡`
+        );
+        const categoryUp = (['faculdade', 'estudo', 'leituras', 'jornada'] as const).find(
+          (cat) => levelFor(after[cat]) > levelFor(before[cat])
+        );
+        const generalBefore = levelFor(before.faculdade + before.estudo + before.leituras + before.jornada);
+        const generalAfter = levelFor(after.faculdade + after.estudo + after.leituras + after.jornada);
+        if (categoryUp) {
+          celebrate('level-up');
+          hapticSuccess();
+          showToast(
+            `nível ${levelFor(after[categoryUp])} alcançado: ${levelTitle(categoryUp, levelFor(after[categoryUp]))} 🎉`
+          );
+        } else if (generalAfter > generalBefore) {
+          celebrate('level-up');
+          hapticSuccess();
+          showToast(frase(CELEBRACAO, 'nivelAlcancado', { numero: generalAfter, titulo: generalTitle(generalAfter) }));
+        }
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    stickers,
+    profile,
+    readings,
+    flashcards,
+    sessions,
+    classes,
+    tasks,
+    exams,
+    authors,
+    materials,
+    courses,
+    quizSessions,
+    techniques,
+    internshipLogs,
+    streakStats.current,
+    streakStats.total,
+    streakStats.longest,
+    tcc,
+    savedBookIds,
+    concepts,
+    looseNotes,
+    todayKey,
+  ]);
+
+  // Limpeza pontual: remove as chaves órfãs do recurso de humor removido (uma vez, ao iniciar)
+  useEffect(() => {
+    void storage.remove('currentMood');
+    void storage.remove('moodHistory');
+  }, []);
+
+  const toggleBookmarkCourse = useCallback((courseId: string) => {
+    setBookmarkedCourseIds((prev) =>
+      prev.includes(courseId) ? prev.filter((id) => id !== courseId) : [...prev, courseId]
+    );
+  }, []);
+
+  // Handlers
+  /** Registra "hoje" como dia ativo na streak (qualquer dia da semana; idempotente). */
+  const registerActivity = useCallback(() => {
+    const key = toDateKey(new Date());
+    setStreakData((prev) =>
+      prev.activeDays.includes(key) ? prev : { activeDays: [...prev.activeDays, key] }
+    );
+  }, []);
+
+  // Um único ponto de escrita (D12). Os efeitos abaixo agendam/cancelam cada
+  // família; reagendar aqui duplicaria o trabalho.
+  const updateReminder = useCallback(
+    (settings: ReminderSettings) => {
+      setReminderSettings(normalizeReminderSettings(settings, tcc.reminderPrefs?.enabled));
+      if (settings.enabled) hapticSuccess();
+    },
+    [setReminderSettings, tcc.reminderPrefs?.enabled]
+  );
+
+  // Aulas: semanal. Categoria desligada cancela a faixa.
+  useEffect(() => {
+    if (remindersOn && reminderCategories.class) void syncFamily('class', { courses });
+    else void cancelClassReminders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [courses, remindersOn, reminderCategories.class]);
+
+  // Provas (D4).
+  useEffect(() => {
+    void syncFamily('exam', {
+      exams,
+      prefs: { enabled: remindersOn && reminderCategories.exam, time: effectiveReminder.time },
+      today: todayKey,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exams, remindersOn, reminderCategories.exam, effectiveReminder.time, todayKey]);
+
+  // Lembretes do TCC (SPEC-012 §6.3): reagenda no boot e quando qualquer
+  // entidade com data muda — cancela a faixa e refaz o plano (mais próximos
+  // primeiro, teto de 64 do iOS). Nativo-only; o plano é puro no domínio.
+  // Preferências desligadas: só o cancelamento (nunca fica lembrete órfão).
+  useEffect(() => {
+    void syncFamily('thesis', {
+      state: { thesis: tcc, chapters: thesisChapters, tasks: thesisTasks, meetings: thesisMeetings },
+      today: todayKey,
+      prefs: { ...tcc.reminderPrefs, enabled: remindersOn && reminderCategories.thesis },
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tcc, thesisChapters, thesisTasks, thesisMeetings, todayKey, remindersOn, reminderCategories.thesis]);
+
+  // Estágio (D5).
+  useEffect(() => {
+    void syncFamily('internship', {
+      logs: internshipLogs,
+      prefs: { enabled: remindersOn && reminderCategories.internship, time: effectiveReminder.time },
+      today: todayKey,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [internshipLogs, remindersOn, reminderCategories.internship, effectiveReminder.time, todayKey]);
+
+  // Tarefas e prazos (D10).
+  useEffect(() => {
+    void syncFamily('task', {
+      tasks,
+      prefs: { enabled: remindersOn && reminderCategories.task, time: effectiveReminder.time },
+      today: todayKey,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks, remindersOn, reminderCategories.task, effectiveReminder.time, todayKey]);
+
+  // Resumo diário (D11).
+  useEffect(() => {
+    void syncFamily('daily', {
+      snapshot: summarySnapshot,
+      prefs: { enabled: remindersOn && reminderCategories.summary, time: effectiveReminder.time },
+      today: todayKey,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summarySnapshot, remindersOn, reminderCategories.summary, effectiveReminder.time, todayKey]);
+
+  const setGcalEnabled = useCallback(
+    async (on: boolean) => {
+      if (on) {
+        const ok = await connectGcal();
+        setGcalEnabledState(ok);
+        if (!ok) {
+          showToast(frase(CELEBRACAO, 'clientIdFaltando'));
+        }
+        return ok;
+      }
+      disconnectGcal();
+      setGcalEnabledState(false);
+      return false;
+    },
+    [setGcalEnabledState, showToast]
+  );
+
+  const gcalSyncExam = useCallback(
+    async (exam: Exam, op: 'upsert' | 'delete') => {
+      if (!gcalEnabled) return;
+      try {
+        if (op === 'upsert') {
+          const gid = await syncExam(exam, courses);
+          if (gid) setGcalMap((m) => ({ ...m, [`exam-${exam.id}`]: gid }));
+        } else {
+          const gid = gcalMap[`exam-${exam.id}`];
+          if (gid) {
+            await unsyncEvent(gid);
+            setGcalMap((m) => {
+              const next = { ...m };
+              delete next[`exam-${exam.id}`];
+              return next;
+            });
+          }
+        }
+      } catch {
+        /* falha silenciosa: a agenda é um espelho opcional */
+      }
+    },
+    [gcalEnabled, courses, gcalMap, setGcalMap]
+  );
+
+  const gcalSyncTask = useCallback(
+    async (task: Task, op: 'upsert' | 'delete') => {
+      if (!gcalEnabled) return;
+      try {
+        if (op === 'upsert') {
+          const gid = await syncTask(task, courses);
+          if (gid) setGcalMap((m) => ({ ...m, [`task-${task.id}`]: gid }));
+        } else {
+          const gid = gcalMap[`task-${task.id}`];
+          if (gid) {
+            await unsyncEvent(gid);
+            setGcalMap((m) => {
+              const next = { ...m };
+              delete next[`task-${task.id}`];
+              return next;
+            });
+          }
+        }
+      } catch {
+        /* falha silenciosa */
+      }
+    },
+    [gcalEnabled, courses, gcalMap, setGcalMap]
+  );
+
+  const toggleSaveBook = useCallback((bookId: string) => {
+    setSavedBookIds((prev) =>
+      prev.includes(bookId) ? prev.filter((id) => id !== bookId) : [...prev, bookId]
+    );
+  }, []);
+
+  const updateReadingProgress = useCallback((bookId: string, readPages: number) => {
+    setReadingProgress((prev) => ({ ...prev, [bookId]: Math.max(0, Math.floor(readPages)) }));
+  }, []);
+
+  const dataActions = useDataActions({
+    tasks,
+    readings,
+    exams,
+    courses,
+    concepts,
+    authors,
+    profile,
+    currentWorkspaceId,
+    setTasks,
+    setClasses,
+    setLooseNotes,
+    setExams,
+    setConcepts,
+    setMaterials,
+    setReadings,
+    setFlashcards,
+    setInternshipLogs,
+    setCourses,
+    setAuthors,
+    setSessions,
+    setQuizSessions,
+    setTechniques,
+    setProfile,
+    setTcc,
+    academicTerms,
+    setAcademicTerms,
+    readingSessions,
+    setReadingSessions,
+    readingHighlights,
+    setReadingHighlights,
+    readingBookmarks,
+    setReadingBookmarks,
+    registerActivity,
+    showToast,
+    gcalSyncTask,
+    gcalSyncExam,
+  });
+
+  const workspaceActions = useWorkspaceActions({
+    currentWorkspaceId,
+    workspaces,
+    relations,
+    associationPolicies,
+    projects,
+    setWorkspaces,
+    setCurrentWorkspaceId,
+    setRelations,
+    setAssociationPolicies,
+    setSuggestions,
+    setProjects,
+    setOutputs,
+    showToast,
+  });
+
+  return useMemo(
+    () => ({
+      data,
+      currentWorkspaceId,
+      currentWorkspace,
+      streakStats,
+      currentWeekProgress,
+      toggleBookmarkCourse,
+      registerActivity,
+      updateReminder,
+      setGcalEnabled,
+      gcalSyncExam,
+      gcalSyncTask,
+      toggleSaveBook,
+      updateReadingProgress,
+      stickerState,
+      dataActions,
+      workspaceActions,
+    }),
+    [
+      data,
+      currentWorkspaceId,
+      currentWorkspace,
+      streakStats,
+      currentWeekProgress,
+      toggleBookmarkCourse,
+      registerActivity,
+      updateReminder,
+      setGcalEnabled,
+      gcalSyncExam,
+      gcalSyncTask,
+      toggleSaveBook,
+      updateReadingProgress,
+      stickerState,
+      dataActions,
+      workspaceActions,
+    ]
+  );
+}

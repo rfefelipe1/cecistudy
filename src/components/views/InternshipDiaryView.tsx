@@ -1,0 +1,524 @@
+import React, { useMemo, useState, useEffect } from 'react';
+import { HeartHandshake, Compass, AlertCircle, Users, Sparkles } from 'lucide-react';
+import { useMobileApp } from '@/context/mobileApp';
+import { InternshipLogCard } from '../InternshipLogCard';
+import { SupervisionView } from './SupervisionView';
+import { HeroCard } from '../ui/HeroCard';
+import { Mascote } from '../ui/Mascote';
+import { EmptyState } from '../ui/EmptyState';
+import { DitherGrowthChart } from '../ui/dither-growth';
+import { UnderlineTabBar, type UnderlineTab } from '../ui/UnderlineTabBar';
+import { SwipeableTabPanel, useTabPager } from '../ui/SwipeableTabPanel';
+import { DICA, VAZIO, erro, frase } from '../../lib/voice';
+import { PillGroup } from '../ui/PillGroup';
+import { ProgressBar } from '../ui/ProgressBar';
+import { StatusChip } from '../internship/StatusChip';
+import { InternshipCaseCard } from '../internship/InternshipCaseCard';
+import {
+  deriveCases,
+  computeStats,
+  computePendencies,
+  groupByWeek,
+} from '../../lib/internshipCases';
+import { todayKeyLocal } from '../../lib/dateBR';
+import { formatHours } from '../../lib/formatHours';
+import { pluralPt } from '../../lib/pluralPt';
+import { isDarkTheme } from '../../lib/themes';
+import { Reveal } from '@/lib/motion';
+import type { InternshipLog } from '../../types';
+import type { LogGroupId } from '../../types';
+
+export type InternshipTab = 'diario' | 'pacientes' | 'supervisao';
+
+/** Ordem das abas do diário — define para onde o arrasto avança (SPEC-015). */
+const DIARIO_TAB_ORDER: readonly InternshipTab[] = ['diario', 'pacientes', 'supervisao'];
+
+/** Nome legível da aba — o `aria-label` do painel mostra isto, não o id cru. */
+const DIARIO_TAB_LABEL: Record<InternshipTab, string> = {
+  diario: 'visão geral',
+  pacientes: 'casos',
+  supervisao: 'supervisão',
+};
+
+/** As abas do diário com o badge de pendência que cada uma mostra. */
+const DIARIO_TABS = (pend: {
+  noReflection: string[];
+  noSupervision: string[];
+}): UnderlineTab<InternshipTab>[] => [
+  {
+    id: 'diario',
+    label: 'visão geral',
+    icon: <HeartHandshake className="w-4 h-4" />,
+    badge: pend.noReflection.length,
+  },
+  { id: 'pacientes', label: 'casos', icon: <Users className="w-4 h-4" /> },
+  {
+    id: 'supervisao',
+    label: 'supervisão',
+    icon: <Compass className="w-4 h-4" />,
+    badge: pend.noSupervision.length,
+  },
+];
+
+type Filter = 'todos' | 'campo' | 'clinico' | 'supervisao';
+type PendingFilter = 'reflexao' | 'supervisao' | null;
+
+const FILTER_TYPES: Record<Filter, InternshipLog['type'][]> = {
+  todos: [],
+  campo: ['estagio', 'outro'],
+  clinico: ['atendimento_clinico'],
+  supervisao: ['supervisao', 'intervisao'],
+};
+
+/**
+ * Tela do Estágio — v2 (`SPEC-009 §9.2`–`§9.3`).
+ *
+ * **Uma derivação só.** Antes as horas eram somadas em três lugares diferentes
+ * (`F6`) e as pendências eram derivadas por caso, o que fazia atendimento sem
+ * iniciais sumir de todo contador (`F9`). Agora um `useMemo` produz
+ * `stats`, `pendências`, `linkIndex` e `casos`, e as abas recebem por props.
+ */
+export const InternshipDiaryView: React.FC = () => {
+  const {
+    internshipLogs,
+    openWizard,
+    openInternshipWizard,
+    themePref,
+    profile,
+    handleUpdateProfile,
+    internshipTab,
+    openInternshipCase,
+  } = useMobileApp();
+  const appIsDark = isDarkTheme(themePref);
+  // A troca de aba dentro da Clínica é **local** (useState): não chama
+  // `openInternshipDiary`, que empurraria uma nova tela na pilha global e
+  // sairia da navegação principal. A `internshipTab` global só serve para
+  // entry points externos (deep-link `#/clinica/estagio/...`, calendar,
+  // Faculdade) e é sincronizada abaixo.
+  const [tab, setTab] = useState<InternshipTab>(internshipTab ?? 'diario');
+  useEffect(() => {
+    setTab((atual) => (internshipTab ?? 'diario') === atual ? atual : (internshipTab ?? 'diario'));
+  }, [internshipTab]);
+  const [filter, setFilter] = useState<Filter>('todos');
+  const [pending, setPending] = useState<PendingFilter>(null);
+  const [extraWeeks, setExtraWeeks] = useState(0);
+
+  // Arraste horizontal troca de aba (SPEC-015). Trocar de aba limpa o filtro de
+  // pendência — vale para o toque na tab bar e para o arrasto, pelos dois
+  // caminhos passando pelo `onChange` do pager.
+  const pager = useTabPager<InternshipTab>({
+    tabIds: DIARIO_TAB_ORDER,
+    active: tab,
+    onChange: (next) => {
+      setTab(next);
+      setPending(null);
+    },
+  });
+
+  const today = todayKeyLocal();
+
+  // A única derivação da tela. Tudo abaixo lê daqui.
+  const derived = useMemo(() => {
+    const stats = computeStats(internshipLogs, today);
+    const pend = computePendencies(internshipLogs, today);
+    const { cases, orphans } = deriveCases(internshipLogs, today);
+    const groups = groupByWeek(internshipLogs, today);
+    return { stats, pend, cases, orphans, groups };
+  }, [internshipLogs, today]);
+
+  const { stats, pend, cases, orphans, groups } = derived;
+
+  const filtered = useMemo(() => {
+    const byType = (logs: InternshipLog[]) => {
+      const allowed = FILTER_TYPES[filter];
+      if (!allowed.length) return logs;
+      return logs.filter((l) => allowed.includes(l.type));
+    };
+    const byPending = (logs: InternshipLog[]) => {
+      if (!pending) return logs;
+      const ids = pending === 'reflexao' ? pend.noReflection : pend.noSupervision;
+      return logs.filter((l) => ids.includes(l.id));
+    };
+    return groups
+      .filter((g) => !(pending && g.id === 'upcoming'))
+      .map((g) => ({ ...g, logs: byPending(byType(g.logs)) }))
+      .filter((g) => g.logs.length > 0);
+  }, [groups, filter, pending, pend]);
+
+  const goal = profile?.internshipGoalHours;
+  const goalPct = goal ? Math.min(100, (stats.doneHours / goal) * 100) : 0;
+  const hasPending = pend.noReflection.length > 0 || pend.noSupervision.length > 0;
+
+  const togglePending = (which: Exclude<PendingFilter, null>) => {
+    setPending((p) => (p === which ? null : which));
+  };
+
+  // Hero único, acima da barra de abas (SPEC-010 D1/D3): o conteúdo muda com a
+  // aba, a identidade não — trocar de aba não pula o topo da tela.
+  const encontros = internshipLogs.filter(
+    (l) => l.type === 'supervisao' || l.type === 'intervisao',
+  ).length;
+  const pendencias: string[] = [];
+  if (pend.noReflection.length) pendencias.push(`${pend.noReflection.length} sem reflexão`);
+  if (pend.noSupervision.length) pendencias.push(`${pend.noSupervision.length} sem supervisão`);
+  const pendenciasSummary = pendencias.length ? pendencias.join(' · ') : 'tudo em dia ♡';
+
+  const hero =
+    tab === 'pacientes'
+      ? {
+          title: pluralPt(cases.length, 'caso', 'casos'),
+          summary:
+            orphans.length > 0
+              ? `${pluralPt(stats.clinicalDoneCount, 'sessão clínica feita', 'sessões clínicas feitas')} · ${pluralPt(orphans.length, 'sem iniciais', 'sem iniciais')}`
+              : pluralPt(
+                  stats.clinicalDoneCount,
+                  'sessão clínica feita',
+                  'sessões clínicas feitas',
+                ),
+          expression: 'connection-link' as const,
+        }
+      : tab === 'supervisao'
+        ? {
+            title: pluralPt(encontros, 'encontro', 'encontros'),
+            summary: pend.noSupervision.length
+              ? `${pluralPt(pend.noSupervision.length, 'sessão esperando supervisão', 'sessões esperando supervisão')}`
+              : pendenciasSummary,
+            expression: 'supervision-reflect' as const,
+          }
+        : {
+            title: `${formatHours(stats.doneHours)} h de campo`,
+            summary: `${goal ? `meta ${formatHours(goal)} h` : 'sem meta ainda'} · ${pendenciasSummary}`,
+            expression: 'field-prepare' as const,
+          };
+
+  return (
+    <div className="pt-5 pb-8 sm:pt-6 sm:pb-10 space-y-4">
+      {/* Hero (SPEC-010 D1) — acima da barra de abas.
+          A primária **não** é do herói desde 2026-10-19 (SPEC-022 D2-ii): o
+          herói do Estágio cedeu a ação para a barra contextual, que a
+          executa com a mesma semente (`openInternshipWizard` com o `kind` da
+          aba). O herói fica com identidade e resumo. */}
+      <HeroCard
+        eyebrow="clínica"
+        title={hero.title}
+        summary={hero.summary}
+        expression={hero.expression}
+      />
+
+      {/* Abas com badge de pendência */}
+      <UnderlineTabBar<InternshipTab>
+        active={tab}
+        onChange={(t) => pager.goTo(t)}
+        tabs={DIARIO_TABS(pend)}
+      />
+
+      {/* Conteúdo das abas: o painel arrasta junto com o dedo (SPEC-015) */}
+      <SwipeableTabPanel active={tab} pager={pager} label={DIARIO_TAB_LABEL[tab]}>
+        {tab === 'supervisao' ? (
+          <SupervisionView today={today} cases={cases} pendingIds={pend.noSupervision} />
+        ) : tab === 'pacientes' ? (
+          <section className="space-y-3">
+            {/* D11: privacidade da camada clínica — iniciais apenas. */}
+            <p className="text-[11px] text-ceci-tertiary">{frase(DICA, 'clinicaPrivacidade')}</p>
+            {cases.length > 0 && (
+              <p className="text-[11px] text-ceci-tertiary">
+                {pluralPt(cases.length, 'caso', 'casos')} ·{' '}
+                {pluralPt(stats.clinicalDoneCount, 'sessão feita', 'sessões feitas')}
+              </p>
+            )}
+            {cases.length === 0 && orphans.length === 0 ? (
+              <EmptyState
+                description={frase(VAZIO, 'semPaciente')}
+                actionLabel="anotar atendimento"
+                onAction={() => openInternshipWizard({ kind: 'atendimento_clinico' })}
+              />
+            ) : (
+              <div className="space-y-3">
+                {cases.map((c, i) => (
+                  <Reveal key={c.patientKey} index={i}>
+                    <InternshipCaseCard
+                      caseData={c}
+                      onPress={() => openInternshipCase(c.patientKey)}
+                    />
+                  </Reveal>
+                ))}
+                {orphans.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => openInternshipCase('')}
+                    className="w-full text-left p-4 rounded-2xl bg-surface-muted border border-status-warning-border shadow-sm cursor-pointer tap-interactive"
+                  >
+                    <div className="flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-status-warning-strong" />
+                      <span className="text-xs font-semibold text-status-warning-strong">
+                        {pluralPt(
+                          orphans.length,
+                          'atendimento sem iniciais',
+                          'atendimentos sem iniciais',
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-ceci-secondary mt-1">toque pra completar</p>
+                  </button>
+                )}
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
+            {/* a) Pendências primeiro (SPEC-M-032 D3): é o que exige ação agora.
+                Somem quando zeradas (D13). */}
+            {hasPending && (
+              <div className="rounded-2xl p-4 bg-surface-muted border border-status-warning-border space-y-2">
+                <div className="flex items-center gap-2 text-[13px] font-semibold text-status-warning-strong">
+                  <AlertCircle className="w-4 h-4" aria-hidden />
+                  pendências
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {pend.noReflection.length > 0 && (
+                    <StatusChip
+                      tone="warning"
+                      pressed={pending === 'reflexao'}
+                      onClick={() => togglePending('reflexao')}
+                      label={`${pend.noReflection.length} sem reflexão`}
+                    />
+                  )}
+                  {pend.noSupervision.length > 0 && (
+                    <StatusChip
+                      tone="warning"
+                      pressed={pending === 'supervisao'}
+                      onClick={() => togglePending('supervisao')}
+                      label={`${pend.noSupervision.length} sem supervisão`}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* b) Resumo */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center">
+                <p className="font-bold text-ceci-academic-strong text-lg">
+                  {formatHours(stats.doneHours)}
+                </p>
+                <p className="text-[12px] text-ceci-secondary">
+                  {goal ? `de ${formatHours(goal)} h` : 'horas feitas'}
+                </p>
+              </div>
+              <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center">
+                <p className="font-bold text-ceci-academic-strong text-lg">
+                  {formatHours(stats.weekHours)}
+                </p>
+                <p className="text-[12px] text-ceci-secondary">esta semana</p>
+              </div>
+              <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default shadow-sm text-center">
+                <p className="font-bold text-ceci-academic-strong text-lg">
+                  {stats.clinicalDoneCount}
+                </p>
+                <p className="text-[12px] text-ceci-secondary">
+                  {pluralPt(stats.clinicalDoneCount, 'sessão', 'sessões')}
+                </p>
+              </div>
+            </div>
+
+            {/* Meta de horas (D2) */}
+            {goal ? (
+              <div className="space-y-1.5">
+                <ProgressBar
+                  value={goalPct}
+                  barClassName={goalPct >= 100 ? 'bg-status-success' : undefined}
+                />
+                <p className="text-[11px] text-ceci-secondary">
+                  {goalPct >= 100
+                    ? 'meta batida ♡'
+                    : `faltam ${formatHours(Math.max(0, goal - stats.doneHours))} h`}
+                </p>
+              </div>
+            ) : (
+              <GoalCta onSet={(h) => handleUpdateProfile({ internshipGoalHours: h })} />
+            )}
+
+            {/* c) Gráfico — só com 2+ semanas de dado (U7) */}
+            {stats.weeksWithData >= 2 && (
+              <div className="rounded-2xl p-4 bg-surface-default border border-ceci-border-default shadow-sm">
+                <DitherGrowthChart
+                  theme={appIsDark ? 'dark' : 'light'}
+                  data={stats.weeklySeries}
+                  title="horas de campo por semana"
+                  unitLabel="h"
+                  accentColor="#4A879F"
+                  className="w-full"
+                />
+              </div>
+            )}
+
+            {/* e) Filtros */}
+            <PillGroup<Filter>
+              size="sm"
+              variant="rose"
+              value={filter}
+              onChange={setFilter}
+              options={[
+                { value: 'todos', label: 'todos' },
+                { value: 'campo', label: 'campo' },
+                { value: 'clinico', label: 'clínico' },
+                { value: 'supervisao', label: 'supervisão' },
+              ]}
+            />
+
+            {pending && (
+              <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default flex items-center justify-between gap-2 text-[12px] text-ceci-secondary">
+                <span>
+                  mostrando{' '}
+                  {pending === 'reflexao' ? pend.noReflection.length : pend.noSupervision.length}{' '}
+                  {pending === 'reflexao' ? 'sem reflexão' : 'sem supervisão'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPending(null)}
+                  className="min-h-[44px] px-4 rounded-full text-[12px] font-semibold bg-surface-default border border-ceci-border-default cursor-pointer tap-interactive"
+                >
+                  limpar
+                </button>
+              </div>
+            )}
+
+            {/* f) Lista agrupada por semana */}
+            {internshipLogs.length === 0 ? (
+              <EmptyState
+                description={frase(VAZIO, 'semRegistroEstagio')}
+                actionLabel="anotar"
+                onAction={() => openWizard('internship')}
+              />
+            ) : filtered.length === 0 ? (
+              <EmptyState
+                description={frase(VAZIO, 'semResultadoFiltro')}
+                actionLabel="limpar filtros"
+                onAction={() => {
+                  setFilter('todos');
+                  setPending(null);
+                }}
+              />
+            ) : (
+              <div className="space-y-4">
+                {visibleGroups(filtered, extraWeeks).map((g) => (
+                  <section key={g.id as LogGroupId}>
+                    <div className="flex items-baseline gap-1.5 mb-1.5">
+                      <h3 className="text-[11px] font-bold uppercase tracking-wider text-ceci-tertiary">
+                        {g.label}
+                      </h3>
+                      {g.hours > 0 && (
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-ceci-tertiary">
+                          · {formatHours(g.hours)} h
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      {g.logs.map((log, i) => (
+                        <Reveal key={log.id} index={i}>
+                          <InternshipLogCard log={log} today={today} allLogs={internshipLogs} />
+                        </Reveal>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+                {countDoneGroups(filtered) > 4 && (
+                  <button
+                    type="button"
+                    onClick={() => setExtraWeeks((n) => n + 8)}
+                    className="w-full min-h-[44px] rounded-full text-xs font-semibold bg-surface-default border border-ceci-border-default cursor-pointer tap-interactive"
+                  >
+                    ver semanas anteriores
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </SwipeableTabPanel>
+    </div>
+  );
+};
+
+/** `E11`: as 4 semanas mais recentes, mais o que a usuária pediu ver. */
+const visibleGroups = (groups: ReturnType<typeof groupByWeek>, extra: number) => {
+  const done = groups.filter((g) => g.id !== 'upcoming');
+  const keep = 4 + extra;
+  if (done.length <= keep) return groups;
+  return [...groups.filter((g) => g.id === 'upcoming'), ...done.slice(0, keep)];
+};
+
+const countDoneGroups = (groups: ReturnType<typeof groupByWeek>) =>
+  groups.filter((g) => g.id !== 'upcoming').length;
+
+const GoalCta: React.FC<{ onSet: (hours: number) => void }> = ({ onSet }) => {
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('');
+  const [error, setError] = useState('');
+
+  const submit = () => {
+    const n = Number(value.replace(',', '.'));
+    if (!Number.isInteger(n) || n < 1 || n > 5000) {
+      setError(erro('metaDeHoras'));
+      return;
+    }
+    onSet(n);
+    setOpen(false);
+    setValue('');
+    setError('');
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full min-h-[44px] rounded-full text-xs font-semibold text-ceci-brand-strong border border-ceci-border-brand bg-surface-rose cursor-pointer tap-interactive"
+      >
+        definir meta
+      </button>
+    );
+  }
+
+  return (
+    <div className="rounded-2xl p-3 bg-surface-default border border-ceci-border-default space-y-2">
+      <p className="text-[11px] font-semibold text-ceci-secondary">meta de horas</p>
+      <input
+        autoFocus
+        inputMode="numeric"
+        value={value}
+        onChange={(e) => {
+          setValue(e.target.value);
+          setError('');
+        }}
+        onKeyDown={(e) => e.key === 'Enter' && submit()}
+        placeholder="ex.: 300"
+        aria-label="meta de horas"
+        className="w-full rounded-xl border border-ceci-border-default bg-surface-defaurface-default px-3 py-2 text-sm text-ceci-primary min-h-[44px]"
+      />
+      <p className="text-[11px] text-ceci-tertiary">
+        quantas horas seu estágio pede no total? dá pra mudar quando quiser
+      </p>
+      {error && <p className="text-[11px] text-status-warning-strong">{error}</p>}
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={submit}
+          className="min-h-[44px] px-4 rounded-full text-xs font-semibold bg-ceci-primary text-ceci-on-primary cursor-pointer tap-interactive"
+        >
+          guardar
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setOpen(false);
+            setError('');
+          }}
+          className="min-h-[44px] px-4 rounded-full text-xs font-semibold bg-surface-muted border border-ceci-border-subtle text-ceci-secondary cursor-pointer tap-interactive"
+        >
+          cancelar
+        </button>
+      </div>
+    </div>
+  );
+};

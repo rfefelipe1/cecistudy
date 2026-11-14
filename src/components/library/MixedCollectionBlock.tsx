@@ -1,0 +1,153 @@
+﻿import React from 'react';
+import {
+  Bookmark,
+  Brain,
+  Feather,
+  Globe,
+  GraduationCap,
+  Heart,
+  Landmark,
+  LucideIcon,
+  Sun,
+  Target,
+} from 'lucide-react';
+import { Article, MixedCollection } from '../../data/books';
+import { CollectionBook } from '../../data/libraryData';
+import { ArticleCard } from './ArticleCard';
+import { ManageSurface } from '../ui/ManageSurface';
+import { Reveal } from '@/lib/motion';
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  brain: Brain,
+  sun: Sun,
+  heart: Heart,
+  globe: Globe,
+  landmark: Landmark,
+  feather: Feather,
+  target: Target,
+  'graduation-cap': GraduationCap,
+};
+
+interface MixedCollectionBlockProps {
+  collection: MixedCollection;
+  savedBookIds: Set<string>;
+  readProgress?: Record<string, number>;
+  onSelectBook: (book: CollectionBook) => void;
+  onSelectArticle: (article: Article) => void;
+}
+
+/** Bloco de categoria mista: shelf com capas de livros + artigos em folha de papel. */
+export const MixedCollectionBlock: React.FC<MixedCollectionBlockProps> = ({
+  collection,
+  savedBookIds,
+  readProgress,
+  onSelectBook,
+  onSelectArticle,
+}) => {
+  const Icon = ICON_MAP[collection.icon] ?? Globe;
+  const total = collection.books.length + collection.articles.length;
+
+  return (
+    <div className="space-y-3">
+      {/* Título com acento cor da categoria */}
+      <div className="border-l-3 pl-3.5 space-y-0.5" style={{ borderColor: collection.accent }}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <span
+              className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center"
+              style={{ backgroundColor: collection.color, color: collection.accent }}
+            >
+              <Icon className="w-3.5 h-3.5" />
+            </span>
+            <h3 className="font-display font-bold text-base text-ceci-primary leading-tight truncate">
+              {collection.title}
+            </h3>
+          </div>
+          <span className="text-[10px] font-semibold text-ceci-tertiary bg-surface-muted px-2 py-0.5 rounded border border-ceci-border-default shrink-0">
+            {total} obras
+          </span>
+        </div>
+        <p className="text-xs text-ceci-secondary leading-relaxed">{collection.subtitle}</p>
+      </div>
+
+      {/* Grade mista expandida: livros + artigos */}
+      <div className="grid grid-cols-3 gap-x-3 gap-y-4 overflow-y-auto">
+        {collection.books.map((book, i) => {
+          const isSaved = savedBookIds.has(book.id);
+          const readPages = readProgress?.[book.id];
+          const isReading = (readPages ?? 0) > 0;
+          const progressPercent =
+            book.totalPages && readPages ? Math.round((readPages / book.totalPages) * 100) : 0;
+
+          return (
+            <Reveal key={book.id} index={i}>
+            <ManageSurface
+              kind="catalogBook"
+              id={book.id}
+              onTap={() => onSelectBook(book)}
+              className="group/book cursor-pointer select-none space-y-1.5"
+            >
+              {/* Capa grande */}
+              <div
+                className="w-full h-[150px] sm:h-[165px] rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden shadow-xs border border-black/5 card-lift"
+                style={{
+                  backgroundColor: `color-mix(in srgb, ${book.coverColor} 70%, var(--color-cover-base))`,
+                }}
+              >
+                {/* Lombada */}
+                <div className="absolute left-0 top-0 bottom-0 w-2.5 bg-black/10 border-r border-black/10" />
+
+                <div className="pl-1.5 flex items-center justify-between">
+                  <span className="text-[8px] font-extrabold uppercase tracking-wider bg-cover-base/90 text-cover-ink px-1.5 py-0.5 rounded shadow-2xs line-clamp-1 max-w-[80px]">
+                    {book.badge || 'Livro'}
+                  </span>
+                  {isSaved && <Bookmark className="w-3.5 h-3.5 fill-cover-ink text-cover-ink" />}
+                </div>
+
+                <div className="pl-1.5 my-auto">
+                  <p className="font-display font-bold text-xs sm:text-[13px] leading-tight text-cover-ink line-clamp-4">
+                    {book.title}
+                  </p>
+                </div>
+
+                <div className="pl-1.5">
+                  <p className="text-[9px] font-semibold text-cover-ink/80 line-clamp-1">
+                    {book.author}
+                  </p>
+
+                  {isReading && book.totalPages && readPages && (
+                    <div className="mt-1 w-full bg-black/10 h-1 rounded-full overflow-hidden">
+                      <div
+                        className="bg-cover-ink h-full rounded-full"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Título/autor expandidos sob a capa */}
+              <div className="px-0.5 space-y-0.5">
+                <p className="font-display font-bold text-xs text-ceci-primary line-clamp-2 leading-snug group-hover:text-ceci-brand-strong transition-colors">
+                  {book.title}
+                </p>
+                <p className="text-[10px] text-ceci-tertiary line-clamp-1">{book.author}</p>
+              </div>
+            </ManageSurface>
+            </Reveal>
+          );
+        })}
+
+        {collection.articles.map((article, i) => (
+          <Reveal key={article.id} index={i}>
+            <ArticleCard
+              article={article}
+              isSaved={savedBookIds.has(article.id)}
+              onSelect={() => onSelectArticle(article)}
+            />
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  );
+};

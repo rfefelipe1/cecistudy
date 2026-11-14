@@ -1,0 +1,628 @@
+// Domínio: entidades acadêmicas e de biblioteca (MOD-001 / B.3).
+
+import type { CourseStatus, RefAuthor, RefType } from '@/core/domain';
+
+export type { CourseStatus };
+
+export interface Task {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  title: string;
+  disciplineId?: string;
+  classId?: string;
+  dueDate?: string;
+  completed: boolean;
+  priority: 'alta' | 'media' | 'baixa';
+  category: 'leitura' | 'trabalho' | 'revisao' | 'estagio' | 'outro';
+}
+
+export interface CourseScheduleSlot {
+  /** Dia da semana: 0=domingo … 6=sábado (mesma convenção de Date.getDay()). */
+  day: number;
+  /** Hora de início no formato HH:MM. */
+  start: string;
+  /** Hora de término opcional no formato HH:MM. */
+  end?: string;
+}
+
+/** Status de participação de uma aula registrada. */
+export type AttendanceStatus = 'presente' | 'falta' | 'cancelada';
+
+/** Registro de presença/falta/cancelamento de uma aula (frequência detalhada). */
+export interface AttendanceRecord {
+  id: string;
+  /** Data da aula no formato YYYY-MM-DD (fuso local). */
+  date: string;
+  status: AttendanceStatus;
+  /** Id da anotação de aula criada/vinculada (só em "presente"). */
+  noteId?: string;
+  /** Carga horária da aula em horas (derivada do slot ou editável). */
+  hours?: number;
+  updatedAt?: string;
+}
+
+/** Frequência de uma disciplina (substitui o par {attended,total}). */
+export interface CourseAttendance {
+  /** Total de aulas previstas/manual (ajustável; 0 = não configurado). Derivado das horas no wizard/editar. */
+  total: number;
+  /** Percentual mínimo de presença da disciplina (default 75). */
+  minPct: number;
+  /** Presenças registradas antes dos registros detalhados (migração/manual). */
+  baseAttended?: number;
+  /** Histórico de participação por aula (mais recente primeiro). */
+  records: AttendanceRecord[];
+  /** Carga horária total em horas (SPEC-004) — fonte da verdade na UI; `total` é derivado. */
+  totalHours?: number;
+  /** Horas já feitas antes dos registros (SPEC-004) — `baseAttended` é derivado. */
+  baseHoursDone?: number;
+}
+
+export interface Course {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  name: string;
+  code?: string;
+  professor: string;
+  /**
+   * @deprecated Rótulo textual do semestre (ex.: "6º Semestre"). **Não é mais
+   * lido** para nada que filtre ou agrupe (SPEC-005 §D4) — a fonte da verdade é
+   * `Course.termId` → `AcademicTerm.ordinal`. Fica no tipo e no `data_json`
+   * só por compat com golden files e com `payload.rs:248`, que valida
+   * `semester` como obrigatório. Lido apenas como fallback de exibição quando
+   * `termId` é nulo.
+   */
+  semester: string;
+  /**
+   * Período letivo ao qual a disciplina pertence (SPEC-005). `null`/ausente =
+   * fora de período (disciplina avulsa, template, import sem período) — é o
+   * escape hatch anti-órfão: disciplina sem `termId` nunca é tratada como
+   * órfã pela invariante de integridade.
+   */
+  termId?: string | null;
+  /**
+   * Situação da disciplina. Default `'ativo'`. `arquivado` = saiu da grade do
+   * período mas **continua pesquisável** — arquivar nunca apaga.
+   */
+  status?: CourseStatus;
+  /** Horários estruturados da disciplina (dias da semana + início/término). */
+  schedule: CourseScheduleSlot[];
+  room?: string;
+  category?: 'obrigatoria' | 'complementar' | 'optativa' | 'estagio' | 'tcc' | 'extra';
+  color: string; // hex code or style class
+  icon: string; // nome Lucide (ex.: 'Brain') OU emoji (SPEC-004)
+  /** Média mínima para aprovação (0-10, ex.: 7). Fallback de exibição: 7. */
+  minGrade?: number;
+  description?: string;
+  /** Atendimento & monitoria (ex.: "quartas, 14h - 15h30, sala dos professores"). */
+  officeHours?: string;
+  /** Frequência da disciplina (total configurável + registros por aula). */
+  attendance?: CourseAttendance;
+  /**
+   * Vínculos explícitos de repertório (SPEC-001): conceitos-chave, autores
+   * fundamentais e bibliografia recomendada da disciplina. Opcionais — o
+   * caminho legado (concept.courseIds, reading.courseId, autores transitivos)
+   * continua valendo na renderização (união). Prefixos: `con-`/`aut-`
+   * (banco pessoal), `r-`/`m-` (leituras/materiais pessoais) e
+   * `cat-`/`inter-`/`art-` (catálogo estático).
+   */
+  conceptIds?: string[];
+  authorIds?: string[];
+  bibliographyIds?: string[];
+}
+
+export interface ClassNote {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  courseId: string;
+  title: string;
+  number: number;
+  date: string;
+  summary: string;
+  fullNotes?: string;
+  conceptIds?: string[];
+  authorIds?: string[];
+  approachIds?: string[];
+  materials?: string[];
+  hasQuestions?: boolean;
+  /** Avaliação da aula de 1 a 5 estrelas (opcional — preenchida no wizard de detalhes). */
+  rating?: number;
+}
+
+export interface Exam {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  courseId: string;
+  title: string;
+  date: string;
+  /** Horário da prova (HH:MM). Quando ausente, o calendário estima o início. */
+  time?: string;
+  weight: string; // e.g. "40% da nota"
+  /** Peso numérico (0-100) — derivável para breakdowns (ex.: 35). */
+  weightValue?: number;
+  topics: string[];
+  completed: boolean;
+  grade?: number;
+}
+
+export interface StudySession {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  courseId?: string;
+  topic: string;
+  date: string;
+  /** Horário de início do bloco (HH:MM). Quando ausente, o calendário estima. */
+  startTime?: string;
+  durationMinutes: number;
+  notes?: string;
+}
+
+export interface ReadingChapter {
+  id: string;
+  title: string;
+  body: string;
+}
+
+export interface ReadingItem {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  title: string;
+  author: string;
+  courseId?: string;
+  type: 'livro' | 'artigo' | 'capitulo' | 'pdf';
+  totalPages?: number;
+  readPages?: number;
+  status: 'nao_iniciado' | 'lendo' | 'concluido';
+  highlights?: string[];
+  /** Conteúdo real do leitor — capítulos/anotações da própria usuária (livros completos não são embutidos). */
+  chapters?: ReadingChapter[];
+  catalogId?: string;
+  sourceKind?: 'catalog-book' | 'catalog-article' | 'custom';
+  url?: string;
+  contentRef?: { contentId: string; version: number };
+  position?: {
+    sectionId: string;
+    blockId: string;
+    ratio: number;
+    percent: number;
+    updatedAt: string;
+  };
+  furthestPercent?: number;
+  lastReadAt?: string;
+  coverColor?: string;
+  /**
+   * Texto de citação montado à mão pela usuária (SPEC-012 / ADR-010). Quando
+   * preenchido, `formatAbnt` o respeita **inteiro** — é o escape da referência
+   * legada (string solta da lista antiga do TCC) e da citação que ela prefere
+   * digitar.
+   */
+  rawCitation?: string;
+  // ---------------------------------------------------------------------------
+  // Dado bibliográfico estruturado (SPEC-012 F7.1 / ADR-010): o `ReadingItem` é
+  // o **dono** da obra, e `formatAbnt`/`validateRef` leem daqui. Todos
+  // opcionais — `backupSchema` é `passthrough`, então a `MIGRATIONS[22]` não
+  // transforma nada. `enrichStatus` é estado de enriquecimento (Q13), não
+  // vínculo.
+  // ---------------------------------------------------------------------------
+  /** Autores com sobrenome já separado — `formatAbnt` não adivinha. */
+  authors?: RefAuthor[];
+  year?: string;
+  /** Periódico (artigo), site, ou título do livro (capítulo). */
+  container?: string;
+  publisher?: string;
+  place?: string;
+  edition?: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  doi?: string;
+  accessedOn?: string;
+  /** Tipo ABNT; ausente cai no mapeamento de `type` (pdf = outro). */
+  refType?: RefType;
+  /** Estado do enriquecimento por link/DOI; ausente = nada a buscar. */
+  enrichStatus?: 'pendente' | 'ok' | 'falhou';
+  /** Aberturas já tentando enriquecer sem sucesso (máx. antes de `falhou`). */
+  enrichAttempts?: number;
+}
+
+export type ReadingSessionUnit = 'pages' | 'position' | 'time';
+
+export interface ReadingSession {
+  id: string;
+  workspaceId?: string;
+  readingId: string;
+  kind: 'session' | 'baseline';
+  date: string;
+  unit: ReadingSessionUnit;
+  fromPage?: number;
+  toPage?: number;
+  fromPercent?: number;
+  toPercent?: number;
+  fromBlockId?: string;
+  toBlockId?: string;
+  minutes?: number;
+  note?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type HighlightColor = 'idea' | 'doubt' | 'quote' | 'review';
+
+export interface ReadingHighlight {
+  id: string;
+  workspaceId?: string;
+  readingId: string;
+  kind: 'text' | 'manual';
+  anchor?: { sectionId: string; blockId: string; start: number; end: number };
+  quote: string;
+  page?: number;
+  color: HighlightColor;
+  note?: string;
+  conceptIds?: string[];
+  authorIds?: string[];
+  flashcardId?: string;
+  looseNoteId?: string;
+  contentVersion?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReadingBookmark {
+  id: string;
+  workspaceId?: string;
+  readingId: string;
+  sectionId: string;
+  blockId: string;
+  label?: string;
+  createdAt: string;
+}
+
+export interface FlashcardDeck {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  workspaceId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Flashcard {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  deckId?: string;
+  conceptId?: string;
+  courseId?: string;
+  question: string;
+  answer: string;
+  /** FSRS scheduling */
+  due?: string;
+  stability?: number;
+  difficulty?: number;
+  retrievability?: number;
+  lapses?: number;
+  reviews?: number;
+  lastInterval?: number;
+  state?: 'new' | 'learning' | 'review' | 'relearning';
+  /** Legado — mantidos por migração */
+  lastReviewed?: string;
+  easeFactor?: number;
+  timesReviewed?: number;
+}
+
+export interface PsychologyConcept {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  name: string;
+  definition: string;
+  approachId?: string; // TCC, Psicanálise, etc.
+  authorIds: string[];
+  courseIds: string[];
+  tags: string[];
+}
+
+export interface PsychologyAuthor {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  name: string;
+  bio: string;
+  lifespan?: string;
+  approachId?: string;
+  keyConcepts: string[];
+  majorWorks: string[];
+  imageUrl?: string;
+}
+
+export interface PsychologyApproach {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string;
+  foundingAuthors: string[];
+  color: string;
+
+  // Extended fields for detailed approach view
+  family?: string; // Família da abordagem
+  historicalPeriod?: string; // Período de surgimento
+  tags?: string[]; // Tags para categorização
+  summary?: string; // Uma frase-resumo
+
+  // Conteúdo detalhado conforme solicitado
+  definition?: string; // O que é? (2-4 parágrafos)
+  centralIdea?: string; // Ideia central (seção destacada)
+  humanUnderstanding?: string; // Como entende a pessoa?
+  sufferingUnderstanding?: string; // Como entende o sofrimento?
+  changeMechanism?: string; // Como acontece a mudança?
+  practicePresentation?: string; // Como se apresenta na prática?
+  therapistObservation?: string; // O que o terapeuta procura observar?
+
+  // Campos para seções adicionais
+  academicView?: {
+    historicalPosition?: string;
+    currentState?: string;
+    evidence?: string;
+    debates?: string;
+    limitations?: string;
+  };
+
+  fundamentalBooks?: Array<{
+    title: string;
+    author: string;
+    year: string;
+    importance: string;
+    content: string;
+    centralIdeas: string;
+    reasonToRead: string;
+  }>;
+
+  criticismsAndControversies?: string;
+  applications?: string; // Onde é mais utilizada
+  relationsWithOtherApproaches?: {
+    similar?: string[];
+    influences?: string[];
+    contrasts?: string[];
+  };
+
+  // Relacionamentos existentes (manter compatibilidade)
+  conceptIds?: string[];
+  techniqueIds?: string[];
+  authorIds?: string[];
+
+  /** Família de psicoterapia (id `fam-XX` do catálogo base de psicoterapias). */
+  familyId?: string;
+  /**
+   * Campos crus (22) extraídos das entregas de psicoterapias — usados na página
+   * de leitura da abordagem. Chaves = nomes dos campos do material (kebab-case).
+   */
+  detail?: Partial<Record<PsicoterapiaFieldKey, string>>;
+}
+
+/** Nomes dos 22 campos das entregas de psicoterapias (mapa `detail`). */
+export type PsicoterapiaFieldKey =
+  | 'descricao_curta'
+  | 'definicao'
+  | 'ideia_central'
+  | 'origem'
+  | 'periodo_historico'
+  | 'contexto_historico'
+  | 'visao_ser_humano'
+  | 'visao_psique'
+  | 'visao_desenvolvimento'
+  | 'visao_sofrimento'
+  | 'teoria_da_mudanca'
+  | 'apresentacao_pratica'
+  | 'papel_terapeuta'
+  | 'papel_paciente'
+  | 'relacao_terapeutica'
+  | 'foco_clinico'
+  | 'perspectiva_academica'
+  | 'evidencias'
+  | 'debates'
+  | 'criticas_limitacoes'
+  | 'leituras_fundamentais';
+
+/** Família de psicoterapia do catálogo base (nome, descrição e cor). */
+export interface PsicoterapiaFamily {
+  id: string; // `fam-XX` (ordem de exibição)
+  order: number;
+  name: string;
+  description: string;
+  color: string;
+  approachCount: number;
+}
+
+export interface MaterialItem {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  title: string;
+  type: 'artigo' | 'livro' | 'pdf' | 'link' | 'slides';
+  author: string;
+  courseId?: string;
+  url?: string;
+  tags: string[];
+  addedAt: string;
+}
+
+/** Técnica clínica / instrumento (templo de conhecimento). */
+export interface Technique {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  name: string;
+  approachId?: string;
+  description: string;
+  steps?: string[];
+  relatedConceptIds?: string[];
+  color?: string;
+}
+
+/** Progresso de leitura por obra da biblioteca (id → páginas lidas). */
+export type ReadingProgress = Record<string, number>;
+
+/**
+ * Nota avulsa transitória — rascunho que pode virar outras entidades
+ * (aula, tarefa, prova, flashcard, conceito…). Campos de vínculo são opcionais
+ * (retrocompatível com notas antigas).
+ */
+export interface LooseNote {
+  id: string;
+  /** Escopo de workspace (Fase 3). Default = ws-academico. */
+  workspaceId?: string;
+  title: string;
+  content: string;
+  category: 'reflexão' | 'estudo' | 'ideia' | 'lembrete';
+  /** Timestamp ISO (ex.: "2026-08-17T14:30:00-03:00"). */
+  date: string;
+  /** Última edição (timestamp ISO). */
+  updatedAt?: string;
+  // ---- vínculos opcionais (matéria, conceitos, autores, abordagens, materiais) ----
+  courseId?: string;
+  conceptIds?: string[];
+  authorIds?: string[];
+  approachIds?: string[];
+  materialIds?: string[];
+}
+
+/** Alvos possíveis ao transformar uma nota avulsa em outra entidade. */
+export type NoteTargetType =
+  | 'class'
+  | 'task'
+  | 'exam'
+  | 'flashcard'
+  | 'session'
+  | 'internship'
+  | 'concept'
+  | 'author'
+  | 'material';
+
+export type QuickType =
+  | 'task'
+  | 'class'
+  | 'reading'
+  | 'flashcard'
+  | 'internship'
+  | 'session'
+  | 'exam'
+  | 'author';
+
+// Biblioteca (SPEC-034) — entidades de dados independentes da interface.
+// Todas carregam `workspaceId?` (Fase 3) para isolamento de contexto.
+
+/** Obra do catálogo da Biblioteca (livro, artigo, apostila, paper, pesquisa). */
+export interface Material {
+  id: string;
+  workspaceId?: string;
+  titulo: string;
+  autorId?: string;
+  /** Eixo temático ao qual pertence (opcional; um material pode estar em mais de um eixo via coleções/prateleiras). */
+  eixoId?: string;
+  tipo: 'livro' | 'artigo' | 'apostila' | 'paper' | 'pesquisa';
+  totalPaginas?: number;
+  paginasLidas?: number;
+  /** Disponibilidade do arquivo para leitura (spec principal §11). */
+  disponibilidade: 'disponivel' | 'indisponivel';
+  caminhoArquivo?: string;
+  ultimaLeituraEm?: string;
+  criadoEm: string;
+  atualizadoEm: string;
+  /** Cor de fundo da capa (fallback quando não há imagem). */
+  coverColor?: string;
+  /** Cor de destaque da lombada/detalhes. */
+  accentColor?: string;
+}
+
+/** Autor com página própria de referência (spec principal §10). */
+export interface AutorBiblioteca {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  bio?: string;
+  nascimento?: string;
+  obrasPrincipais?: string[];
+  fotoUrl?: string;
+}
+
+/** Eixo temático abrangente de conhecimento (spec principal §5). */
+export interface EixoTematico {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao: string;
+  cor?: string;
+  ordem: number;
+}
+
+/** Subdivisão de um eixo temático (spec principal §5.2). */
+export interface Subtema {
+  id: string;
+  eixoId: string;
+  workspaceId?: string;
+  nome: string;
+  descricao: string;
+  ordem: number;
+}
+
+/** Seleção curada de materiais (spec principal §14.1). */
+export interface ColecaoEditorial {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao?: string;
+  materialIds: string[];
+}
+
+/** Prateleira: agrupamento de materiais apresentado em uma seção. */
+export interface Prateleira {
+  id: string;
+  workspaceId?: string;
+  nome: string;
+  descricao?: string;
+  materialIds: string[];
+  ordem: number;
+}
+
+/** Relação recomendada entre materiais (spec principal §13). */
+export interface Recomendacao {
+  id: string;
+  workspaceId?: string;
+  materialId: string;
+  motivo?: string;
+  tipo: 'similar' | 'complementar' | 'destacada';
+  ativo: boolean;
+}
+
+/** Estado pessoal independente por material (spec principal §8.5).
+ *  salvo / emLeitura / concluido / favorito são booleanos independentes:
+ *  um livro pode estar salvo e favorito, concluído e favorito, etc. */
+export interface EstadoPessoal {
+  materialId: string;
+  workspaceId?: string;
+  salvo: boolean;
+  emLeitura: boolean;
+  concluido: boolean;
+  favorito: boolean;
+  nota?: number;
+  dataAtualizacao: string;
+}
+
+/** Arquivo associado a um material e sua disponibilidade (spec principal §11-12). */
+export interface Arquivo {
+  id: string;
+  materialId: string;
+  workspaceId?: string;
+  nomeArquivo: string;
+  caminho: string;
+  tamanho: number;
+  tipoMime: string;
+  disponibilidade: 'local' | 'remoto' | 'indisponivel';
+  atualizadoEm: string;
+}

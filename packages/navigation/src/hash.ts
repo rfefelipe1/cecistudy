@@ -1,0 +1,643 @@
+// Motor puro de rota hash ↔ pilha de navegação.
+// Moveu de src/lib/routing.ts (dono agora: packages/navigation). Sem React, sem runtime de src.
+import type {
+  NavTab,
+  NavScreen,
+  InternshipTab,
+  ThesisTab,
+  WizardFlow,
+  QuizConfig,
+  QuizAnswer,
+  QuizPlayState,
+  StudyScreen,
+  QuestionGroup,
+} from './types';
+import { TEMPLE_SECTION_SLUGS, type TempleSection } from './temple';
+
+/**
+ * Rota virtual (espelho do `location.hash`).
+ * A pilha de navegação é a fonte da verdade; a rota permite deep-link,
+ * voltar/avançar do browser e o histórico do webview (swipe-back do iOS).
+ */
+export interface Route {
+  tab?: NavTab;
+  focusedCourseId?: string | null;
+  /** Detalhe full-screen de uma aula (`#/faculdade/:courseId/aula/:classNoteId`). */
+  classNoteId?: string;
+  /** Ficha de um item do repertório da disciplina (`#/faculdade/:courseId/repertorio/:itemId`). */
+  repertorioItemId?: string;
+  notes?: boolean;
+  temple?: boolean;
+  /** Seção interna do templo (ex.: `#/biblioteca/templo/conceitos`). */
+  templeSection?: TempleSection;
+  /** Slug da comparação do templo (ex.: `#/biblioteca/templo/comparacoes/:slug`). */
+  comparisonSlug?: string;
+  /** Detalhe de uma nota avulsa (ex.: `#/biblioteca/notas/:noteId`). */
+  noteDetailId?: string;
+  /** Transformação de uma nota em outra entidade (ex.: `#/biblioteca/notas/:noteId/transformar`). */
+  noteTransformId?: string;
+  streak?: boolean;
+  /** Diário de estágio (tela cheia de todos os registros, empilhada sobre a faculdade). */
+  internshipDiary?: boolean;
+  /** Aba ativa do diário de estágio (`SPEC-009 D16`). */
+  internshipTab?: InternshipTab;
+  /** Tela do caso (paciente) empilhada sobre a aba pacientes. `''` = grupo sem iniciais. */
+  internshipPatientKey?: string;
+  /** Registro de supervisão a destacar ao voltar (`focusLogId`). */
+  internshipFocusId?: string;
+  /** Tela cheia do meu TCC (criar/manter), empilhada sobre a Home (SPEC-M-032 D8). */
+  tcc?: boolean;
+  /**
+   * Calendário empilhado (SPEC-024 D1): `#/calendario[/<DateKey>]`. Aberto a
+   * partir da Faculdade (`#/faculdade/calendario`), a base é a Faculdade.
+   */
+  calendar?: boolean;
+  /** Dia destacado no calendário (`DateKey`); ausente = hoje. */
+  calendarDay?: string;
+  /** Central do Cecinho (SPEC-037): `#/cecinho` e `#/cecinho/:taskId`. */
+  cecinhoCenter?: boolean;
+  cecinhoTaskId?: string;
+  /** Aba ativa do TCC (`SPEC-012 F3`): `#/clinica/tcc/<tab>`. */
+  tccTab?: ThesisTab;
+  /** Entidade do TCC a destacar ao abrir (capítulo/referência/pendência). */
+  tccFocusId?: string;
+  /** Tela cheia de stickers & conquistas, empilhada sobre o perfil. */
+  stickers?: boolean;
+  /** Quiz: tela de escolha de filtros/categoria. */
+  quizCategory?: boolean;
+  /** Quiz: detalhe do grupo selecionado (estado transitório, degrada ao seletor). */
+  quizGroupDetail?: boolean;
+  /** Quiz: splash de preparação das questões (transitório, degrada ao seletor). */
+  quizLoading?: boolean;
+  /** Quiz: tela de jogo (pergunta + alternativas). */
+  quizPlay?: boolean;
+  /** Quiz: tela de resultado/estatísticas. */
+  quizResult?: boolean;
+  /** Tela dedicada de estudos empurrada sobre a aba (ex.: `#/clinica/foco`). */
+  studyScreen?: StudyScreen;
+  compose?: boolean;
+  composeDetails?: boolean;
+  /** Wizard de criação em tela cheia (ex.: `#/novo/conceito`, `#/faculdade/c3/novo/prova`). */
+  wizard?: WizardFlow;
+  /** Sub-tab da aba base, codificada no hash (ex.: `#/clinica/leituras`). */
+  subTab?: string;
+  /** Aba base sob a qual a composição/wizard foi empilhada (default: home). */
+  baseTab?: NavTab;
+  /** Curso sob o qual a composição/wizard foi empilhada (ex.: `faculdade/c3`). */
+  baseCourseId?: string;
+  /** Detalhe de abordagem (ex.: `#/biblioteca/abordagens/:id`). */
+  approachId?: string;
+  /** Tela de famílias de psicoterapias (ex.: `#/biblioteca/familias`). */
+  families?: boolean;
+  /** Detalhe de uma família (ex.: `#/biblioteca/familias/:famId`). */
+  familyId?: string;
+  /** Sincronização entre dispositivos (ex.: `#/perfil/sincronizar`). */
+  sync?: boolean;
+  /** Histórico de períodos letivos (ex.: `#/perfil/semestre/historico`). */
+  termHistory?: boolean;
+  /** Período aberto no histórico (ex.: `#/perfil/semestre/historico/trm-3`). */
+  termId?: string;
+}
+
+/** Valores de sub-tab conhecidos por aba (usados para distinguir sub-tab de courseId na rota). */
+const SUB_TAB_BY_TAB: Record<string, string[]> = {
+  faculdade: ['disciplinas'],
+  // clínica não tem sub-tabs de estudo — a tela é própria e usa `internshipTab`
+  clinica: [],
+  biblioteca: ['materiais', 'autores', 'conceitos', 'abordagens', 'mapa'],
+};
+
+/** Sub-tabs legadas da faculdade (fusão no detalhe da disciplina) → degradam à padrão. */
+const LEGACY_SUB_TABS_FACULDADE = ['aulas', 'avaliacoes'];
+
+/** Slugs das telas dedicadas de estudos (rota `#/clinica/<slug>`). */
+const STUDY_SCREEN_SLUGS: Record<string, StudyScreen> = {
+  foco: 'focus',
+  revisar: 'revisar',
+  leituras: 'leituras',
+  historico: 'historico',
+};
+const STUDY_SCREEN_TO_SLUG: Record<StudyScreen, string> = {
+  focus: 'foco',
+  revisar: 'revisar',
+  leituras: 'leituras',
+  historico: 'historico',
+};
+
+/** Slug de URL ↔ aba do TCC (`#/clinica/tcc/<slug>`, SPEC-012 F3). */
+const THESIS_TAB_SLUGS: Record<string, ThesisTab> = {
+  visao: 'visao',
+  capitulos: 'capitulos',
+  leituras: 'leituras',
+  orientacao: 'orientacao',
+  escrita: 'escrita',
+};
+
+/** Sub-tab padrão de cada aba (não é codificada no hash — mantém URLs limpas). */
+export const DEFAULT_SUB_TAB: Record<NavTab, string> = {
+  home: 'home',
+  faculdade: 'disciplinas',
+  clinica: 'clinica',
+  biblioteca: 'autores',
+  perfil: 'jornada',
+};
+
+const NAV_TABS: NavTab[] = ['home', 'faculdade', 'clinica', 'biblioteca', 'perfil'];
+
+/** Slug de URL ↔ tipo de wizard (rota `#/novo/:slug`). */
+const WIZARD_SLUGS: Record<string, WizardFlow> = {
+  tarefa: 'task',
+  prova: 'exam',
+  'prova-atividade': 'task-exam',
+  materia: 'course',
+  leitura: 'reading',
+  flashcard: 'flashcard',
+  estagio: 'internship',
+  estudo: 'session',
+  autor: 'author',
+  conceito: 'concept',
+  material: 'material',
+  tcc: 'tcc',
+  // O wizard de semestre **não** é `#/novo/semestre`: ele tem rota própria
+  // (`#/perfil/semestre`) porque é uma transição de estado, não um cadastro.
+  // Mantido aqui só para a pilha não ter tratamento especial no wizard genérico.
+  semestre: 'semester',
+};
+const WIZARD_SLUG_TO_TYPE: Record<WizardFlow, string> = {
+  task: 'tarefa',
+  exam: 'prova',
+  'task-exam': 'prova-atividade',
+  course: 'materia',
+  reading: 'leitura',
+  flashcard: 'flashcard',
+  internship: 'estagio',
+  session: 'estudo',
+  author: 'autor',
+  concept: 'conceito',
+  material: 'material',
+  tcc: 'tcc',
+  semester: 'semestre',
+};
+
+export function parseRoute(hash: string): Route {
+  const raw = hash.replace(/^#\/?/, '').split('/');
+  // `estudos` é o id **legado** da aba (antes de virar `clinica`): deep-link,
+  // notificação e backup antigo continuam chegando aqui. Um alias, um lugar.
+  const h = raw[0] === 'estudos' ? ['clinica', ...raw.slice(1)] : raw;
+  const seg = h[0];
+
+  if (seg === 'streak') return { tab: 'home', streak: true };
+
+  // Telas de composição: "nota" (e "detalhes") pode aparecer em qualquer nível,
+  // com base opcional codificada antes — ex.: `#/biblioteca/nota`, `#/faculdade/c3/nota/detalhes`.
+  const notaIdx = h.indexOf('nota');
+  if (notaIdx !== -1) {
+    const prefix = h.slice(0, notaIdx);
+    let baseTab: NavTab = 'home';
+    let baseCourseId: string | undefined;
+    if (prefix[0] === 'faculdade' && prefix[1]) {
+      baseTab = 'faculdade';
+      baseCourseId = prefix[1];
+    } else if (prefix.length === 1 && (NAV_TABS as string[]).includes(prefix[0])) {
+      baseTab = prefix[0] as NavTab;
+    } else if (prefix.length > 0) {
+      return { tab: 'home' }; // rota de composição inválida → home
+    }
+    const composeDetails = h[notaIdx + 1] === 'detalhes';
+    return {
+      baseTab,
+      baseCourseId,
+      ...(composeDetails ? { composeDetails: true } : { compose: true }),
+    };
+  }
+
+  // Telas de wizard: "novo" pode aparecer em qualquer nível, com base opcional antes
+  // — ex.: `#/novo/conceito`, `#/faculdade/c3/novo/prova`.
+  const novoIdx = h.indexOf('novo');
+  if (novoIdx !== -1) {
+    const prefix = h.slice(0, novoIdx);
+    let baseTab: NavTab = 'home';
+    let baseCourseId: string | undefined;
+    if (prefix[0] === 'faculdade' && prefix[1]) {
+      baseTab = 'faculdade';
+      baseCourseId = prefix[1];
+    } else if (prefix.length === 1 && (NAV_TABS as string[]).includes(prefix[0])) {
+      baseTab = prefix[0] as NavTab;
+    } else if (prefix.length > 0) {
+      return { tab: 'home' }; // rota de wizard inválida → home
+    }
+    const type = h[novoIdx + 1] ? WIZARD_SLUGS[h[novoIdx + 1]] : undefined;
+    if (!type) return { tab: 'home' };
+    return { baseTab, baseCourseId, wizard: type };
+  }
+
+  // Abordagem detalhe: `#/biblioteca/abordagens/:id`
+  if (seg === 'biblioteca' && h[1] === 'abordagens' && h[2]) {
+    return { tab: 'biblioteca', approachId: h[2] };
+  }
+
+  // Famílias de psicoterapias: `#/biblioteca/familias` e `#/biblioteca/familias/:famId`
+  if (seg === 'biblioteca' && h[1] === 'familias') {
+    if (h[2]) return { tab: 'biblioteca', familyId: h[2] };
+    return { tab: 'biblioteca', families: true };
+  }
+
+  const subtab = (tab: string): string | undefined => {
+    if (!h[1]) return undefined;
+    return SUB_TAB_BY_TAB[tab]?.includes(h[1]) ? h[1] : undefined;
+  };
+
+  if (seg === 'cecinho') {
+    // SPEC-037: `#/cecinho` (Central) e `#/cecinho/:taskId` (conversa).
+    const taskId = h[1] ? decodeURIComponent(h[1]) : undefined;
+    if (taskId) return { tab: 'home', cecinhoTaskId: taskId };
+    return { tab: 'home', cecinhoCenter: true };
+  }
+
+  if (!seg || seg === 'home') return { tab: 'home' };
+  // Calendário (SPEC-024 D1): `#/calendario[/<DateKey>]`.
+  if (seg === 'calendario') return { tab: 'home', calendar: true, calendarDay: h[1] };
+  if (seg === 'faculdade') {
+    // Hash antigo da sub-aba removida: abre a tela de calendário, não a lista
+    // de disciplinas (SPEC-024 D2, I8).
+    if (h[1] === 'calendario') return { tab: 'faculdade', calendar: true };
+    // Rotas legadas de estágio: `#/faculdade/estagio/*` agora vivem na Clínica
+    // (SPEC-M-032 D1). Degrada para a aba clínica mantendo a sub-tab.
+    if (h[1] === 'estagio') {
+      if (h[2] === 'pacientes' && h[3]) {
+        const raw = decodeURIComponent(h[3]);
+        return {
+          tab: 'clinica',
+          internshipTab: 'pacientes',
+          internshipPatientKey: raw === 'sem-iniciais' ? '' : raw,
+        };
+      }
+      if (h[2] === 'pacientes') return { tab: 'clinica', internshipTab: 'pacientes' };
+      if (h[2] === 'supervisao') return { tab: 'clinica', internshipTab: 'supervisao' };
+      return { tab: 'clinica', internshipTab: 'diario' };
+    }
+    // Detalhe de aula: `#/faculdade/:courseId/aula/:classNoteId`
+    if (h[2] === 'aula' && h[3]) {
+      return { tab: 'faculdade', focusedCourseId: h[1], classNoteId: h[3] };
+    }
+    // Ficha de item do repertório: `#/faculdade/:courseId/repertorio/:itemId`
+    if (h[2] === 'repertorio' && h[3]) {
+      return { tab: 'faculdade', focusedCourseId: h[1], repertorioItemId: h[3] };
+    }
+    // Sub-tabs legadas (aulas/avaliacoes fundidas no detalhe da disciplina)
+    if (h[1] && LEGACY_SUB_TABS_FACULDADE.includes(h[1])) return { tab: 'faculdade' };
+    const s = subtab('faculdade');
+    if (s) return { tab: 'faculdade', subTab: s };
+    return { tab: 'faculdade', focusedCourseId: h[1] || null };
+  }
+  if (seg === 'biblioteca') {
+    if (h[1] === 'notas') {
+      if (h[2] && h[3] === 'transformar') return { tab: 'biblioteca', noteTransformId: h[2] };
+      if (h[2]) return { tab: 'biblioteca', noteDetailId: h[2] };
+      return { tab: 'biblioteca', notes: true };
+    }
+    if (h[1] === 'templo') {
+      // Seções internas: `#/biblioteca/templo/conceitos|autores|tecnicas|comparacoes`
+      if (h[2]) {
+        const section = (Object.keys(TEMPLE_SECTION_SLUGS) as TempleSection[]).find(
+          (s) => TEMPLE_SECTION_SLUGS[s] === h[2],
+        );
+        if (section) {
+          // Detalhe de uma comparação: `#/biblioteca/templo/comparacoes/:slug`
+          if (section === 'comparacoes' && h[3]) {
+            return { tab: 'biblioteca', templeSection: section, comparisonSlug: h[3] };
+          }
+          return { tab: 'biblioteca', templeSection: section };
+        }
+      }
+      return { tab: 'biblioteca', temple: true };
+    }
+    const s = subtab('biblioteca');
+    if (s) return { tab: 'biblioteca', subTab: s };
+    return { tab: 'biblioteca' };
+  }
+  if (seg === 'clinica') {
+    if (h[1] === 'quiz') {
+      // Telas de quiz (categoria, preparação, jogo, resultado) — estado transitório
+      // não é serializável, então jogo/resultado degradam ao seletor de categorias.
+      return { tab: 'clinica', quizCategory: true };
+    }
+    if (h[1] === 'streak') return { tab: 'home', streak: true };
+    // Telas dedicadas de estudo (`#/clinica/foco`, `revisar`, `leituras`, `historico`)
+    // — legado: continuam resolvendo por deep-link, sem entrada na navegação.
+    if (h[1] && STUDY_SCREEN_SLUGS[h[1]])
+      return { tab: 'clinica', studyScreen: STUDY_SCREEN_SLUGS[h[1]] };
+    if (h[1] === 'flashcards') return { tab: 'clinica', studyScreen: 'revisar' };
+    if (h[1] === 'questoes') return { tab: 'clinica', quizCategory: true };
+    // Meu TCC: `#/clinica/tcc[/<aba>[/<id>]]` (rota legada — hoje a tela abre
+    // a partir da Home, SPEC-M-032 D8).
+    if (h[1] === 'tcc') {
+      const tccTab = THESIS_TAB_SLUGS[h[2] ?? ''] as ThesisTab | undefined;
+      return {
+        tab: 'home',
+        tcc: true,
+        ...(tccTab ? { tccTab, ...(h[3] ? { tccFocusId: h[3] } : {}) } : {}),
+      };
+    }
+    // Diário de estágio dentro da Clínica: `#/clinica/estagio/<aba>` e
+    // `#/clinica/estagio/pacientes/:patientKey`. `#/faculdade/estagio/...`
+    // continua válido (entrada pela Seção de Estágio da Faculdade).
+    if (h[1] === 'estagio') {
+      if (h[2] === 'pacientes' && h[3]) {
+        const raw = decodeURIComponent(h[3]);
+        return {
+          tab: 'clinica',
+          internshipTab: 'pacientes',
+          internshipPatientKey: raw === 'sem-iniciais' ? '' : raw,
+        };
+      }
+      if (h[2] === 'pacientes') return { tab: 'clinica', internshipTab: 'pacientes' };
+      if (h[2] === 'supervisao') return { tab: 'clinica', internshipTab: 'supervisao' };
+      return { tab: 'clinica', internshipTab: 'diario' };
+    }
+    return { tab: 'clinica' };
+  }
+  if (seg === 'perfil') {
+    // Rotas legadas (perfil era aba primária) → degradam para o novo destino.
+    if (h[1] === 'estagio') {
+      return { tab: 'clinica', internshipTab: 'diario' };
+    }
+    if (h[1] === 'tcc') {
+      return { tab: 'home', tcc: true };
+    }
+    if (h[1] === 'stickers') {
+      return { tab: 'perfil', stickers: true };
+    }
+    if (h[1] === 'sincronizar') return { tab: 'perfil', sync: true };
+    if (h[1] === 'streak') return { tab: 'perfil', streak: true };
+    // Período letivo (SPEC-005): `#/perfil/semestre` (wizard) e
+    // `#/perfil/semestre/historico[/:termId]`. O histórico é **irmão** do wizard
+    // (SPEC-008 D5), não filho: o prefixo `/semestre` é o namespace do período,
+    // não uma tela-pai. Quem abrir o histórico a partir da URL cai na lista, sem
+    // passar pelo assistente.
+    if (h[1] === 'semestre') {
+      if (h[2] === 'historico') {
+        return { tab: 'perfil', termHistory: true, termId: h[3] };
+      }
+      return { tab: 'perfil', wizard: 'semester' };
+    }
+    return { tab: 'perfil' };
+  }
+
+  // Quiz transitório serializado com hash antigo (`#/quiz/play` / `#/quiz/result`)
+  // — degrada ao seletor de categorias.
+  if (seg === 'quiz' && (h[1] === 'play' || h[1] === 'result')) {
+    return { tab: 'clinica', quizCategory: true };
+  }
+
+  return { tab: 'home' };
+}
+
+/** Pilha base para telas auxiliares empilhadas sobre uma aba (+ curso opcional). */
+function baseStackFor(baseTab: NavTab, baseCourseId?: string): NavScreen[] {
+  if (baseTab === 'faculdade' && baseCourseId) {
+    return [
+      { kind: 'tab', tab: 'faculdade' },
+      { kind: 'course', courseId: baseCourseId },
+    ];
+  }
+  return [{ kind: 'tab', tab: baseTab }];
+}
+
+/** Reconstrói a pilha de navegação a partir da rota hash. */
+export function routeToStack(route: Route): NavScreen[] {
+  if (route.composeDetails) {
+    return [
+      ...baseStackFor(route.baseTab ?? 'home', route.baseCourseId),
+      { kind: 'composeDetails' },
+    ];
+  }
+  if (route.compose) {
+    return [...baseStackFor(route.baseTab ?? 'home', route.baseCourseId), { kind: 'compose' }];
+  }
+  if (route.wizard) {
+    return [
+      ...baseStackFor(route.baseTab ?? 'home', route.baseCourseId),
+      { kind: 'wizard', type: route.wizard },
+    ];
+  }
+  if (route.streak) return [...baseStackFor(route.tab ?? 'home'), { kind: 'streak' }];
+  // A tela do diário/caso vive em duas abas: a Clínica (dona, SPEC-M-032 D1) e
+  // a Seção de Estágio da Faculdade. A base viaja na rota (`#/clinica/estagio/...`
+  // ou `#/faculdade/estagio/...`) para o round-trip não trocar de aba.
+  const internshipBase: NavTab = route.tab === 'clinica' ? 'clinica' : 'faculdade';
+  if (route.internshipPatientKey !== undefined) {
+    return [
+      { kind: 'tab', tab: internshipBase },
+      { kind: 'internshipDiary', tab: 'pacientes' },
+      { kind: 'internshipCase', patientKey: route.internshipPatientKey },
+    ];
+  }
+  if (route.internshipTab) {
+    return [
+      { kind: 'tab', tab: internshipBase },
+      { kind: 'internshipDiary', tab: route.internshipTab },
+    ];
+  }
+  if (route.internshipDiary)
+    return [{ kind: 'tab', tab: internshipBase }, { kind: 'internshipDiary' }];
+  if (route.tcc) {
+    return [
+      { kind: 'tab', tab: 'home' },
+      { kind: 'tcc', tab: route.tccTab, focusId: route.tccFocusId },
+    ];
+  }
+  if (route.calendar) {
+    // Aberto da Faculdade, a base é a Faculdade; reload direto de `#/calendario`
+    // cai em `[home, calendar]` e o voltar leva à Home (SPEC-024 D1).
+    return [
+      { kind: 'tab', tab: route.tab ?? 'home' },
+      { kind: 'calendar', day: route.calendarDay },
+    ];
+  }
+  if (route.stickers) return [{ kind: 'tab', tab: 'perfil' }, { kind: 'stickers' }];
+  if (route.cecinhoTaskId) {
+    // Deep link por tarefa (SPEC-037): a base é a Home, onde vive a Agenda.
+    return [
+      { kind: 'tab', tab: 'home' },
+      { kind: 'cecinhoTask', taskId: route.cecinhoTaskId },
+    ];
+  }
+  if (route.cecinhoCenter) {
+    return [{ kind: 'tab', tab: 'home' }, { kind: 'cecinhoCenter' }];
+  }
+  if (route.termHistory) {
+    // O histórico é **irmão** do wizard (SPEC-008 D5): a rota só sabe que a base
+    // é o Perfil, então a pilha tem 2 telas e o back volta pro Perfil. Quem
+    // chegou aqui pelo assistente mantém o wizard porque quem montou a pilha foi
+    // `openTermHistory`; no reload (esta função) volta ao Perfil, que é o
+    // destino honesto de um deep-link.
+    return [
+      { kind: 'tab', tab: 'perfil' },
+      { kind: 'termHistory', termId: route.termId },
+    ];
+  }
+  if (route.notes) return [{ kind: 'tab', tab: 'biblioteca' }, { kind: 'notes' }];
+  if (route.noteTransformId) {
+    return [
+      { kind: 'tab', tab: 'biblioteca' },
+      { kind: 'notes' },
+      { kind: 'noteTransform', noteId: route.noteTransformId },
+    ];
+  }
+  if (route.noteDetailId) {
+    return [
+      { kind: 'tab', tab: 'biblioteca' },
+      { kind: 'notes' },
+      { kind: 'noteDetail', noteId: route.noteDetailId },
+    ];
+  }
+  if (route.temple) return [{ kind: 'tab', tab: 'biblioteca' }, { kind: 'temple' }];
+  if (route.templeSection) {
+    const base: NavScreen[] = [
+      { kind: 'tab', tab: 'biblioteca' },
+      { kind: 'temple' },
+      { kind: 'templeSection', section: route.templeSection },
+    ];
+    if (route.templeSection === 'comparacoes' && route.comparisonSlug) {
+      return [...base, { kind: 'comparison', slug: route.comparisonSlug }];
+    }
+    return base;
+  }
+  if (route.approachId) {
+    return [...baseStackFor('biblioteca'), { kind: 'approach', approachId: route.approachId }];
+  }
+  if (route.familyId) {
+    return [...baseStackFor('biblioteca'), { kind: 'family', familyId: route.familyId }];
+  }
+  if (route.families) {
+    return [...baseStackFor('biblioteca'), { kind: 'families' }];
+  }
+  if (route.sync) {
+    return [{ kind: 'tab', tab: 'perfil' }, { kind: 'sync' }];
+  }
+  if (route.quizCategory || route.quizLoading) {
+    return [...baseStackFor('clinica'), { kind: 'quiz-category' }];
+  }
+  if (route.studyScreen) {
+    return [
+      { kind: 'tab', tab: 'clinica' },
+      { kind: 'study', screen: route.studyScreen },
+    ];
+  }
+  if (route.tab === 'faculdade' && route.focusedCourseId) {
+    const courseScreen: NavScreen = { kind: 'course', courseId: route.focusedCourseId };
+    if (route.classNoteId) {
+      return [
+        { kind: 'tab', tab: 'faculdade' },
+        courseScreen,
+        { kind: 'classNote', classNoteId: route.classNoteId, courseId: route.focusedCourseId },
+      ];
+    }
+    if (route.repertorioItemId) {
+      return [
+        { kind: 'tab', tab: 'faculdade' },
+        courseScreen,
+        { kind: 'repertorioItem', courseId: route.focusedCourseId, itemId: route.repertorioItemId },
+      ];
+    }
+    return [{ kind: 'tab', tab: 'faculdade' }, courseScreen];
+  }
+  return [{ kind: 'tab', tab: route.tab ?? 'home' }];
+}
+
+/**
+ * Serializa a pilha em uma rota hash.
+ * Sub-tab da aba base é incluída quando for diferente da padrão (ex.: `#/clinica/leituras`).
+ */
+export function stackToHash(stack: NavScreen[], subTab?: string): string {
+  const top = stack[stack.length - 1];
+  if (top.kind === 'composeDetails' || top.kind === 'compose') {
+    const base = stack[0];
+    const course = stack[1]?.kind === 'course' ? stack[1] : undefined;
+    const tab = base?.kind === 'tab' ? base.tab : 'home';
+    const suffix = top.kind === 'composeDetails' ? '/detalhes' : '';
+    if (tab !== 'home') {
+      const prefix = course ? `#/${tab}/${course.courseId}` : `#/${tab}`;
+      return `${prefix}/nota${suffix}`;
+    }
+    return `#/nota${suffix}`;
+  }
+  if (top.kind === 'wizard') {
+    const base = stack[0];
+    const course = stack[1]?.kind === 'course' ? stack[1] : undefined;
+    const tab = base?.kind === 'tab' ? base.tab : 'home';
+    // SPEC-005: o wizard de semestre tem rota própria (`#/perfil/semestre`)
+    // em vez de `#/novo/semestre` — é transição de estado, não cadastro, e a
+    // URL precisa dizer onde ela vive.
+    if (top.type === 'semester') return '#/perfil/semestre';
+    const suffix = WIZARD_SLUG_TO_TYPE[top.type];
+    if (tab !== 'home') {
+      const prefix = course ? `#/${tab}/${course.courseId}` : `#/${tab}`;
+      return `${prefix}/novo/${suffix}`;
+    }
+    return `#/novo/${suffix}`;
+  }
+  if (top.kind === 'streak') {
+    const base = stack[0];
+    const tab = base?.kind === 'tab' ? base.tab : 'home';
+    return tab === 'home' ? '#/streak' : `#/${tab}/streak`;
+  }
+  if (top.kind === 'internshipCase') {
+    const key = top.patientKey ? encodeURIComponent(top.patientKey) : 'sem-iniciais';
+    const tab = stack[0]?.kind === 'tab' && stack[0].tab === 'clinica' ? 'clinica' : 'faculdade';
+    return `#/${tab}/estagio/pacientes/${key}`;
+  }
+  if (top.kind === 'internshipDiary') {
+    const tab = stack[0]?.kind === 'tab' && stack[0].tab === 'clinica' ? 'clinica' : 'faculdade';
+    return `#/${tab}/estagio/${top.tab ?? 'diario'}`;
+  }
+  if (top.kind === 'tcc') {
+    // `#/clinica/tcc/<aba>[/<id>]` — rota legada; a tela abre a partir da Home.
+    const base = top.tab ? `#/clinica/tcc/${top.tab}` : '#/clinica/tcc';
+    return top.focusId ? `${base}/${top.focusId}` : base;
+  }
+  if (top.kind === 'calendar') return top.day ? `#/calendario/${top.day}` : '#/calendario';
+  if (top.kind === 'cecinhoCenter') return '#/cecinho';
+  if (top.kind === 'cecinhoTask') return `#/cecinho/${encodeURIComponent(top.taskId)}`;
+  if (top.kind === 'stickers') return '#/perfil/stickers';
+  if (top.kind === 'termHistory') {
+    return top.termId ? `#/perfil/semestre/historico/${top.termId}` : '#/perfil/semestre/historico';
+  }
+  if (top.kind === 'notes') return '#/biblioteca/notas';
+  if (top.kind === 'noteDetail') return `#/biblioteca/notas/${top.noteId}`;
+  if (top.kind === 'noteTransform') return `#/biblioteca/notas/${top.noteId}/transformar`;
+  if (top.kind === 'temple') return '#/biblioteca/templo';
+  if (top.kind === 'templeSection') {
+    return `#/biblioteca/templo/${TEMPLE_SECTION_SLUGS[top.section]}`;
+  }
+  if (top.kind === 'comparison') {
+    return `#/biblioteca/templo/comparacoes/${top.slug}`;
+  }
+  if (top.kind === 'course') return `#/faculdade/${top.courseId}`;
+  if (top.kind === 'classNote') return `#/faculdade/${top.courseId}/aula/${top.classNoteId}`;
+  if (top.kind === 'repertorioItem') {
+    return `#/faculdade/${top.courseId}/repertorio/${top.itemId}`;
+  }
+  if (top.kind === 'approach') {
+    return `#/biblioteca/abordagens/${top.approachId}`;
+  }
+  if (top.kind === 'families') return '#/biblioteca/familias';
+  if (top.kind === 'family') return `#/biblioteca/familias/${top.familyId}`;
+  if (top.kind === 'sync') return '#/perfil/sincronizar';
+  if (
+    top.kind === 'quiz-category' ||
+    top.kind === 'quiz-group-detail' ||
+    top.kind === 'quiz-loading'
+  )
+    return '#/clinica/quiz';
+  if (top.kind === 'quiz-play') return '#/clinica/quiz/play';
+  if (top.kind === 'quiz-result') return '#/clinica/quiz/result';
+  if (top.kind === 'study') return `#/clinica/${STUDY_SCREEN_TO_SLUG[top.screen]}`;
+  if (top.kind === 'tab') {
+    const base = `#/${top.tab}`;
+    const subtab = subTab && subTab !== DEFAULT_SUB_TAB[top.tab] ? subTab : undefined;
+    return subtab ? `${base}/${subtab}` : base;
+  }
+  return '#/home';
+}

@@ -1,0 +1,350 @@
+{
+  "format": "cecistudy-user-backup",
+  "formatVersion": 1,
+  "userSchemaVersion": 1,
+  "schemaVersion": 22,
+  "catalogRelease": null,
+  "exportedAt": "2026-10-27T00:00:00.000Z",
+  "payload": {
+    "profile": {
+      "name": "Ceci",
+      "semester": 6,
+      "totalSemesters": 10,
+      "university": "UFRJ",
+      "targetCareer": "clínica",
+      "dailyQuote": "com leveza",
+      "stickersCollected": 3,
+      "categoryXp": {
+        "faculdade": 45,
+        "estudo": 120,
+        "leituras": 30,
+        "jornada": 15
+      },
+      "photoUrl": ""
+    },
+    "courses": [
+      {
+        "id": "c1",
+        "name": "Psicopatologia I",
+        "professor": "Ana",
+        "semester": "6º semestre",
+        "schedule": [
+          { "day": 1, "start": "09:00", "end": "11:00" },
+          { "day": 3, "start": "14:00", "end": "16:00" }
+        ],
+        "color": "#FFD3DD",
+        "icon": "Brain",
+        "termId": "trm-1",
+        "status": "ativo",
+        "conceptIds": ["con-1"],
+        "authorIds": ["aut-1"],
+        "bibliographyIds": ["cat-1"],
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "c2",
+        "name": "Estágio Supervisionado",
+        "professor": "Carla",
+        "semester": "6º semestre",
+        "schedule": [
+          { "day": 2, "start": "08:00", "end": "12:00" }
+        ],
+        "color": "#D3EFFD",
+        "icon": "Stethoscope",
+        "termId": "trm-1",
+        "status": "ativo",
+        "conceptIds": [],
+        "authorIds": [],
+        "bibliographyIds": [],
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "c3",
+        "name": "Teorias da Personalidade",
+        "professor": "Marcos",
+        "semester": "5º semestre",
+        "schedule": [
+          { "day": 4, "start": "19:00", "end": "21:00" }
+        ],
+        "color": "#E2D3FF",
+        "icon": "BookOpen",
+        "termId": "trm-1",
+        "status": "arquivado",
+        "conceptIds": [],
+        "authorIds": [],
+        "bibliographyIds": [],
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "classes": [
+      {
+        "id": "cl-1",
+        "courseId": "c1",
+        "title": "Aula 1 - Introdução à Psicopatologia",
+        "number": 1,
+        "date": "2026-08-04",
+        "summary": "Resumo da primeira aula do semestre.",
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "cl-2",
+        "courseId": "c1",
+        "title": "Aula 2 - Transtornos de Ansiedade",
+        "number": 2,
+        "date": "2026-08-11",
+        "summary": "Estudo de caso sobre transtorno de pânico.",
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "cl-3",
+        "courseId": "c2",
+        "title": "Primeiro dia de estágio",
+        "number": 1,
+        "date": "2026-08-05",
+        "summary": "Acolhimento na instituição de saúde.",
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "t1",
+        "title": "Ler capítulo 2 do livro",
+        "completed": false,
+        "priority": "media",
+        "category": "leitura",
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "t2",
+        "title": "Entregar relatório de estágio",
+        "completed": true,
+        "priority": "alta",
+        "category": "estagio",
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "t3",
+        "title": "Revisar flashcards de teorias",
+        "completed": false,
+        "priority": "baixa",
+        "category": "revisao",
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "exams": [
+      {
+        "id": "e1",
+        "courseId": "c1",
+        "title": "Prova 1",
+        "date": "2026-09-15",
+        "weight": "40%",
+        "topics": ["ansiedade", "depressão"],
+        "completed": false,
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "e2",
+        "courseId": "c2",
+        "title": "Avaliação de estágio",
+        "date": "2026-11-20",
+        "weight": "50%",
+        "topics": ["atendimento", "relatório"],
+        "completed": false,
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "authors": [
+      {
+        "id": "aut-1",
+        "name": "Sigmund Freud",
+        "bio": "Pai da psicanálise.",
+        "keyConcepts": ["inconsciente", "recalque"],
+        "majorWorks": ["A Interpretação dos Sonhos"],
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "aut-2",
+        "name": "Carl Jung",
+        "bio": "Psicologia analítica.",
+        "keyConcepts": ["inconsciente coletivo", "arquétipos"],
+        "majorWorks": ["Tipos Psicológicos"],
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "concepts": [
+      {
+        "id": "con-1",
+        "name": "Recalque",
+        "definition": "Mecanismo de defesa que afasta conteúdos angustiantes da consciência.",
+        "authorIds": ["aut-1"],
+        "courseIds": ["c1"],
+        "tags": ["defesa", "psicanálise"],
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "readings": [
+      {
+        "id": "bk-1",
+        "title": "O Mal-Estar na Civilização",
+        "author": "Sigmund Freud",
+        "type": "livro",
+        "status": "lendo",
+        "catalogId": null,
+        "sourceKind": "custom",
+        "contentRef": null,
+        "position": 45,
+        "furthestPercent": 30,
+        "lastReadAt": "2026-10-20",
+        "coverColor": "#FFD3DD",
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "flashcards": [],
+    "decks": [],
+    "materials": [
+      {
+        "id": "mat-1",
+        "title": "Artigo sobre transtornos de ansiedade",
+        "type": "artigo",
+        "author": "Autora X",
+        "tags": ["ansiedade", "estudo"],
+        "addedAt": "2026-09-01T00:00:00.000Z",
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "internshipLogs": [
+      {
+        "id": "log-1",
+        "type": "estagio",
+        "date": "2026-09-10",
+        "hours": 4,
+        "activity": "Acolhimento e triagem inicial.",
+        "reflections": "Primeiro contato com o paciente. Aprendi a escutar ativamente.",
+        "workspaceId": "ws-academico"
+      },
+      {
+        "id": "log-2",
+        "type": "supervisao",
+        "date": "2026-09-17",
+        "hours": 2,
+        "activity": "Supervisionar caso clínico do log-1.",
+        "reflections": "Discutimos limites e setting do atendimento.",
+        "discussedLogIds": ["log-1"],
+        "workspaceId": "ws-academico"
+      }
+    ],
+    "supervision": [],
+    "tcc": {
+      "id": "tcc-main",
+      "title": "Ansiedade e psicanálise na clínica contemporânea",
+      "advisor": "Dra. Carla",
+      "field": "Psicanálise",
+      "problemStatement": "Como a ansiedade se manifesta na clínica psicanalítica?",
+      "objectives": ["Entender a ansiedade", "Mapear casos clínicos"],
+      "status": "em_andamento",
+      "reminderPrefs": {
+        "enabled": false,
+        "chapterDaysBefore": [7, 1, 0],
+        "milestoneDaysBefore": [30, 14, 7, 1],
+        "time": "09:00",
+        "meetingEve": true,
+        "meetingMinutesBefore": [60]
+      },
+      "workspaceId": "ws-academico"
+    },
+    "stickers": [],
+    "sessions": [
+      {
+        "id": "s-1",
+        "topic": "Estudo de Psicopatologia",
+        "date": "2026-09-05",
+        "durationMinutes": 60
+      }
+    ],
+    "streakData": {
+      "activeDays": ["2026-08-04", "2026-09-05", "2026-10-20"]
+    },
+    "reminder": {
+      "enabled": true,
+      "time": "19:00",
+      "categories": ["estudo", "estagio", "leituras"]
+    },
+    "looseNotes": [
+      {
+        "id": "note-1",
+        "title": "Ideia de pesquisa",
+        "content": "Pesquisar relação entre sono e memória em estudantes.",
+        "category": "ideia",
+        "date": "2026-10-01"
+      }
+    ],
+    "savedBookIds": ["bk-1"],
+    "bookmarkedCourseIds": ["c1"],
+    "readingProgress": { "bk-1": 30 },
+    "questions": [],
+    "techniques": [
+      {
+        "id": "tec-1",
+        "name": "Associação livre",
+        "description": "Técnica psicanalítica de livre associação."
+      }
+    ],
+    "quizSessions": [
+      {
+        "id": "qs-1",
+        "config": {
+          "areas": ["clínica"],
+          "temas": ["ansiedade"],
+          "escolas": ["TCC"],
+          "dificuldades": ["basica"],
+          "count": 5
+        },
+        "answers": [
+          {
+            "questionId": "q1",
+            "userAnswer": "A",
+            "correct": true,
+            "timeMs": 5000,
+            "question": { "id": "q1", "question": "O que é recalque?", "answer": "A" }
+          }
+        ],
+        "startedAt": 1,
+        "finishedAt": 2,
+        "totalTimeMs": 60000,
+        "correctCount": 1,
+        "totalCount": 5,
+        "scorePct": 20,
+        "createdAt": "2026-08-19"
+      }
+    ],
+    "academicTerms": [
+      {
+        "id": "trm-1",
+        "label": "6º semestre",
+        "ordinal": 6,
+        "status": "ativo",
+        "startedAt": "2026-08-01",
+        "statusTransitionAt": "2026-08-01T00:00:00.000Z",
+        "createdAt": "2026-08-01T00:00:00.000Z",
+        "updatedAt": "2026-08-01T00:00:00.000Z"
+      }
+    ],
+    "readingSessions": [],
+    "readingHighlights": [],
+    "readingBookmarks": [],
+    "thesisChapters": [],
+    "thesisReferences": [],
+    "thesisMeetings": [],
+    "thesisTasks": [],
+    "thesisWritingLogs": [],
+    "onboarding": {
+      "completed": true,
+      "completedAt": "2026-08-01"
+    },
+    "syncIndex": {
+      "stamps": {},
+      "records": {},
+      "tombstones": {}
+    }
+  }
+}

@@ -1,0 +1,346 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useCanvasSetup, useDitherLoop } from '@/lib/useCanvasSetup';
+import { AnimatedNumber } from '@/components/ui/AnimatedNumber';
+import {
+  smoothstep,
+  hash,
+  hexToRgba,
+  drawRoundedWedge,
+  CHART_PASTELS,
+  formatCount,
+  buildDemoDonutPeriods,
+  type ChartTheme,
+} from '@/lib/ditherChart';
+import { type DonutData, type ChartSeries, type ChartConfig } from '@/lib/charts/dataTypes';
+
+/** Donut dithered com rótulos dentro das fatias, percentages em destaque e separação visual — canvas + framer-motion. */
+export const DitherDonutChart: React.FC<DitherDonutChartProps> = ({
+  theme = 'light',
+  compact = false,
+  className,
+  data: dataProp,
+  periods,
+  title = 'tempo por área',
+  subtitle = 'onde seu tempo foi',
+  icon = <Users className="w-4 h-4" />,
+  totalLabel = 'total',
+  formatValue = formatCount,
+}) => {
+  const [periodIndex, setPeriodIndex] = useState(0);
+  const setup = useCanvasSetup();
+  const { canvasRef, ctxRef, rect, reducedMotion } = setup;
+
+  const usingPeriods = periods !== undefined || dataProp === undefined;
+  const activePeriod = (periods ?? buildDemoDonutPeriods())[periodIndex];
+
+  const segments: ChartSeries[] = useMemo(() => {
+    const base = dataProp ?? activePeriod.data;
+    return base.map((s, i) => ({
+      label: s.label,
+      value: s.value,
+      color: s.color ?? CHART_PASTELS[i % CHART_PASTELS.length],
+    }));
+  }, [dataProp, activePeriod]);
+
+  const { shares, total } = useMemo(() => {
+    const sum = segments.reduce((acc, s) => acc + s.value, 0) || 1;
+    return {
+      shares: segments.map((s) => s.value / sum),
+      total: segments.reduce((acc, s) => acc + s.value, 0),
+    };
+  }, [segments]);
+
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const hoverRef = useRef(hoverIndex);
+  const timeRef = useRef(0);
+  const morphStartTimeRef = useRef<number>(0);
+  const fromSharesRef = useRef<number[]>([]);
+  const targetSharesRef = useRef<number[]>([]);
+  const dispSharesRef = useRef<number[]>([]);
+
+  const morphActive = () =>
+    !reducedMotion &&
+    morphStartTimeRef.current > 0 &&
+    performance.now() - morphStartTimeRef.current < 500;
+
+  const { scheduleFrame } = useDitherLoop(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return false;
+    const ctx = ctxRef.current ?? (ctxRef.current = canvas.getContext('2d'));
+    if (!ctx) return false;
+
+    const { width: logW, height: logH } = rect.current;
+    if (logW === 0 || logH === 0) return true; // aguardando o ResizeObserver medir
+
+    timeRef.current += reducedMotion ? 0 : 0.02;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const logicalSize = 200;
+
+    ctx.save();
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.scale((logW * dpr) / logicalSize, (logH * dpr) / logicalSize);
+
+    let t = 0;
+    if (reducedMotion) {
+      t = 1;
+    } else if (morphStartTimeRef.current > 0) {
+      t = (performance.now() - morphStartTimeRef.current) / 500;
+      if (t > 1) t = 1;
+    } else {
+      t = 1;
+    }
+
+    const e = 1 - Math.pow(2, -10 * t);
+    for (let i = 0; i < targetSharesRef.current.length; i++) {
+      dispSharesRef.current[i] =
+        fromSharesRef.current[i] + (targetSharesRef.current[i] - fromSharesRef.current[i]) * e;
+    }
+
+    const center = 100;
+    const gap = 0.07;
+    let startAngle = -Math.PI / 2;
+    const currentHover = hoverRef.current;
+
+    for (let i = 0; i < dispSharesRef.current.length; i++) {
+      const share = dispSharesRef.current[i];
+      if (share === 0) continue;
+
+      const sweep = share * Math.PI * 2;
+      const aStart = startAngle + gap / 2;
+      let aEnd = startAngle + sweep - gap / 2;
+      if (aEnd < aStart) aEnd = aStart;
+
+      ctx.save();
+      const isHovered = currentHover === i;
+      const isAnyHovered = currentHover !== null;
+
+      if (isHovered) {
+        const mid = (aStart + aEnd) / 2;
+        ctx.translate(Math.cos(mid) * 6, Math.sin(mid) * 6);
+      }
+
+      ctx.beginPath();
+      drawRoundedWedge(ctx, center, center, 55, 86, aStart, aEnd, 6);
+      ctx.clip();
+
+      ctx.globalAlpha = isHovered ? 1.0 : isAnyHovered ? 0.3 * 0.72 : 0.72;
+      ctx.fillStyle = segments[i].color as string;
+
+      if (isHovered) {
+        ctx.shadowColor = hexToRgba(segments[i].color as string, 0.55);
+        ctx.shadowBlur = 5;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+      }
+
+      // TEXTURA DITHERED DENTRO DA FATIA
+      const cell = 4.6;
+      const t2 = timeRef.current;
+      for (let x = 14; x <= 186; x += cell) {
+        for (let y = 14; y <= 186; y += cell) {
+          const dx = x - center;
+          const dy = y - center;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 55 - cell || dist > 86 + cell) continue;
+
+          let a = Math.atan2(dy, dx);
+          let normalizedA = a - aStart;
+          while (normalizedA < 0) normalizedA += Math.PI * 2;
+          while (normalizedA >= Math.PI * 2) normalizedA -= Math.PI * 2;
+          if (normalizedA > aEnd - aStart) continue;
+
+          const fullness = smoothstep(0.62, 1.0, (dist - 55) / (86 - 55));
+          const waveRaw = reducedMotion
+            ? 0
+            : Math.sin(dist * 0.1 - t2) +
+              Math.sin(a * 3 + t2 * 1.5) +
+              Math.sin(dx * 0.05 + dy * 0.05 + t2 * 2);
+          const wave = smoothstep(-1.5, 1.5, waveRaw);
+          const jitter = hash(x, y);
+
+          const size =
+            cell *
+            ((isHovered ? 0.46 : 0.34) + 0.36 * fullness + 0.26 * wave) *
+            (0.78 + 0.42 * jitter);
+
+          ctx.fillRect(x - size / 2, y - size / 2, size, size);
+        }
+      }
+
+      // RÓTULO COM PORCENTAGEM DENTRO DA FATIA
+      const midAngle = (aStart + aEnd) / 2;
+      const labelRadius = 68;
+      const labelX = center + labelRadius * Math.cos(midAngle);
+      const labelY = center + labelRadius * Math.sin(midAngle);
+
+      const pct = Math.round(shares[i] * 100);
+
+      if (share > 0.02) {
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = 'bold 11px system-ui, sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 3;
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 1;
+        ctx.fillText(`${pct}%`, labelX, labelY);
+        ctx.restore();
+      }
+
+      startAngle += sweep;
+    }
+
+    ctx.restore();
+    // needsAnimation (spec §5.2): só o morph — hover/redesenho é um frame,
+    // dado estável congela o shimmer (sem loop ornamental infinito).
+    return morphActive();
+  }, setup);
+
+  useEffect(() => {
+    hoverRef.current = hoverIndex;
+    // Hover muda o desenho (fatia destacada): um frame basta.
+    scheduleFrame();
+  }, [hoverIndex, scheduleFrame]);
+
+  useEffect(() => {
+    if (dispSharesRef.current.length === 0) {
+      dispSharesRef.current = [...shares];
+      fromSharesRef.current = [...shares];
+      targetSharesRef.current = [...shares];
+    } else {
+      fromSharesRef.current = [...dispSharesRef.current];
+      targetSharesRef.current = [...shares];
+      morphStartTimeRef.current = performance.now();
+    }
+    scheduleFrame();
+  }, [shares, scheduleFrame]);
+
+  if (compact) {
+    return (
+      <div className="relative w-full h-full flex items-center justify-center p-2">
+        <div className="relative w-[130px] h-[130px]">
+          <canvas ref={canvasRef} className="w-full h-full block" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'relative w-full rounded-2xl p-5 border shadow-sm transition-colors',
+        'bg-surface-default border-ceci-border-default text-ceci-primary',
+        className,
+      )}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <div
+            className={cn(
+              'p-2 rounded-xl',
+              'bg-surface-rose text-ceci-brand-strong border border-ceci-border-brand',
+            )}
+          >
+            {icon}
+          </div>
+          <div>
+            <h4 className="text-sm font-bold">{title}</h4>
+            <p className="text-[11px] text-ceci-secondary">{subtitle}</p>
+          </div>
+        </div>
+
+        {usingPeriods && (
+          <div
+            className={cn(
+              'flex items-center p-1 rounded-full border text-xs font-medium',
+              'bg-surface-subtle border-ceci-border-default',
+            )}
+          >
+            {(periods ?? buildDemoDonutPeriods()).map((p, idx) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  setPeriodIndex(idx);
+                  setHoverIndex(null);
+                }}
+                className={cn(
+                  'px-2.5 py-1 rounded-full transition cursor-pointer',
+                  periodIndex === idx
+                    ? 'bg-ceci-primary text-ceci-on-primary'
+                    : 'text-ceci-secondary hover:text-ceci-primary',
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="relative w-[180px] h-[180px] shrink-0">
+          <canvas ref={canvasRef} className="w-full h-full block" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <AnimatedNumber
+              value={total}
+              className={cn('font-display text-2xl font-bold tracking-tight', 'text-ceci-primary')}
+              format={formatValue}
+            />
+            <span className="text-[10px] mt-0.5 text-ceci-secondary">{totalLabel}</span>
+          </div>
+        </div>
+
+        <div className="flex-1 w-full space-y-2">
+          {segments.map((seg, idx) => {
+            const pct = Math.round(shares[idx] * 100);
+            const isHovered = hoverIndex === idx;
+
+            return (
+              <div
+                key={seg.label}
+                onMouseEnter={() => setHoverIndex(idx)}
+                onMouseLeave={() => setHoverIndex(null)}
+                className={cn(
+                  'flex items-center justify-between p-2 rounded-xl transition cursor-pointer border',
+                  isHovered ? 'bg-surface-subtle border-ceci-border-default' : 'border-transparent',
+                )}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: seg.color }}
+                  />
+                  <span className="text-xs font-medium truncate">{seg.label}</span>
+                </div>
+                <div className="flex items-center gap-3 text-xs shrink-0">
+                  <span className="text-[10px] font-medium text-ceci-primary">{pct}%</span>
+                  <span className={cn('text-[10px] w-8 text-right font-mono', 'text-ceci-muted')}>
+                    {formatValue(seg.value)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export interface DitherDonutChartProps {
+  theme?: ChartTheme;
+  compact?: boolean;
+  className?: string;
+  data?: ChartSeries[];
+  periods?: any[];
+  title?: string;
+  subtitle?: string;
+  icon?: React.ReactNode;
+  totalLabel?: string;
+  formatValue?: (n: number) => string;
+}

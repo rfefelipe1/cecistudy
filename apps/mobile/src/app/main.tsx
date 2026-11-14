@@ -1,0 +1,48 @@
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import '@fontsource/plus-jakarta-sans/400.css';
+import '@fontsource/plus-jakarta-sans/500.css';
+import '@fontsource/plus-jakarta-sans/600.css';
+import '@fontsource/plus-jakarta-sans/700.css';
+import '@fontsource/plus-jakarta-sans/800.css';
+import '@fontsource/dm-serif-display/400.css';
+import '@fontsource/dm-serif-display/400-italic.css';
+import '@fontsource/jetbrains-mono/400.css';
+import { MotionConfig } from 'framer-motion';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { BootSplash } from '@/components/ui/BootSplash';
+import { MobileAppShell } from '@/shells/MobileAppShell';
+import { MobileOverlays } from '@/overlays/MobileOverlays';
+import { MotionPreferenceGate } from '@/components/motion/MotionPreferenceGate';
+import { GlimmThemeAnimationProvider } from '@/components/ui/glimm-theme-animation-provider';
+import { MobileAppProvider } from '../MobileAppProvider';
+import { mark } from '@/lib/performance/perfMarks';
+import '@/assets/fonts/sf-pro/sf-pro-text.css';
+import '@/index.css';
+
+mark('app-entry-start');
+
+/**
+ * Entrypoint próprio do cliente mobile (Fase 5).
+ * Renderiza `MobileAppShell` direto — sem casca desktop.
+ * O estado/navegação vêm do `MobileAppProvider` (casca mobile, spec 07).
+ * Sem preload global de telas (spec-performance §7 Fase 3): o chunk da Home
+ * vem do boot e os demais por intenção/prefetch com política.
+ */
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <MotionConfig reducedMotion="user">
+      <ErrorBoundary>
+        <GlimmThemeAnimationProvider>
+          <MobileAppProvider>
+            <MotionPreferenceGate>
+              <BootSplash />
+              <MobileAppShell />
+              <MobileOverlays />
+            </MotionPreferenceGate>
+          </MobileAppProvider>
+        </GlimmThemeAnimationProvider>
+      </ErrorBoundary>
+    </MotionConfig>
+  </StrictMode>,
+);

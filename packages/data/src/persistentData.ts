@@ -1,0 +1,168 @@
+/**
+ * Contrato único do banco persistido do cecistudy.
+ *
+ * Fonte de verdade para o que é gravado, exportado, importado e resetado.
+ * - `PersistedDatabase` = todas as coleções realmente persistidas (via
+ *   `usePersistentState`), espelhando `EmptyDatabase` (agora com `quizSessions`).
+ * - `readDatabaseFromState()` = conversão do estado do contexto → banco completo.
+ * - `buildBackupData()` = payload de exportação (decisão explícita por campo:
+ *   bancos estáticos `approaches`/`questions` NÃO são exportados — são catálogos
+ *   embutidos no app e re-semeados sob demanda; incluí-los inflaria o backup em ~2MB).
+ */
+import { EmptyDatabase, emptyDatabase } from '@/data/empty';
+import type {
+  UserProfile,
+  Course,
+  ClassNote,
+  Task,
+  Exam,
+  PsychologyAuthor,
+  PsychologyConcept,
+  PsychologyApproach,
+  ReadingItem,
+  Flashcard,
+  FlashcardDeck,
+  MaterialItem,
+  InternshipLog,
+  ThesisProject,
+  ThesisChapter,
+  ThesisReference,
+  ThesisMeeting,
+  ThesisTask,
+  ThesisWritingLog,
+  Sticker,
+  StudySession,
+  StreakData,
+  StudyQuestion,
+  Technique,
+  OnboardingState,
+  QuizSession,
+  LooseNote,
+  SyncIndex,
+  AcademicTerm,
+  ReadingSession,
+  ReadingHighlight,
+  ReadingBookmark,
+  AssistedTask,
+  AgentConversation,
+  AgentPlan,
+  AgentArtifact,
+} from '@/types';
+
+/** Tipo do banco persistido completo (fonte única de verdade). */
+export type PersistedDatabase = EmptyDatabase;
+
+/** Coleções estáticas re-semeadas a partir de catálogos embutidos (não exportadas). */
+export const STATIC_BANKS = ['approaches', 'questions'] as const;
+
+/**
+ * Instantâneo dos estados persistidos do `AppContext` (entrada de
+ * `readDatabaseFromState`/`buildBackupData`).
+ */
+export interface PersistedStateSnapshot {
+  profile: UserProfile;
+  courses: Course[];
+  classes: ClassNote[];
+  tasks: Task[];
+  exams: Exam[];
+  authors: PsychologyAuthor[];
+  concepts: PsychologyConcept[];
+  approaches: PsychologyApproach[];
+  readings: ReadingItem[];
+  flashcards: Flashcard[];
+  decks: FlashcardDeck[];
+  materials: MaterialItem[];
+  internshipLogs: InternshipLog[];
+  tcc: ThesisProject;
+  thesisChapters: ThesisChapter[];
+  thesisReferences: ThesisReference[];
+  thesisMeetings: ThesisMeeting[];
+  thesisTasks: ThesisTask[];
+  thesisWritingLogs: ThesisWritingLog[];
+  /** SPEC-037: estado leve do Cecinho Agent. */
+  assistedTasks: AssistedTask[];
+  agentConversations: AgentConversation[];
+  agentPlans: AgentPlan[];
+  agentArtifacts: AgentArtifact[];
+  stickers: Sticker[];
+  sessions: StudySession[];
+  streakData: StreakData;
+  reminder: EmptyDatabase['reminder'];
+  looseNotes: LooseNote[];
+  savedBookIds: string[];
+  bookmarkedCourseIds: string[];
+  readingProgress: Record<string, number>;
+  questions: StudyQuestion[];
+  techniques: Technique[];
+  quizSessions: QuizSession[];
+  academicTerms: AcademicTerm[];
+  readingSessions: ReadingSession[];
+  readingHighlights: ReadingHighlight[];
+  readingBookmarks: ReadingBookmark[];
+  onboarding: OnboardingState;
+  syncIndex: SyncIndex;
+}
+
+/** Converte o estado do contexto no banco persistido completo. */
+export function readDatabaseFromState(state: PersistedStateSnapshot): PersistedDatabase {
+  return {
+    profile: state.profile,
+    courses: state.courses,
+    classes: state.classes,
+    tasks: state.tasks,
+    exams: state.exams,
+    authors: state.authors,
+    concepts: state.concepts,
+    approaches: state.approaches,
+    readings: state.readings,
+    flashcards: state.flashcards,
+    decks: state.decks,
+    materials: state.materials,
+    internshipLogs: state.internshipLogs,
+    tcc: state.tcc,
+    stickers: state.stickers,
+    sessions: state.sessions,
+    streakData: state.streakData,
+    reminder: state.reminder,
+    looseNotes: state.looseNotes,
+    savedBookIds: state.savedBookIds,
+    bookmarkedCourseIds: state.bookmarkedCourseIds,
+    readingProgress: state.readingProgress ?? {},
+    questions: state.questions,
+    techniques: state.techniques,
+    quizSessions: state.quizSessions,
+    academicTerms: state.academicTerms,
+    readingSessions: state.readingSessions ?? [],
+    readingHighlights: state.readingHighlights ?? [],
+    readingBookmarks: state.readingBookmarks ?? [],
+    // SPEC-012: tolerância `?? []` no mesmo padrão das coleções de leitura —
+    // snapshot antigo (pré-22) não carrega as chaves.
+    thesisChapters: state.thesisChapters ?? [],
+    thesisReferences: state.thesisReferences ?? [],
+    thesisMeetings: state.thesisMeetings ?? [],
+    thesisTasks: state.thesisTasks ?? [],
+    thesisWritingLogs: state.thesisWritingLogs ?? [],
+    assistedTasks: state.assistedTasks ?? [],
+    agentConversations: state.agentConversations ?? [],
+    agentPlans: state.agentPlans ?? [],
+    agentArtifacts: state.agentArtifacts ?? [],
+    onboarding: state.onboarding,
+    syncIndex: state.syncIndex ?? emptyDatabase().syncIndex,
+  };
+}
+
+/** Payload de dados do backup (exclui os bancos estáticos — decisão documentada). */
+export function buildBackupData(state: PersistedStateSnapshot): Record<string, unknown> {
+  const db = readDatabaseFromState(state);
+  const { approaches: _approaches, questions: _questions, ...userData } = db;
+  return userData;
+}
+
+/**
+ * Banco "zerado" de referência para comparação em testes/round-trip.
+ * Atalho para `emptyDatabase()` (inclui onboarding `{completed:false}` e
+ * `quizSessions: []`).
+ */
+export function resetDatabase(): PersistedDatabase {
+  return emptyDatabase();
+}

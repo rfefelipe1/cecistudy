@@ -1,0 +1,55 @@
+name: release-please
+
+# Mantém a versão, o CHANGELOG.md e a tag. Ao mergear o PR que ele abre, cria a
+# tag e o Release — e é o Release publicado que dispara o `release.yml`.
+#
+# Usa PAT (RELEASE_PLEASE_TOKEN) e não o GITHUB_TOKEN padrão: tag/Release criados
+# com o token padrão NÃO disparam outros workflows (anti-recursão do GitHub), e o
+# build nunca rodaria. Ver SPEC-026 D6.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-please
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          # obrigatório: a branch padrão é `dev`, mas o release nasce da `main`.
+          target-branch: main
+
+      # O `gh pr merge` abaixo precisa do repositório clonado (detecta o `.git`
+      # para saber em qual repo operar). Sem o checkout, falha com
+      # `fatal: not a git repository`.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+
+      # O PR de versão segue a mesma regra dos de promoção: quem decide é o
+      # gate. Sem isto a `main` promoveria e pararia, esperando alguém mergear.
+      - name: liga o auto-merge no PR de versão
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          pr=$(gh pr list --base main --state open --json number,headRefName \
+                 --jq '[.[] | select(.headRefName | startswith("release-please--"))][0].number // empty')
+          if [ -z "$pr" ]; then
+            echo "nenhum PR de versão aberto"
+            exit 0
+          fi
+          gh pr merge "$pr" --auto --merge
+          echo "auto-merge ligado no PR de versão #$pr"

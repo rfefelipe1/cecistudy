@@ -1,0 +1,449 @@
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
+import { LocalNotifications } from '@capacitor/local-notifications';
+import { AnimatePresence, motion, useMotionValue, useTransform } from 'framer-motion';
+import { useMobileApp } from '@/context/mobileApp';
+import { useNavValue } from '@/context/shellNavContexts';
+import { setupNativeShell } from '../lib/native';
+import { mark } from '../lib/performance/perfMarks';
+import { cancelQueuedPrefetches } from '../lib/performance/screenPrefetch';
+import {
+  EASE,
+  MorphLayer,
+  MorphTarget,
+  overlayVariants,
+  resolveProfile,
+  screenAnnouncement,
+  sharedNoteId,
+} from '../lib/motion';
+import { RevealProvider } from '../components/motion/RevealProvider';
+import { erro } from '../lib/voice';
+import { nativeNavigation } from '../navigation/native-navigation';
+import { resolveNotificationRoute } from '../lib/notificationRoutes';
+
+import { HeaderNav } from '../components/HeaderNav';
+import { BottomNav } from '../components/BottomNav';
+import { ContextualBottomBar } from '../components/ui/ContextualBottomBar';
+import { EdgeSwipeBack } from '../components/ui/EdgeSwipeBack';
+import { OnboardingScreen } from '../components/views/OnboardingScreen';
+
+import { SlideScreen } from './SlideScreen';
+import { CaptureHost } from './CaptureHost';
+import { useMotionProfile } from '../components/motion/MotionProfileProvider';
+import { SlideContent, OverlayContent } from './SharedScreenLayers';
+import type { NavTab } from '../types';
+import { focusController } from '../lib/focusController';
+import {
+  BackExitState,
+  EXIT_BACK_TOAST,
+  initialBackExitState,
+  resolveBackExit,
+} from '../lib/exitBack';
+
+const HeaderNavMemo = memo(HeaderNav);
+const BottomNavMemo = memo(BottomNav);
+
+/**
+ * Casca mobile/web: header dinâmico + barra inferior + pilha com slide
+ * horizontal e overlays em tela cheia. Efeitos nativos (Capacitor) vivem aqui.
+ */
+export const MobileAppShell: React.FC = () => (
+  // O perfil de movimento vem do `MotionPreferenceGate` nos entrypoints
+  // (SPEC-M-027 D9): ele precisa envolver também os overlays, que são irmãos
+  // do shell. Aqui só se consome `useMotionProfile()`.
+  <MobileAppShellInner />
+);
+
+const MobileAppShellInner: React.FC = () => {
+  const app = useMobileApp();
+  /** Perfil de movimento do chrome (bottom-nav). Lido fora do JSX para não
+   *  reconstruir o objeto a cada render. */
+  const chrome = useMotionProfile();
+  // Campos de navegação via NavValueContext (identidade estável entre mudanças de
+  // dados) — o BottomNavMemo só re-renderiza quando a NAVEGAÇÃO muda de fato.
+  const nav = useNavValue();
+  const { activeTab, handleNavigate, openCompose, openWizard, openTaskExamWizard } = nav;
+
+  /** Preview ao vivo durante o arrasto na navbar: aba sob o dedo (null = sem arrasto). */
+  const [dragPreviewTab, setDragPreviewTab] = useState<NavTab | null>(null);
+
+  useEffect(() => {
+    mark('first-screen-mounted');
+    setupNativeShell();
+  }, []);
+
+  // Guarda central do back: enquanto a sessão de foco imersiva estiver RODANDO,
+  // volta NÃO navega — emite para a view abrir a confirmação de saída (EST-002).
+  // Vale para Android (backButton), gesto iOS (swipeBackCompleted) e borda web.
+  const handleBackWithFocusGuard = useCallback(() => {
+    if (focusController.isActive() && focusController.isRunning()) {
+      focusController.emitBackRequested();
+      return true;
+    }
+    return app.handleSystemBack();
+  }, [app]);
+
+  // "Voltar duas vezes para sair": na raiz (sem nada para fechar) o 1º back
+  // mostra um toast de aviso; o 2º dentro da janela fecha o app (Android).
+  const backExitRef = useRef<BackExitState>(initialBackExitState());
+  const handleBackAtRoot = useCallback(() => {
+    const { state, action } = resolveBackExit(backExitRef.current, Date.now());
+    backExitRef.current = state;
+    if (action !== 'exit') {
+      app.showToast(EXIT_BACK_TOAST);
+      return;
+    }
+    // iOS não sair por API (App.exitApp é Android-only); só toca o aviso.
+    if (Capacitor.getPlatform() === 'android') {
+      void CapacitorApp.exitApp();
+    }
+  }, [app]);
+
+  // Cadeia de volta única: foco imersivo → pop/modal → raiz (toast → sair).
+  const performBack = useCallback((): boolean => {
+    const handled = handleBackWithFocusGuard();
+    if (handled) {
+      // Qualquer back real (pop de tela/modal) reinicia a contagem do "sair".
+      backExitRef.current = initialBackExitState();
+    } else {
+      handleBackAtRoot();
+    }
+    return handled;
+  }, [handleBackWithFocusGuard, handleBackAtRoot]);
+
+  const focusBackRef = useRef(performBack);
+  focusBackRef.current = performBack;
+
+  // Navegar para outro lugar (tab ou push) reinicia a contagem do "sair".
+  useEffect(() => {
+    backExitRef.current = initialBackExitState();
+  }, [app.canGoBack, activeTab]);
+
+  // Troca de rota descarta o prefetch oportunístico pendente (spec-performance
+  // §3.3): o que já corre, corre — mas a fila não atrapalha a nova rota.
+  useEffect(() => {
+    cancelQueuedPrefetches();
+  }, [activeTab]);
+
+  // Gesto de voltar nativo (iOS). O `addListener` é registrado **antes** do
+  // `enable()`: `notifyListeners` usa `retainUntilConsumed: false`, então um
+  // gesto que occurresse antes de o listener existir seria descartado.
+  //
+  // ⚠️ O listener é do **plugin**, não de `window`. `notifyListeners` no iOS não
+  // é um evento de DOM — a versão anterior escutava `window` e o gesto nunca
+  // fechava o pop (a tela voltava sozinha para o lugar). Ver SPEC-007 D7.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const off = nativeNavigation.onSwipeBack('swipeBackCompleted', () => {
+      focusBackRef.current();
+    });
+    nativeNavigation.enable();
+    return off;
+  }, []);
+
+  // Informa ao plugin se existem telas para voltar (apenas informativo).
+  // O gesto permanece ativo na raiz para o double-back-to-exit.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    nativeNavigation.setCanGoBack(app.canGoBack);
+  }, [app.canGoBack]);
+
+  // Gesto de "voltar pela borda" (iOS): transform da camada de slide acompanha o dedo
+  const swipeX = useMotionValue(0);
+  // Peek do gesto: a "tela anterior" (fundo parallax) revelada sob a tela
+  // de cima enquanto ela desliza p/ a direita; sombra de borda no limite do slide.
+  const peekX = useTransform(swipeX, (v) => -v * 0.16);
+  const shadowAlpha = useTransform(swipeX, [0, 120], [0, 0.14]);
+
+  // G3 (SPEC-M-027): qualquer navegação zera o deslocamento do gesto. Sem
+  // isso, um drag interrompido (hash, notificação, back do sistema) deixa a
+  // tela nova deslocada até o próximo gesto.
+  useEffect(() => {
+    swipeX.set(0);
+  }, [app.slideKey, swipeX]);
+
+  // Android back button: foco imersivo → pop de modais/telas → na raiz,
+  // 1º back mostra toast de aviso e o 2º (na janela) fecha o app.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const handler = CapacitorApp.addListener('backButton', () => {
+      focusBackRef.current();
+    });
+    return () => {
+      void handler.then((h) => h.remove());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Toque na notificação → tela da família (SPEC-M-025 D8). Registrado cedo
+  // no bootstrap: em partida a frio o iOS entrega o evento após o
+  // `addListener` — e a navegação não depende de dado hidratado (o `focusId`
+  // de item removido degrada na própria tela). O resolvedor é puro e
+  // defensivo: `extra` inválido simplesmente não navega.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const handler = LocalNotifications.addListener('localNotificationActionPerformed', (event) => {
+      const route = resolveNotificationRoute(
+        (event.notification as { extra?: unknown }).extra,
+      );
+      if (!route) return;
+      if (route.kind === 'tcc') app.openTccScreen(route.tab, route.focusId);
+      else if (route.kind === 'calendar') app.openCalendar(route.day);
+      else if (route.kind === 'internship') app.openInternshipDiary();
+      else handleNavigate(route.tab);
+    });
+    return () => {
+      void handler.then((h) => h.remove());
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const {
+    profile,
+    headerConfig,
+  } = app;
+
+  // Região viva da troca de tela (SPEC-007 §E).
+  //
+  // O texto é a única coisa que muda: o nó fica montado o tempo todo, porque é
+  // isso que faz um leitor de tela tratar a diferença como **anúncio** em vez de
+  // entrada de conteúdo nova (um nó que entra no DOM junto com o texto
+  // normalmente não é anunciado).
+  //
+  // Começa vazio de propósito — preencher no primeiro render faria o leitor
+  // falar a tela inicial logo na abertura do app, que é ruído, não informação.
+  const announcement = screenAnnouncement(activeTab, headerConfig?.title);
+  const [announced, setAnnounced] = useState('');
+  useEffect(() => {
+    setAnnounced(announcement ?? '');
+  }, [announcement]);
+
+  const onNavigateToPerfil = useCallback(() => handleNavigate('perfil'), [handleNavigate]);
+  /** Troca de aba vinda da navbar: o `dir` do arrasto vira o 4º parâmetro. */
+  const onTabChange = useCallback(
+    (tab: NavTab, dir?: 1 | -1) => handleNavigate(tab, undefined, undefined, dir),
+    [handleNavigate],
+  );
+  /** Preview ao vivo durante o arrasto: mostra a tela de destino sem navegar. */
+  const onTabPreview = useCallback((tab: NavTab) => {
+    setDragPreviewTab(tab);
+  }, []);
+  /** Commit do arrasto: navega de verdade uma única vez e limpa o preview. */
+  const onTabCommit = useCallback((tab: NavTab, dir: 1 | -1) => {
+    setDragPreviewTab(null);
+    handleNavigate(tab, undefined, undefined, dir);
+  }, [handleNavigate]);
+
+  /** Falha da ação da barra contextual: a voz do cecinho em duas frases
+   * (SPEC-022 D10 · `src/lib/voice.ts`). */
+  const handleContextBarError = useCallback(() => {
+    app.showToast(erro('acaoFalhou'));
+  }, [app]);
+
+  const isAuxFlow =
+    app.isComposeScreenOpen ||
+    app.isComposeDetailsOpen ||
+    app.isWizardOpen ||
+    app.isNoteDetailOpen ||
+    app.isNoteTransformOpen;
+
+  // Container transform (SPEC-M-028 D26): o card da nota (`NotesScreen`) é a
+  // origem e a página do detalhe é o alvo. Sem `focusedNote` não há par — o
+  // overlay cai no fade+scale de sempre.
+  const noteMorphId =
+    app.isNoteDetailOpen && app.focusedNote ? sharedNoteId(app.focusedNote.id) : null;
+
+  // Primeiro acesso → onboarding em tela cheia (sem header/nav)
+  if (!app.onboarding.completed) {
+    return <OnboardingScreen />;
+  }
+
+  return (
+    <div className="min-h-screen text-ceci-primary flex flex-col font-sans antialiased selection:bg-surface-rose selection:text-ceci-brand-strong">
+
+      {/* Nome da tela atual para o leitor de tela (SPEC-007 §E). `sr-only` tira o nó
+          da árvore visual mas o mantém no DOM — é o que o `aria-live` observa. */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {announced}
+      </div>
+
+      {/* Gesto de "voltar pela borda" (iOS): desliza a camada de slide e volta um nível. */}
+      {Capacitor.isNativePlatform() ? (
+        null // iOS gesto nativo sempre ativo; slide controlado pelo plugin.
+      ) : (
+        <EdgeSwipeBack
+          swipeX={swipeX}
+          onBack={performBack}
+          canGoBack={app.canGoBack}
+        />
+      )}
+
+      {/* Top Header — entra/sai com fade nos fluxos auxiliares (compose/wizards)
+          em vez de desmontar seco; o sticky é preservado pois o motion está no
+          próprio elemento header. Some também na sessão de foco imersiva. */}
+      <AnimatePresence initial={false}>
+        {!isAuxFlow &&
+        !app.isFocusImmersiveOpen &&
+        !(activeTab === 'perfil' && !headerConfig) && (
+          <HeaderNavMemo
+            key="header"
+            profile={profile}
+            headerConfig={headerConfig}
+            direction={app.navDirection}
+            onNavigateToPerfil={onNavigateToPerfil}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Main Screen Content (Mobile First App Frame Container) */}
+      <main
+        className={`flex-1 max-w-md sm:max-w-xl lg:max-w-3xl xl:max-w-4xl w-full mx-auto px-3.5 py-4 sm:px-5 lg:px-8 relative transition-[padding] duration-[220ms] ease-out ${
+          app.isBottomNavVisible
+            ? 'pb-[calc(5rem+env(safe-area-inset-bottom,0px))] lg:pb-10'
+            : nav.contextBarConfig
+              ? // respiro da barra contextual: a altura real da peça + a folga
+                // da base, pela mesma constante que a barra usa (SPEC-022 D7)
+                'pb-[calc(var(--contextual-bar-space)+env(safe-area-inset-bottom,0px))]'
+              : 'pb-6'
+        }`}
+      >
+        {/* F5 (SPEC-M-027 D6): um IntersectionObserver para as duas camadas. */}
+        <RevealProvider>
+        {/* === Camada 0 (só web): peek do gesto de borda ===
+            Durante o drag, a tela de cima desliza p/ a direita e este fundo
+            parallax (canvas) é revelado por baixo —
+            dá a sensação de "a tela anterior acompanha o dedo" sem remontar a
+            view; no commit o pop direcional revela a anterior de verdade.
+            A sombra de borda no limite do slide reforça a elevação. */}
+        {!Capacitor.isNativePlatform() && (
+          <>
+            <motion.div
+              aria-hidden
+              style={{ x: peekX }}
+              className="pointer-events-none fixed inset-0 z-0 bg-canvas lg:pl-60"
+            />
+            <motion.div
+              aria-hidden
+              style={{ opacity: shadowAlpha }}
+              className="pointer-events-none fixed inset-y-0 left-0 z-0 w-4 bg-gradient-to-r from-ceci-primary/15 to-transparent lg:left-60"
+            />
+          </>
+        )}
+        {/* === Camada 1: slide horizontal (base + auxiliares de 1º nível) ===
+            A tela que sai congela onde está (SlideScreen vira fixed) e esvanece
+            por baixo — o reset de scroll do handler não a arrasta mais. */}
+        <motion.div
+          // G1 (SPEC-M-027): no nativo quem move a webView é o plugin Swift;
+          // no web o deslocamento é este `swipeX`. A versão anterior fixava `0`
+          // no web e o gesto de borda não movia nada.
+          style={{ x: Capacitor.isNativePlatform() ? 0 : swipeX }}
+          className="relative z-10"
+        >
+          {dragPreviewTab && dragPreviewTab !== activeTab ? (
+            // Preview ao vivo durante o arrasto: mostra a tela de destino com
+            // crossfade simples de conteúdo dentro do mesmo SlideScreen.
+            // Sem novo slideKey, sem AnimatePresence extra, sem remount — nada
+            // que deixe fundo vazio ou tela fantasma na frente.
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.12, ease: EASE.standard }}
+            >
+              <SlideScreen key={app.slideKey} intent={app.navIntent}>
+                <SlideContent activeTabOverride={dragPreviewTab} />
+              </SlideScreen>
+            </motion.div>
+          ) : (
+            <AnimatePresence initial={false} custom={app.navIntent}>
+              <SlideScreen key={app.slideKey} intent={app.navIntent}>
+                <SlideContent />
+              </SlideScreen>
+            </AnimatePresence>
+          )}
+        </motion.div>
+        {/* === Camada 2: overlay (fade+scale) — compose/wizard não disputam o slide === */}
+        <AnimatePresence initial={false}>
+          {app.overlayKey && (
+            <MorphTarget key={app.overlayKey} id={noteMorphId}>
+              <motion.div
+                variants={overlayVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="fixed inset-0 z-40 overflow-y-auto px-3.5 py-4 sm:px-5 bg-canvas"
+              >
+                {/* Desktop (≥ lg): formulários centrados numa coluna em vez de tela cheia */}
+                <div className="w-full max-w-md sm:max-w-xl lg:max-w-3xl mx-auto">
+                  <OverlayContent />
+                </div>
+              </motion.div>
+            </MorphTarget>
+          )}
+        </AnimatePresence>
+        </RevealProvider>
+      </main>
+
+      {/* Captura de link (F8.4/F8.5): deep link iOS e share Android caem aqui,
+          fora das views — o host decide salvar direto ou abrir a sheet. */}
+      <CaptureHost />
+
+      {/* Fixed Bottom Navigation Bar — some junto com o push/pop, em tempo com o
+          slide. **Só opacity, de propósito:** um `transform` neste wrapper viraria
+          containing block do `fixed` interno (o `fixed` do nav deixaria de se
+          posicionar na viewport). Fazer a barra "deslizar para fora" exigiria
+          animar o `y` de dentro do elemento `fixed`, não do wrapper. */}
+      <AnimatePresence initial={false}>
+        {app.isBottomNavVisible && (
+          <motion.div
+            key="bottom-nav"
+            initial={{ opacity: 0 }}
+            animate={{
+              opacity: 1,
+              transition: { duration: chrome.d.navBar, ease: EASE.standard },
+            }}
+            exit={{
+              opacity: 0,
+              transition: { duration: chrome.d.navBar, ease: EASE.exit },
+            }}
+            className="lg:hidden"
+          >
+            <BottomNavMemo
+              activeTab={activeTab}
+              onChangeTab={onTabChange}
+              onTabPreview={onTabPreview}
+              onTabCommit={onTabCommit}
+              onOpenWizard={openWizard}
+              onOpenTaskExamWizard={openTaskExamWizard}
+              onOpenCompose={openCompose}
+              onOpenSearch={app.openSearch}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Barra contextual — o rodapé das telas AUXILIARES (empilhadas), que não
+          têm barra de abas. Fica **sempre montada** (fora do `AnimatePresence`)
+          para que o estado expandido/compacto sobreviva à navegação: quem decide
+          se ela aparece é `contextBarConfig` (`null` = nada renderizado). É uma
+          decisão explícita — voltar para uma aba e voltar para a auxiliar não
+          troca a barra de lugar.
+
+          A falha de uma ação é dita em voz alta (SPEC-022 D10): sem aviso, a
+          usuária toca e "nada acontece" — que lê como travamento. */}
+      <ContextualBottomBar
+        config={nav.contextBarConfig}
+        onBack={performBack}
+        onError={handleContextBarError}
+      />
+
+      {/* Modais/toasts globais */}
+
+      {/* Container transform (SPEC-M-028 D25): a camada do clone mora no shell,
+          acima das duas telas, `pointer-events-none` e `z-[55]` — acima do modal
+          (z-50) e abaixo do toast (z-60). Sem morph ativo ela não renderiza nada. */}
+      <MorphLayer profile={chrome} />
+
+    </div>
+  );
+};

@@ -1,0 +1,707 @@
+import React from 'react';
+import type { DataClientValue, ReminderSettings, ToastOptions } from './DataClientProvider';
+import type { SharedAppValue } from './sharedAppValue';
+import type { InternshipWizardSeed } from '../types/internshipSeed';
+import type { InternshipTab, ThesisTab } from '../../packages/navigation/src/types';
+import type { ToastState } from '../components/ui/Toast';
+import type { StickerState } from '../lib/stickers';
+import type { ThemeId } from '../lib/themes';
+import type { DataActions, DataActionGroups } from './dataActions';
+import type { TermRolloverPlan } from '../lib/termRollover';
+import type { TccSheet, ContextBarConfig } from '../lib/contextBarConfig';
+import type { NavigationValue } from './navigationEngine';
+import type { NavIntent } from '../lib/motion';
+import type {
+  NavTab,
+  NavScreen,
+  SubTabFaculdade,
+  SubTabBiblioteca,
+  UserProfile,
+  Course,
+  ClassNote,
+  Task,
+  Exam,
+  PsychologyAuthor,
+  PsychologyConcept,
+  PsychologyApproach,
+  ReadingItem,
+  Flashcard,
+  FlashcardDeck,
+  MaterialItem,
+  InternshipLog,
+  InternshipNextStepLink,
+  ThesisProject,
+  ThesisChapter,
+  ThesisReference,
+  ThesisMeeting,
+  ThesisTask,
+  ThesisWritingLog,
+  Sticker,
+  StudySession,
+  DynamicHeaderConfig,
+  StreakData,
+  WizardFlow,
+  StudyQuestion,
+  Technique,
+  PsicoterapiaFamily,
+  OnboardingState,
+  QuizConfig,
+  QuizAnswer,
+  QuizSession,
+  AcademicTerm,
+  ReadingSession,
+  ReadingHighlight,
+  ReadingBookmark,
+  QuizPlayState,
+  LooseNote,
+  StudyScreen,
+  ManagedItem,
+  ManagedItemKind,
+  TempleSection,
+  QuestionGroup,
+  AttendanceRecord,
+  AttendanceStatus,
+} from '../types';
+import type { StreakStats, WeekDayCell } from '../lib/streak';
+import type { MemoryCategory, SemesterMemory } from '../lib/semesterMemory';
+import type { DataClient } from '../lib/dataClient';
+import type { SyncPreview } from '../lib/sync/engine';
+import type { SyncManifest } from '../lib/sync/provider';
+import type { AuthorDraft, ConceptDraft } from '../lib/acervoBridge';
+import type {
+  Workspace,
+  Relation,
+  Suggestion,
+  AssociationPolicy,
+  RelationKind,
+  SuggestionType,
+  Project,
+  Output,
+  ProjectType,
+  OutputFormat,
+  CitationProfile,
+} from '../core/domain';
+
+// ReminderSettings é definido em ./DataClientProvider e re-exportado para compatibilidade.
+export type { ReminderSettings } from './DataClientProvider';
+
+export interface AppContextValue {
+  // data
+  profile: UserProfile;
+  courses: Course[];
+  classes: ClassNote[];
+  tasks: Task[];
+  exams: Exam[];
+  authors: PsychologyAuthor[];
+  concepts: PsychologyConcept[];
+  approaches: PsychologyApproach[];
+  readings: ReadingItem[];
+  /**
+   * Setter bruto da estante — exposto para seed de teste e reparos de boot
+   * (o mesmo critério do `setTcc`/`setThesisChapters`). Views preferem os
+   * handlers (`handleUpdateReading` etc.).
+   */
+  setReadings: React.Dispatch<React.SetStateAction<ReadingItem[]>>;
+  /** Leitura (SPEC-M-014): sessões, destaques e marcadores. */
+  readingSessions: ReadingSession[];
+  readingHighlights: ReadingHighlight[];
+  readingBookmarks: ReadingBookmark[];
+  flashcards: Flashcard[];
+  decks: FlashcardDeck[];
+  materials: MaterialItem[];
+  internshipLogs: InternshipLog[];
+  tcc: ThesisProject;
+  /** TCC (SPEC-012) — coleções com id estável. */
+  thesisChapters: ThesisChapter[];
+  thesisReferences: ThesisReference[];
+  thesisMeetings: ThesisMeeting[];
+  thesisTasks: ThesisTask[];
+  thesisWritingLogs: ThesisWritingLog[];
+  setThesisChapters: React.Dispatch<React.SetStateAction<ThesisChapter[]>>;
+  setThesisReferences: React.Dispatch<React.SetStateAction<ThesisReference[]>>;
+  setThesisMeetings: React.Dispatch<React.SetStateAction<ThesisMeeting[]>>;
+  setThesisTasks: React.Dispatch<React.SetStateAction<ThesisTask[]>>;
+  /**
+   * Setter bruto das sessões de escrita (SPEC-012 F5.2). A escrita é **uma por
+   * ação**: o log entra na coleção e, quando há capítulo, o `wordCount` dele é
+   * somado no mesmo handler (o provider entrega o par `...data`).
+   */
+  setThesisWritingLogs: React.Dispatch<React.SetStateAction<ThesisWritingLog[]>>;
+  stickers: Sticker[];
+  /** Snapshot do estado avaliado para as condições dos stickers (barras de progresso). */
+  stickerState: StickerState | null;
+  sessions: StudySession[];
+  questions: StudyQuestion[];
+  techniques: Technique[];
+  /** Cliente de dados canônico (repositórios + backup/restore + sync adapter). */
+  dataClient: DataClient;
+  quizSessions: QuizSession[];
+  /** Períodos letivos (SPEC-005) — coleção de verdade do "qual semestre eu estou". */
+  academicTerms: AcademicTerm[];
+  savedBookIds: string[];
+  toggleSaveBook: (bookId: string) => void;
+  readingProgress: Record<string, number>;
+  updateReadingProgress: (bookId: string, readPages: number) => void;
+  reminderSettings: ReminderSettings;
+  updateReminder: (settings: ReminderSettings) => void;
+  gcalEnabled: boolean;
+  setGcalEnabled: (on: boolean) => Promise<boolean>;
+  /** Tema ativo (TEM-001) — preferência de app persistida (`themePref`). */
+  themePref: ThemeId;
+  setThemePref: React.Dispatch<React.SetStateAction<ThemeId>>;
+
+  // onboarding / ciclo de vida dos dados
+  onboarding: OnboardingState;
+  completeOnboarding: (profile: Partial<UserProfile>) => void;
+  resetApp: () => void;
+  exportData: () => void;
+  importData: (source: string | Blob | ArrayBuffer) => void;
+
+  // streak de estudos
+  streakData: StreakData;
+  streakStats: StreakStats;
+  currentWeekProgress: WeekDayCell[];
+
+  // navigation state
+  activeTab: NavTab;
+  screenKey: string;
+  /** Chave da camada de slide horizontal (base + auxiliares de 1º nível). */
+  slideKey: string;
+  /** Chave da camada overlay (fade+scale) — vazia quando não há overlay. */
+  overlayKey: string;
+  navDirection: 0 | 1 | -1;
+  /** Intenção de navegação completa (SPEC-007) — `navDirection` é só o `dir` dela. */
+  navIntent: NavIntent;
+  navigationStack: NavScreen[];
+  setStack: (next: NavScreen[]) => void;
+  syncHash: (stack: NavScreen[]) => void;
+  /** Volta um nível (modais → telas auxiliares → pop da pilha). Retorna true se algo fechou. */
+  handleSystemBack: () => boolean;
+  setActiveTab: (tab: NavTab) => void;
+  subTabFaculdade: SubTabFaculdade;
+  setSubTabFaculdade: (t: SubTabFaculdade) => void;
+  subTabBiblioteca: SubTabBiblioteca;
+  setSubTabBiblioteca: (t: SubTabBiblioteca) => void;
+  focusedStudyScreen: StudyScreen | null;
+  /** Sessão de foco imersiva em tela (chrome preto + orientação landscape). */
+  isFocusImmersiveOpen: boolean;
+  openStudy: (screen: StudyScreen) => void;
+  closeStudy: () => void;
+  targetId: string | undefined;
+  setTargetId: (id: string | undefined) => void;
+  focusedCourseId: string | null;
+  setFocusedCourseId: (id: string | null) => void;
+  focusedCourse: Course | undefined;
+  openCourseDetail: (courseId: string) => void;
+  closeCourseDetail: () => void;
+  isClassNoteDetailOpen: boolean;
+  focusedClassNoteId: string | null;
+  focusedClassNote: ClassNote | undefined;
+  openClassNoteDetail: (classNoteId: string) => void;
+  closeClassNoteDetail: () => void;
+  /** Ficha de um item do repertório da disciplina, empilhada sobre o curso. */
+  isRepertorioItemOpen: boolean;
+  focusedRepertorioItemId: string | null;
+  focusedRepertorioItemCourseId: string | null;
+  openRepertorioItem: (itemId: string, courseId: string) => void;
+  closeRepertorioItem: () => void;
+  isBottomNavVisible: boolean;
+  /** Se existe algo para voltar (cadeia do back do Android / gesto de borda). */
+  canGoBack: boolean;
+  isNotesScreenOpen: boolean;
+  openNotesScreen: () => void;
+  closeNotesScreen: () => void;
+  isTempleScreenOpen: boolean;
+  openTemple: () => void;
+  closeTemple: () => void;
+  /** Seção interna do templo aberta (conceitos/autores/técnicas) ou null. */
+  focusedTempleSection: TempleSection | null;
+  openTempleSection: (section: TempleSection) => void;
+  closeTempleSection: () => void;
+  isFamiliesScreenOpen: boolean;
+  openFamilies: () => void;
+  closeFamilies: () => void;
+  focusedFamilyId: string | null;
+  focusedFamily: PsicoterapiaFamily | undefined;
+  openFamily: (familyId: string) => void;
+  closeFamily: () => void;
+  focusedApproachId: string | null;
+  focusedApproach: PsychologyApproach | undefined;
+  openApproach: (approachId: string) => void;
+  closeApproach: () => void;
+  focusedComparisonSlug: string | null;
+  openComparison: (slug: string) => void;
+  closeComparison: () => void;
+  bookmarkedCourseIds: string[];
+  toggleBookmarkCourse: (id: string) => void;
+
+  // notas avulsas (persistidas globalmente)
+  looseNotes: LooseNote[];
+  addLooseNote: (note: LooseNote) => void;
+  deleteLooseNote: (id: string) => void;
+  updateLooseNote: (id: string, patch: Partial<LooseNote>) => void;
+
+  // detalhe / transformação de nota avulsa (tela estilo wizard)
+  isNoteDetailOpen: boolean;
+  isNoteTransformOpen: boolean;
+  focusedNoteId: string | null;
+  focusedNote: LooseNote | undefined;
+  openNoteDetail: (noteId: string) => void;
+  closeNoteDetail: () => void;
+  openNoteTransform: (noteId: string) => void;
+  closeNoteTransform: () => void;
+  /** Volta direto para a lista de notas (após uma transformação concluída). */
+  closeAllNoteScreens: () => void;
+
+  // composição de nota (tela de captura rápida)
+  isComposeScreenOpen: boolean;
+  composeCourseId: string | undefined;
+  openCompose: (courseId?: string) => void;
+  closeCompose: () => void;
+
+  // wizard de detalhes da aula
+  isComposeDetailsOpen: boolean;
+  wizardNoteId: string | null;
+  openComposeDetails: (noteId: string) => void;
+  closeComposeDetails: () => void;
+
+  // wizards de criação em tela cheia (conceito, flashcard, prova, atividade…)
+  isWizardOpen: boolean;
+  currentWizardType: WizardFlow | null;
+  wizardCourseId: string | undefined;
+  wizardSeed: InternshipWizardSeed | undefined;
+  wizardDate: string | undefined;
+  openWizard: (
+    type: WizardFlow,
+    courseId?: string,
+    seed?: InternshipWizardSeed,
+    date?: string,
+  ) => void;
+  openInternshipWizard: (seed?: InternshipWizardSeed) => void;
+  openTaskExamWizard: () => void;
+  closeWizard: () => void;
+
+  // menu universal de editar/excluir (long-press / clique direito)
+  managedItem: ManagedItem | null;
+  openManageItem: (kind: ManagedItemKind, id: string) => void;
+  closeManageItem: () => void;
+  deleteManagedItem: (kind: ManagedItemKind, id: string) => void;
+  editManagedItem: (kind: ManagedItemKind, id: string) => void;
+
+  // item em edição nos wizards (payload fora da URL, igual `wizardNoteId`)
+  wizardEdit: ManagedItem | null;
+
+  // prompt "quer dar mais detalhes?" após salvar uma aula
+  isDetailPromptOpen: boolean;
+  detailNoteId: string | null;
+  openDetailPrompt: (noteId: string) => void;
+  closeDetailPrompt: () => void;
+
+  // modais / telas auxiliares
+  isStreakScreenOpen: boolean;
+  openStreak: () => void;
+  closeStreak: () => void;
+  isInternshipDiaryOpen: boolean;
+  isInternshipCaseOpen: boolean;
+  internshipTab: InternshipTab | undefined;
+  internshipFocusId: string | undefined;
+  internshipPatientKey: string | undefined;
+  openInternshipDiary: (tab?: InternshipTab, focusLogId?: string) => void;
+  openInternshipCase: (patientKey: string) => void;
+  /** Abre o wizard de sessão já com o caso do paciente preenchido (SPEC-022). */
+  openInternshipCaseSession: () => void;
+  closeInternshipDiary: () => void;
+  closeInternshipCase: () => void;
+  isTccScreenOpen: boolean;
+  /** Aba/foco ativos do TCC (`SPEC-012 F3`) — moram na navegação, não em `useState`. */
+  thesisTab: ThesisTab | undefined;
+  thesisFocusId: string | undefined;
+  openTccScreen: (tab?: ThesisTab, focusId?: string) => void;
+  closeTccScreen: () => void;
+  /** Calendário empilhado (`SPEC-024 D1`): nunca sexta aba. */
+  isCalendarScreenOpen: boolean;
+  calendarDay: string | undefined;
+  openCalendar: (day?: string) => void;
+  closeCalendar: () => void;
+  /** Central do Cecinho (SPEC-037): lista e conversa por tarefa. */
+  isCecinhoCenterOpen: boolean;
+  isCecinhoTaskOpen: boolean;
+  cecinhoTaskId: string | null;
+  openCecinhoCenter: () => void;
+  openCecinhoTask: (taskId: string) => void;
+  closeCecinho: () => void;
+  /**
+   * Folha (sheet) aberta do TCC (SPEC-022 D3) — mora no contexto porque a
+   * barra contextual e o conteúdo abrem a **mesma** folha.
+   */
+  tccSheet: TccSheet | null;
+  /** Texto já lido do clipboard para a folha de captura (D3). */
+  tccCaptureText: string;
+  openTccSheet: (sheet: TccSheet) => void;
+  closeTccSheet: () => void;
+  openTccCapture: () => Promise<void>;
+  /**
+   * Configuração da barra contextual do topo da pilha (`null` = a barra não
+   * aparece nesta tela). Montada pelo motor, consumida pela casca.
+   */
+  contextBarConfig: ContextBarConfig | null;
+  isStickersScreenOpen: boolean;
+  openStickersScreen: () => void;
+  closeStickersScreen: () => void;
+  /** Histórico de períodos letivos (SPEC-005) — índice do wizard de semestre. */
+  isTermHistoryOpen: boolean;
+  focusedTermId: string | undefined;
+  openTermHistory: (termId?: string) => void;
+  /** Sincronização entre dispositivos (pareamento P2P). */
+  isSyncScreenOpen: boolean;
+  openSyncScreen: () => void;
+  closeSyncScreen: () => void;
+  /** Tela de instruções do sync local (backup local importado/exportado). */
+  isSyncLocalScreenOpen: boolean;
+  openSyncLocalScreen: () => void;
+  closeSyncLocalScreen: () => void;
+  /** Tela de instruções do sync remoto (GitHub PAT). */
+  isSyncRemoteScreenOpen: boolean;
+  openSyncRemoteScreen: () => void;
+  closeSyncRemoteScreen: () => void;
+  /** Snapshot local (JSON do payload de backup v2) para o transporte de sync. */
+  getSyncPayloadJson: () => Promise<string>;
+  // Sincronização com a nuvem (GitHub provider)
+  githubSyncConfig: { owner: string; repo: string; token: string } | null;
+  syncStatus: 'idle' | 'checking' | 'syncing' | 'synced' | 'upToDate' | 'error' | 'preview';
+  syncErrorMessage: string | null;
+  pendingSyncPreview: {
+    preview: SyncPreview;
+    mergedJson: string;
+    remoteManifest: SyncManifest;
+    remoteSha: string;
+  } | null;
+  syncNow: () => void;
+  syncInBackground: () => void;
+  configureGithubSync: (cfg: { owner: string; repo: string; token: string }) => void;
+  clearGithubSync: () => void;
+  applySyncPreview: () => void;
+  discardSyncPreview: () => void;
+  /** Aplica o banco mesclado pela sincronização (sem re-carimbar). */
+  applySyncedDatabase: (db: ReturnType<typeof import('../data/empty').emptyDatabase>) => void;
+  isQuizCategoryOpen: boolean;
+  openQuizCategory: (config?: Partial<QuizConfig>) => void;
+  closeQuizCategory: () => void;
+  isQuizGroupDetailOpen: boolean;
+  currentQuizGroup: QuestionGroup | null;
+  openQuizGroupDetail: (group: QuestionGroup) => void;
+  closeQuizDetail: () => void;
+  isQuizLoadingOpen: boolean;
+  currentQuizLoadingConfig: QuizConfig | null;
+  openQuizLoading: (config: QuizConfig) => void;
+  closeQuizLoading: () => void;
+  /** Garante que o banco de questões esteja carregado em memória (retorna o banco). */
+  ensureQuestionsLoaded: () => Promise<StudyQuestion[]>;
+  isQuizPlayOpen: boolean;
+  openQuizPlay: (pool: StudyQuestion[], config: QuizConfig) => void;
+  closeQuizPlay: () => void;
+  isQuizResultOpen: boolean;
+  openQuizResult: (
+    answers: QuizAnswer[],
+    config: QuizConfig,
+    startTime: number,
+    correctCount: number,
+    totalCount: number,
+  ) => void;
+  closeQuizResult: () => void;
+  updateQuizPlayState: (updates: Partial<QuizPlayState>) => void;
+  closeAllQuizScreens: () => void;
+  newQuizFromResult: () => void;
+  isQuickAddOpen: boolean;
+  openQuickAdd: () => void;
+  closeQuickAdd: () => void;
+  isEditCourseOpen: boolean;
+  editCourseId: string | null;
+  openEditCourse: (courseId?: string) => void;
+  closeEditCourse: () => void;
+  isCreatingLooseNote: boolean;
+  setIsCreatingLooseNote: (v: boolean) => void;
+  isSearchOpen: boolean;
+  openSearch: () => void;
+  closeSearch: () => void;
+  toast: ToastState | null;
+  showToast: (message: string, options?: ToastOptions) => void;
+
+  // workspace (Fase 3) — registry compartilhado (mobile e desktop usam o mesmo
+  // AppContext). O workspace ativo tagueia os registros de domínio; a casca
+  // desktop também espelha esse ponteiro na sessão visual (session.activeWorkspaceId).
+  workspaces: Workspace[];
+  setWorkspaces: React.Dispatch<React.SetStateAction<Workspace[]>>;
+  currentWorkspaceId: string;
+  currentWorkspace: Workspace;
+  switchWorkspace: (id: string) => void;
+  createWorkspace: (name: string, kind: Workspace['kind']) => void;
+
+  // conhecimento (Fase 6) — relations + inbox
+  relations: Relation[];
+  suggestions: Suggestion[];
+  associationPolicies: AssociationPolicy[];
+  addExplicitRelation: (input: {
+    sourceId: string;
+    targetId: string;
+    kind: RelationKind;
+    label?: string;
+  }) => Relation;
+  createSuggestion: (input: {
+    type: SuggestionType;
+    payload: Record<string, unknown>;
+  }) => Suggestion;
+  acceptSuggestion: (id: string) => void;
+  rejectSuggestion: (id: string) => void;
+  setAssociationPolicy: (rule: string, action: 'block' | 'reject') => void;
+
+  // produção acadêmica (Fase 8)
+  projects: Project[];
+  outputs: Output[];
+  createProject: (input: {
+    title: string;
+    type?: ProjectType;
+    templateId?: string;
+  }) => Project | null;
+  updateProject: (updated: Project) => void;
+  createOutput: (input: {
+    projectId: string;
+    name: string;
+    type?: ProjectType;
+    format?: OutputFormat;
+    citationProfile?: CitationProfile;
+  }) => Output;
+  updateOutput: (updated: Output) => void;
+  deleteOutput: (id: string) => void;
+
+  // actions
+  /**
+   * `tabDir` (opcional): direção do slide quando a troca de aba vem do arrasto
+   * na navbar (`+1` = próxima, `-1` = anterior). Sem ele, a troca de aba é o
+   * crossfade de sempre.
+   */
+  handleNavigate: (tab: NavTab, subTab?: string, target?: string, tabDir?: 1 | -1) => void;
+  handleToggleTask: (taskId: string) => void;
+  handleToggleExam: (examId: string) => void;
+  handleAddTask: (task: Task) => void;
+  handleUpdateTask: (taskId: string, patch: Partial<Task>) => void;
+  handleAddClassNote: (note: ClassNote) => void;
+  handleUpdateClassNote: (note: ClassNote) => void;
+  handleAddConcept: (concept: PsychologyConcept) => void;
+  /** Adota um rascunho do acervo (idempotente por nome): devolve o id real a usar. */
+  adoptAcervoConcept: (draft: ConceptDraft) => string;
+  handleAddMaterial: (material: MaterialItem) => void;
+  handleAddReading: (reading: ReadingItem) => void;
+  handleAddReadingSession: (session: ReadingSession) => void;
+  handleAddReadingHighlight: (highlight: ReadingHighlight) => void;
+  handleAddReadingBookmark: (bookmark: ReadingBookmark) => void;
+  handleUpdateReadingPages: (readingId: string, newPages: number) => void;
+  handleAddFlashcard: (card: Flashcard) => void;
+  handleReviewFlashcard: (id: string, quality: 0 | 1 | 2 | 3) => void;
+  handleAddInternshipLog: (log: InternshipLog) => void;
+  handleUpdateInternshipLog: (log: InternshipLog) => void;
+  /** Porta de escrita **única** do estágio (`SPEC-009 §8.1`): uma atualização
+   *  por salvamento, e o vínculo sessão ↔ supervisão é derivado. */
+  handleSaveInternshipLog: (draft: InternshipLog) => void;
+  handleDeleteInternshipLog: (id: string) => void;
+  handleRenamePatient: (fromKey: string, toLabel: string) => void;
+  handleSetPatient: (ids: string[], label: string) => void;
+  handleConvertNextStep: (
+    log: InternshipLog,
+    step: string,
+    kind: InternshipNextStepLink['kind'],
+    entityId: string,
+    nowIso: string,
+  ) => InternshipLog;
+  handleAddExam: (exam: Exam) => void;
+  handleAddCourse: (course: Course) => void;
+  handleAddAuthor: (author: PsychologyAuthor) => void;
+  /** Frequência detalhada (spec-frequencia.md): marca a aula de hoje na disciplina. */
+  markAttendance: (courseId: string, status: AttendanceStatus) => void;
+  updateAttendanceRecord: (
+    courseId: string,
+    recordId: string,
+    patch: Partial<Pick<AttendanceRecord, 'status' | 'noteId' | 'hours'>>,
+  ) => void;
+  removeAttendanceRecord: (courseId: string, recordId: string) => void;
+  /** Adota um autor do acervo (idempotente por nome): devolve o id real a usar. */
+  adoptAcervoAuthor: (draft: AuthorDraft) => string;
+  handleAddSession: (session: StudySession) => void;
+  handleAddTechnique: (technique: Technique) => void;
+  handleUpdateReadingChapters: (readingId: string, chapters: ReadingItem['chapters']) => void;
+  handleUpdateProfile: (updated: Partial<UserProfile>) => void;
+  handleUpdateTcc: (updated: ThesisProject) => void;
+  handleUpdateCourse: (updated: Course) => void;
+  handleUpdateExam: (exam: Exam) => void;
+  handleUpdateReading: (reading: ReadingItem) => void;
+  handleUpdateFlashcard: (card: Flashcard) => void;
+  handleUpdateSession: (session: StudySession) => void;
+  handleUpdateAuthor: (author: PsychologyAuthor) => void;
+  handleUpdateConcept: (concept: PsychologyConcept) => void;
+  handleUpdateMaterial: (material: MaterialItem) => void;
+  handleSaveQuizSession: (session: QuizSession) => void;
+
+  // Período letivo (SPEC-005 / SPEC-006)
+  applyTermRollover: (plan: TermRolloverPlan) => void;
+  /** O plano carrega o estado de origem: o desfazer não precisa de argumento extra. */
+  undoTermRollover: (plan: TermRolloverPlan) => void;
+  /** Plano da última virada (em memória) — null se não houve ou já foi desfeito. */
+  lastRollover: TermRolloverPlan | null;
+  /** Desfaz a última virada. No-op quando não há nenhuma. */
+  undoLastRollover: () => void;
+  /** Há virada para desfazer? Usado pela UI para exibir a ação do toast. */
+  canUndoRollover: boolean;
+  /** Corrige o ordinal do período ativo (a "porta fácil" do Perfil). */
+  correctTermOrdinal: (termId: string, ordinal: number) => void;
+  /** Ajusta o total de semestres do curso (`1..12`) — o stepper do Perfil. */
+  setTotalSemesters: (total: number) => void;
+
+  // Memórias de semestre (SPEC-028)
+  semesterMemories: SemesterMemory[];
+  createPastTerm: (input: {
+    ordinal: number;
+    label?: string;
+    startedAt: string;
+    endedAt: string;
+  }) => void;
+  addSemesterMemory: (input: {
+    termId: string;
+    termDate: string;
+    title: string;
+    category: MemoryCategory;
+    description?: string;
+    memoryDate?: string;
+    now: string;
+  }) => void;
+  updateSemesterMemory: (
+    id: string,
+    patch: {
+      title?: string;
+      category?: MemoryCategory;
+      description?: string;
+      memoryDate?: string;
+    },
+    now: string,
+  ) => void;
+  deleteSemesterMemory: (id: string) => void;
+  closeSemesterMemories: () => void;
+  /**
+   * Abre o **primeiro** período quando não há nenhum ativo (SPEC-008 F4.2).
+   * No-op se já existir um ativo.
+   */
+  openFirstTerm: (ordinal: number) => void;
+  /** Reabre um período encerrado (o "re-roll" do histórico). */
+  reopenTermById: (termId: string) => void;
+  archiveCourse: (courseId: string) => void;
+  restoreCourse: (courseId: string) => void;
+
+  // Quiz helpers (extraídos da pilha de navegação)
+  currentQuizPlayState: QuizPlayState | null;
+  currentQuizResultAnswers: QuizAnswer[] | null;
+  currentQuizResultConfig: QuizConfig | null;
+  currentQuizResultStartTime: number | null;
+  currentQuizResultCorrectCount: number | null;
+  currentQuizResultTotalCount: number | null;
+  currentQuizResultPool: StudyQuestion[] | null;
+
+  // header
+  headerConfig: DynamicHeaderConfig | null;
+}
+
+/**
+ * Remove os grupos por domínio de `DataActions & DataActionGroups`, devolvendo
+ * apenas os handlers achatados (`DataActions`). Os grupos (PERF-001 A.3) são
+ * expostos pelas cascas em contextos próprios — aqui só interessam os handlers.
+ */
+export function pickDomainActions(actions: DataActions & DataActionGroups): DataActions {
+  const {
+    courses: _courses,
+    study: _study,
+    knowledge: _knowledge,
+    app: _app,
+    term: _term,
+    ...handlers
+  } = actions;
+  void _courses;
+  void _study;
+  void _knowledge;
+  void _app;
+  void _term;
+  return handlers;
+}
+
+/**
+ * Monta o `AppContextValue` flat a partir das três camadas (spec 07 §6.6):
+ * dados (`DataClientValue`), valor compartilhado (workspace/streak/handlers
+ * comuns) e navegação por app. Usado pelos providers de cada plataforma
+ * (Mobile/Desktop) — garante a mesma superfície para as views.
+ */
+export function buildAppContextValue(
+  data: DataClientValue,
+  shared: SharedAppValue,
+  nav: NavigationValue,
+): AppContextValue {
+  return {
+    ...data,
+    // workspace ativo & pontes compartilhadas
+    currentWorkspaceId: shared.currentWorkspaceId,
+    currentWorkspace: shared.currentWorkspace,
+    streakStats: shared.streakStats,
+    currentWeekProgress: shared.currentWeekProgress,
+    toggleBookmarkCourse: shared.toggleBookmarkCourse,
+    updateReminder: shared.updateReminder,
+    setGcalEnabled: shared.setGcalEnabled,
+    toggleSaveBook: shared.toggleSaveBook,
+    updateReadingProgress: shared.updateReadingProgress,
+    stickerState: shared.stickerState,
+    // ações de domínio / workspace
+    // ⚠️ os grupos por domínio (PERF-001 A.3) ficam nos sub-contextos
+    // (CoursesActionsContext etc. montados pelas cascas) — não vazam para o
+    // value flat, onde os nomes colidiriam com os arrays de dados (courses…).
+    ...pickDomainActions(shared.dataActions),
+    ...shared.workspaceActions,
+    // navegação (pilha por app)
+    ...nav,
+    // memórias de semestre (SPEC-028) — funções de escrita sobre semesterMemories
+    semesterMemories: data.semesterMemories,
+    createPastTerm: (input) => {
+      data.setSemesterMemories((prev) => [
+        ...prev,
+        {
+          id: `mem-${Date.now()}`,
+          termId: `termo-${input.ordinal}`,
+          title: input.label ?? `Semestre ${input.ordinal}`,
+          category: 'memoravel',
+          termDate: input.startedAt,
+          createdAt: input.startedAt,
+          updatedAt: input.endedAt,
+        },
+      ]);
+    },
+    addSemesterMemory: (input) => {
+      data.setSemesterMemories((prev) => [
+        ...prev,
+        {
+          id: `mem-${Date.now()}`,
+          termId: input.termId,
+          title: input.title,
+          category: input.category,
+          description: input.description,
+          memoryDate: input.memoryDate,
+          termDate: input.termDate,
+          createdAt: input.now,
+          updatedAt: input.now,
+        },
+      ]);
+    },
+    updateSemesterMemory: (_id, _patch, _now) => {
+      // no-op: persistência de atualização de memória é seguimento da SPEC-028
+    },
+    deleteSemesterMemory: (_id) => {
+      // no-op: persistência de exclusão de memória é seguimento da SPEC-028
+    },
+    closeSemesterMemories: () => {
+      // no-op: fechamento de tela é tratado pela casca de navegação
+    },
+  };
+}

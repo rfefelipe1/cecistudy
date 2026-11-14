@@ -1,0 +1,448 @@
+import React, { Suspense, lazy, useEffect, useMemo, useState } from 'react';
+import {
+  BookOpen,
+  User,
+  Sparkles,
+  Search,
+  Plus,
+  ChevronRight,
+  ArrowLeft,
+  Bookmark,
+  X,
+  SlidersHorizontal,
+  TrendingUp,
+  BrainCircuit,
+  Compass,
+  RotateCcw,
+  FileText,
+  Landmark,
+  Newspaper,
+  Brain,
+} from 'lucide-react';
+import {
+  PsychologyAuthor,
+  PsychologyConcept,
+  PsychologyApproach,
+  TempleComparison,
+  MaterialItem,
+  Course,
+  SubTabBiblioteca,
+  TempleSection,
+  Material,
+} from '../../types';
+import {
+  initialContextCollections,
+  initialTrendingBooks,
+  CollectionBook,
+  ContextCollection,
+} from '../../data/libraryData';
+import {
+  psychotherapyCollections as staticPsychotherapyCollections,
+  complementaryCollections as staticComplementaryCollections,
+  articleGroups as staticArticleGroups,
+  catalogBooks as staticCatalogBooks,
+  mixedCollections as staticMixedCollections,
+  Article,
+  MixedCollection,
+} from '../../data/books';
+import type { LibraryDataset } from '../../data/books/curate';
+import { loadNativeLibraryDataset } from '../../lib/catalogLibrary';
+import {
+  materialEstaConcluido,
+  materialEstaFavorito,
+} from '../../../packages/domain/src/core/domain';
+import { EixoView } from './EixoView';
+import { VerTudoView } from './VerTudoView';
+import { BuscaView } from './BuscaView';
+import { DetalheMaterialView } from './DetalheMaterialView';
+
+/** Fonte do acervo: facade estático; no nativo, troca pelo catálogo SQLite. */
+const staticLibrary: LibraryDataset = {
+  catalogBooks: staticCatalogBooks,
+  interdisciplinaryBooks: [],
+  articles: [],
+  psychotherapyCollections: staticPsychotherapyCollections,
+  complementaryCollections: staticComplementaryCollections,
+  articleGroups: staticArticleGroups,
+  mixedCollections: staticMixedCollections,
+};
+import { InlineCollectionBlock } from '../library/InlineCollectionBlock';
+import { Mascote } from '../ui/Mascote';
+import { BookDetailModal } from '../library/BookDetailModal';
+import { LibraryFilterModal } from '../library/LibraryFilterModal';
+import { TempleLoading } from '../library/temple/TempleShared';
+import { ArticleCard } from '../library/ArticleCard';
+import { ArticleDetailModal } from '../library/ArticleDetailModal';
+import { MixedCollectionBlock } from '../library/MixedCollectionBlock';
+import { ManageSurface } from '../ui/ManageSurface';
+import { useMobileApp } from '@/context/mobileApp';
+import { useDataClientCourses, useDataClientKnowledge } from '@/context/DataClientProvider';
+import { useKnowledgeActions, useNavValue } from '@/context/shellNavContexts';
+import { useLibraryFilters } from './biblioteca/useLibraryFilters';
+import { MyMaterialsSection } from './biblioteca/MyMaterialsSection';
+import { ExploreSections, LibraryModals } from './biblioteca/ExploreSections';
+import { ViewSkeleton } from '../ui/Skeleton';
+
+// B.4 — sub-telas da biblioteca (notas/templo/famílias/abordagens) só carregam
+// quando o modo da aba as monta: cada uma vira chunk próprio sob Suspense.
+const loadNotesScreen = () =>
+  import('../library/NotesScreen').then((m) => ({ default: m.NotesScreen }));
+const loadTempleScreen = () =>
+  import('../library/TempleScreen').then((m) => ({ default: m.TempleScreen }));
+const loadConceptsScreen = () =>
+  import('../library/temple/ConceptsScreen').then((m) => ({ default: m.ConceptsScreen }));
+const loadAuthorsScreen = () =>
+  import('../library/temple/AuthorsScreen').then((m) => ({ default: m.AuthorsScreen }));
+const loadTechniquesScreen = () =>
+  import('../library/temple/TechniquesScreen').then((m) => ({ default: m.TechniquesScreen }));
+const loadComparisonRouteView = () =>
+  import('./biblioteca/ComparisonRouteView').then((m) => ({ default: m.ComparisonRouteView }));
+const loadFamiliesView = () => import('./FamiliesView').then((m) => ({ default: m.FamiliesView }));
+const loadFamilyDetailView = () =>
+  import('./FamilyDetailView').then((m) => ({ default: m.FamilyDetailView }));
+const loadApproachDetailView = () =>
+  import('./ApproachDetailView').then((m) => ({ default: m.ApproachDetailView }));
+const NotesScreen = lazy(loadNotesScreen);
+const TempleScreen = lazy(loadTempleScreen);
+const ConceptsScreen = lazy(loadConceptsScreen);
+const AuthorsScreen = lazy(loadAuthorsScreen);
+const TechniquesScreen = lazy(loadTechniquesScreen);
+const ComparisonRouteView = lazy(loadComparisonRouteView);
+const FamiliesView = lazy(loadFamiliesView);
+const FamilyDetailView = lazy(loadFamilyDetailView);
+const ApproachDetailView = lazy(loadApproachDetailView);
+
+export type BibliotecaViewMode =
+  | 'library'
+  | 'notes'
+  | 'temple'
+  | TempleSection
+  | 'families'
+  | 'family'
+  | 'approach';
+
+interface BibliotecaViewProps {
+  /** Tela derivada da pilha `biblioteca` renderizada no lugar da grade. */
+  mode?: BibliotecaViewMode;
+  familyId?: string;
+  approachId?: string;
+  comparisonSlug?: string;
+}
+
+export const BibliotecaView: React.FC<BibliotecaViewProps> = ({
+  mode = 'library',
+  familyId,
+  approachId,
+  comparisonSlug,
+}) => {
+  const {
+    looseNotes,
+    savedBookIds,
+    readingProgress,
+    concepts,
+    authors,
+    estadoPessoal,
+    bibliotecas,
+  } = useDataClientKnowledge();
+  const { courses } = useDataClientCourses();
+  const {
+    addLooseNote,
+    deleteLooseNote,
+    toggleSaveBook,
+    updateReadingProgress,
+  } = useKnowledgeActions();
+  const {
+    openNotesScreen,
+    isCreatingLooseNote,
+    setIsCreatingLooseNote,
+    openTemple,
+    openNoteDetail,
+    openNoteTransform,
+    openApproach,
+  } = useNavValue();
+
+  // Detail & Modal States
+  const [selectedBook, setSelectedBook] = useState<CollectionBook | null>(null);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+
+  // Fase F — nativo lê o acervo do catálogo SQLite (fallback: facade estático).
+  const [nativeLibrary, setNativeLibrary] = useState<LibraryDataset | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void loadNativeLibraryDataset().then((dataset) => {
+      if (!cancelled && dataset) setNativeLibrary(dataset);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  const library = nativeLibrary ?? staticLibrary;
+
+  // Filtros, status e coleções derivadas do acervo (extraídos p/ `biblioteca/useLibraryFilters`).
+  const savedSet = useMemo(() => new Set(savedBookIds), [savedBookIds]);
+  const filter = useLibraryFilters({ library, savedBookIds: savedSet, readingProgress });
+  const { savedBooks, readingBooks, availableTags } = filter;
+  if (mode === 'notes') {
+    return (
+      <Suspense fallback={<ViewSkeleton rows={5} />}>
+        <NotesScreen
+          looseNotes={looseNotes}
+          onAddNote={addLooseNote}
+          onDeleteNote={deleteLooseNote}
+          onEditNote={openNoteDetail}
+          onTransformNote={openNoteTransform}
+          courses={courses}
+          concepts={concepts}
+          authors={authors}
+          isCreatingNote={isCreatingLooseNote}
+          setIsCreatingNote={setIsCreatingLooseNote}
+        />
+      </Suspense>
+    );
+  }
+
+  // Dedicated Screen View for "Templo de Conhecimento"
+  if (mode === 'temple') {
+    return (
+      <Suspense fallback={<ViewSkeleton rows={5} />}>
+        <TempleScreen />
+      </Suspense>
+    );
+  }
+
+  // Seções internas do templo (conceitos / autores / técnicas)
+  if (mode === 'conceitos') {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando conceitos…" />}>
+        <ConceptsScreen />
+      </Suspense>
+    );
+  }
+  if (mode === 'autores') {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando autores…" />}>
+        <AuthorsScreen />
+      </Suspense>
+    );
+  }
+  if (mode === 'tecnicas') {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando técnicas…" />}>
+        <TechniquesScreen />
+      </Suspense>
+    );
+  }
+  if (mode === 'comparacoes') {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando comparações…" />}>
+        <ComparisonRouteView comparisonSlug={comparisonSlug} />
+      </Suspense>
+    );
+  }
+
+  // Dedicated Screen View for "Famílias de Psicoterapias"
+  if (mode === 'families') {
+    return (
+      <Suspense fallback={<ViewSkeleton rows={5} />}>
+        <FamiliesView />
+      </Suspense>
+    );
+  }
+
+  // Dedicated Screen View for a Família específica
+  if (mode === 'family' && familyId) {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando família…" />}>
+        <FamilyDetailView familyId={familyId} />
+      </Suspense>
+    );
+  }
+
+  // Dedicated Screen View for a Abordagem específica (página de leitura)
+  if (mode === 'approach' && approachId) {
+    return (
+      <Suspense fallback={<TempleLoading label="carregando abordagem…" />}>
+        <ApproachDetailView approachId={approachId} />
+      </Suspense>
+    );
+  }
+
+  // Concluídos e favoritos derivados do estado pessoal (INV-7: independentes).
+  const concluidos = useMemo(
+    () =>
+      bibliotecas.filter((m) => {
+        const e = estadoPessoal.find((ep) => ep.materialId === m.id);
+        return e?.concluido === true;
+      }),
+    [bibliotecas, estadoPessoal],
+  );
+  const favoritos = useMemo(
+    () =>
+      bibliotecas.filter((m) => {
+        const e = estadoPessoal.find((ep) => ep.materialId === m.id);
+        return e?.favorito === true;
+      }),
+    [bibliotecas, estadoPessoal],
+  );
+
+  // Converte Material → CollectionBook para o MiniBookCard existente.
+  const toCollectionBook = (m: Material): CollectionBook => ({
+    id: m.id,
+    title: m.titulo,
+    author: m.autorId ?? 'autor',
+    coverColor: m.coverColor ?? '#E8C98C',
+    accentColor: m.accentColor ?? '#8C7338',
+    description: '',
+    tags: [],
+    totalPages: m.totalPaginas,
+    readPages: m.paginasLidas,
+  });
+  const concluidosCollection = concluidos.map(toCollectionBook);
+  const favoritosCollection = favoritos.map(toCollectionBook);
+
+  // Navegação interna da biblioteca (qual sub-tela mostrar). Ainda não usa a
+  // pilha NavScreen completa (SPEC-034 D7) — fica para integração com o
+  // navigationEngine; aqui as views já são renderizadas no lugar da grade.
+  const [viewMode, setViewMode] = useState<
+    'grid' | 'eixo' | 'verTudo' | 'busca' | 'detalhe'
+  >('grid');
+  const [viewParams, setViewParams] = useState<{
+    eixoId?: string;
+    secaoId?: string;
+    secaoTitulo?: string;
+    secaoDescricao?: string;
+    materiais?: Material[];
+    materialId?: string;
+  }>({});
+
+  return (
+    <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-6 pb-1 relative">
+      {/* 1. Top Header Label & Title */}
+      <div className="flex items-center justify-between pt-1 px-1">
+        <div>
+          <span className="text-xs text-ceci-secondary font-medium lowercase tracking-wide flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5 text-ceci-brand-strong" /> biblioteca & repertório
+          </span>
+          <h1 className="font-display text-2xl sm:text-3xl text-ceci-primary font-bold mt-0.5 tracking-tight">
+            minhas coleções ♡
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setViewMode('busca')}
+            className="w-10 h-10 rounded-2xl bg-surface-default border border-ceci-border-default hover:border-ceci-border-brand flex items-center justify-center text-ceci-primary shadow-2xs tap-interactive active:scale-95 cursor-pointer"
+            title="busca global"
+          >
+            <Search className="w-5 h-5" />
+          </button>
+          <button
+            onClick={openTemple}
+            className="w-10 h-10 rounded-2xl bg-surface-default border border-ceci-border-default hover:border-ceci-border-brand flex items-center justify-center text-ceci-primary shadow-2xs tap-interactive active:scale-95 cursor-pointer"
+            title="templo de conhecimento"
+          >
+            <Landmark className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {viewMode === 'grid' ? (
+        <>
+          {/* ==================================================================== */}
+          {/* ZONA 1: MEUS MATERIAIS (acesso pessoal primeiro)                      */}
+          {/* ==================================================================== */}
+          <MyMaterialsSection
+            looseNotesCount={looseNotes.length}
+            readingBooks={readingBooks}
+            savedBooks={savedBooks}
+            concluidos={concluidosCollection}
+            favoritos={favoritosCollection}
+            readingProgress={readingProgress}
+            onOpenNotes={openNotesScreen}
+            onSelectBook={setSelectedBook}
+          />
+
+          {/* ==================================================================== */}
+          {/* ZONA 2: EXPLORAR O ACERVO                                             */}
+          {/* ==================================================================== */}
+          <ExploreSections
+            filter={filter}
+            savedBookIds={savedSet}
+            readingProgress={readingProgress}
+            selectedBook={selectedBook}
+            selectedArticle={selectedArticle}
+            onSelectBook={setSelectedBook}
+            onSelectArticle={setSelectedArticle}
+            onCloseBook={() => setSelectedBook(null)}
+            onCloseArticle={() => setSelectedArticle(null)}
+            openApproach={openApproach}
+            toggleSaveBook={toggleSaveBook}
+            updateReadingProgress={updateReadingProgress}
+          />
+          <LibraryModals
+            filter={filter}
+            availableTags={availableTags}
+            savedBookIds={savedSet}
+            readingProgress={readingProgress}
+            selectedBook={selectedBook}
+            selectedArticle={selectedArticle}
+            onCloseBook={() => setSelectedBook(null)}
+            onCloseArticle={() => setSelectedArticle(null)}
+            toggleSaveBook={toggleSaveBook}
+            updateReadingProgress={updateReadingProgress}
+          />
+        </>
+      ) : (
+        <div className="px-1 space-y-4">
+          <button
+            onClick={() => setViewMode('grid')}
+            className="text-xs text-ceci-secondary mb-1 hover:text-ceci-primary cursor-pointer flex items-center gap-1"
+          >
+            <ArrowLeft className="w-3 h-3" /> voltar
+          </button>
+          {viewMode === 'eixo' && viewParams.eixoId && (
+            <EixoView
+              eixoId={viewParams.eixoId}
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'verTudo' && viewParams.secaoId && (
+            <VerTudoView
+              secaoId={viewParams.secaoId}
+              titulo={viewParams.secaoTitulo ?? 'seleção'}
+              descricao={viewParams.secaoDescricao}
+              materiais={viewParams.materiais ?? []}
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'busca' && (
+            <BuscaView
+              onNavigate={(tipo, id) => {
+                if (tipo === 'detalheMaterial') {
+                  setViewParams({ materialId: id });
+                  setViewMode('detalhe');
+                }
+              }}
+            />
+          )}
+          {viewMode === 'detalhe' && viewParams.materialId && (
+            <DetalheMaterialView
+              materialId={viewParams.materialId}
+              onNavigate={() => setViewMode('grid')}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

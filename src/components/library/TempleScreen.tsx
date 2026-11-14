@@ -1,0 +1,152 @@
+﻿import React from 'react';
+import {
+  Landmark,
+  Network,
+  Lightbulb,
+  User,
+  Wrench,
+  GitCompare,
+  ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
+import { useMobileApp } from '@/context/mobileApp';
+import { MorphSource, Reveal, sharedTempleId } from '@/lib/motion';
+import type { TempleSection } from '../../types';
+
+interface TempleCard {
+  id: string;
+  title: string;
+  subtitle: string;
+  Icon: LucideIcon;
+  bubble: string;
+  titleHover: string;
+  chevron: string;
+  toast?: string;
+  action?: 'familias' | TempleSection;
+}
+
+const TEMPLE_CARDS: TempleCard[] = [
+  {
+    id: 'familias',
+    title: 'famílias',
+    subtitle: 'grupos de teorias e correntes que organizam o pensamento da psicologia',
+    Icon: Network,
+    bubble:
+      'bg-surface-rose border border-ceci-border-brand text-ceci-brand-strong group-hover:bg-ceci-brand-strong group-hover:text-ceci-on-brand',
+    titleHover: 'group-hover:text-ceci-brand-strong',
+    chevron: 'text-ceci-brand-strong',
+    action: 'familias',
+  },
+  {
+    id: 'conceitos',
+    title: 'conceitos',
+    subtitle: 'ideias-chave e definições que aparecem nas aulas e nas provas',
+    Icon: Lightbulb,
+    bubble:
+      'bg-surface-blue border border-ceci-border-academic text-ceci-academic-strong group-hover:bg-ceci-academic-strong group-hover:text-ceci-on-academic',
+    titleHover: 'group-hover:text-ceci-academic-strong',
+    chevron: 'text-ceci-academic-strong',
+    action: 'conceitos',
+  },
+  {
+    id: 'autores',
+    title: 'autores',
+    subtitle: 'pensadores e grandes obras de cada abordagem',
+    Icon: User,
+    bubble:
+      'bg-surface-muted border border-ceci-border-default text-ceci-tertiary group-hover:bg-beige-700 group-hover:text-beige-50',
+    titleHover: 'group-hover:text-ceci-tertiary',
+    chevron: 'text-ceci-tertiary',
+    action: 'autores',
+  },
+  {
+    id: 'tecnicas',
+    title: 'técnicas',
+    subtitle: 'instrumentos e recursos clínicos usados na prática',
+    Icon: Wrench,
+    bubble:
+      'bg-status-success-surface border border-ceci-border-academic text-status-success-strong group-hover:bg-status-success-strong group-hover:text-status-success-on',
+    titleHover: 'group-hover:text-status-success-strong',
+    chevron: 'text-status-success-strong',
+    action: 'tecnicas',
+  },
+  {
+    id: 'comparacoes',
+    title: 'comparações',
+    subtitle: 'lado a lado das abordagens para entender diferenças e pontes',
+    Icon: GitCompare,
+    bubble:
+      'bg-status-warning-surface border border-status-warning-border text-status-warning-strong group-hover:bg-status-warning-strong group-hover:text-status-warning-on',
+    titleHover: 'group-hover:text-status-warning-strong',
+    chevron: 'text-status-warning-strong',
+    action: 'comparacoes',
+  },
+];
+
+export const TempleScreen: React.FC = () => {
+  const { showToast, openFamilies, openTempleSection } = useMobileApp();
+
+  const handleCardClick = (card: TempleCard) => {
+    if (card.action === 'familias') openFamilies();
+    else if (
+      card.action === 'conceitos' ||
+      card.action === 'autores' ||
+      card.action === 'tecnicas' ||
+      card.action === 'comparacoes'
+    )
+      openTempleSection(card.action);
+    else showToast(card.toast ?? 'em breve ♡');
+  };
+
+  return (
+    <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto space-y-5 pb-1 relative">
+      {/* Screen Title Banner */}
+      <div className="bg-surface-default rounded-2xl p-5 border border-ceci-border-default space-y-1.5 shadow-2xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-10 h-10 rounded-2xl bg-surface-rose border border-ceci-border-brand flex items-center justify-center text-ceci-brand-strong shrink-0">
+            <Landmark className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold font-display text-ceci-primary leading-tight">
+              templo de conhecimento
+            </h1>
+            <p className="text-xs text-ceci-secondary">o mapa da sua jornada pela psicologia</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Temple Cards */}
+      <div className="space-y-3 px-1">
+        {TEMPLE_CARDS.map((card, i) => (
+          <Reveal key={card.id} index={i}>
+          <MorphSource id={sharedTempleId(card.id)}>
+          <button
+            onClick={() => handleCardClick(card)}
+            className="w-full text-left bg-surface-default rounded-xl p-4 border border-ceci-border-default hover:border-ceci-border-brand shadow-2xs card-lift press-card cursor-pointer group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3 min-w-0 pr-2">
+              <div
+                className={`w-11 h-11 rounded-2xl border flex items-center justify-center transition-colors shrink-0 ${card.bubble}`}
+              >
+                <card.Icon className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h2
+                  className={`text-sm font-bold text-ceci-primary font-display transition-colors ${card.titleHover}`}
+                >
+                  {card.title}
+                </h2>
+                <p className="text-xs text-ceci-secondary mt-0.5">{card.subtitle}</p>
+              </div>
+            </div>
+            <ChevronRight
+              className={`w-5 h-5 ${card.chevron} group-hover:translate-x-1 transition-transform shrink-0`}
+            />
+          </button>
+          </MorphSource>
+          </Reveal>
+        ))}
+      </div>
+    </div>
+  );
+};
