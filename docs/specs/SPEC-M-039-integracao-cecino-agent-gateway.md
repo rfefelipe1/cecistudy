@@ -152,6 +152,17 @@ modo nunca colide com o job anterior.
 
 Headers: `Authorization: Bearer <jwt>`, `Idempotency-Key: <operationId>`
 
+### CORS (obrigatório)
+
+O app chama o gateway de **outra origem** — navegador em dev (`http://localhost:3000`) e
+WebView do Capacitor (`capacitor://localhost`, `http://localhost`). O gateway responde
+`OPTIONS` com `204` e manda `access-control-allow-origin` em **toda** resposta, liberando
+`content-type`, `authorization`, `x-app-key` e `idempotency-key`.
+
+Sem isso o preflight morre, o `fetch` nunca sai e o job fica em `queued_local` — a pílula
+mostra "sincronizando…" para sempre. A origem não é a barreira de segurança: o token vai
+em `Authorization` (sem cookie) e a cota é protegida por JWT por aparelho + rate limit.
+
 Resposta `202 Accepted`:
 
 ```json
