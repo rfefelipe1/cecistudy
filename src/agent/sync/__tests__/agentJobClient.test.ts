@@ -2,10 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import type { AgentJob } from '@/types';
 import {
   enqueueJob,
+  fetchJob,
   flushQueue,
   jobFor,
   jobsToPoll,
   pollQueue,
+  submitJob,
   type GatewayConfig,
 } from '../agentJobClient';
 
@@ -34,6 +36,64 @@ function config(response: Response | Error): GatewayConfig {
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+
+describe('contrato HTTP', () => {
+  it('envia o job em /v1 com Idempotency-Key', async () => {
+    const calls: Array<{ url: string; init: RequestInit }> = [];
+    const fetchImpl = vi.fn(async (url: string, init: RequestInit) => {
+      calls.push({ url, init });
+      return json({ operationId: 'analyze:task-1:v1', status: 'queued_remote' }, 202);
+    });
+
+    const result = await submitJob(
+      { baseUrl: 'https://gw.example', token: 'tok', fetchImpl: fetchImpl as unknown as typeof fetch },
+      queued()[0],
+    );
+
+    expect(result).toEqual({
+      ok: true,
+      value: { operationId: 'analyze:task-1:v1', status: 'queued_remote' },
+    });
+    expect(calls[0].url).toBe('https://gw.example/v1/agent/jobs');
+    expect(calls[0].init.headers).toMatchObject({
+      authorization: 'Bearer tok',
+      'idempotency-key': 'analyze:task-1:v1',
+    });
+  });
+
+  it('renova o token no 401 e repete uma vez', async () => {
+    const responses = [
+      json({ error: 'sessão expirada' }, 401),
+      json({ operationId: 'op-1', status: 'processing' }),
+    ];
+    const fetchImpl = vi.fn(async (_url: string, _init: RequestInit) => responses.shift()!);
+    const renewToken = vi.fn(async () => 'tok-novo');
+
+    const result = await fetchJob(
+      {
+        baseUrl: 'https://gw.example',
+        token: 'tok-velho',
+        renewToken,
+        fetchImpl: fetchImpl as unknown as typeof fetch,
+      },
+      'op-1',
+    );
+
+    expect(renewToken).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({ ok: true, value: { operationId: 'op-1', status: 'processing' } });
+    expect(fetchImpl.mock.calls[1][1].headers).toMatchObject({
+      authorization: 'Bearer tok-novo',
+    });
+  });
+
+  it('401 sem renovação vira unauthorized', async () => {
+    const result = await fetchJob(
+      config(json({ error: 'nope' }, 401)),
+      'op-1',
+    );
+    expect(result).toEqual({ ok: false, error: { kind: 'unauthorized', message: 'sessão inválida' } });
+  });
+});
 
 describe('fila local', () => {
   it('é idempotente por operationId', () => {

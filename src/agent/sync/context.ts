@@ -9,7 +9,7 @@
 // O que foi cortado/omitido volta em `truncated` para o `context-snapshot.json`
 // do gateway. Contexto sem trilha é contexto que ninguém audita.
 
-import type { Task } from '@/types';
+import type { AgentConversation, AgentMessage, Task } from '@/types';
 
 /**
  * Limite do payload de contexto. 4 KiB cabe folgado no orçamento de contexto do
@@ -120,4 +120,63 @@ export function buildMinimalContext(input: MinimalContextInput): MinimalContextR
   }
 
   return { ok: true, context, bytes, truncated };
+}
+
+// ---------------------------------------------------------------------------
+// Histórico da conversa
+// ---------------------------------------------------------------------------
+//
+// O gateway é stateless: sem histórico cada job recomeçaria a conversa. Mandar
+// as últimas rodadas é o que faz o agente não repetir pergunta já respondida.
+// Mesmas regras do contexto: allowlist de papel, teto de rodadas e de tamanho —
+// 8 × 400 caracteres fica muito abaixo do `MAX_CONTEXT_BYTES`, então o teto de
+// bytes do contexto continua valendo para ele.
+
+export const MAX_HISTORY_TURNS = 8;
+const MAX_HISTORY_CHARS = 400;
+
+export interface HistoryTurn {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+function answerText(message: AgentMessage): string {
+  const kind = message.question?.answerKind;
+  if (!kind) return '';
+  if (kind === 'texto') return message.question?.answer ?? '';
+  return kind === 'nao_sei' ? 'não sei' : 'depois';
+}
+
+function renderTurn(message: AgentMessage): string {
+  const answer = answerText(message);
+  const base = clip(message.content, MAX_HISTORY_CHARS);
+  return answer ? clip(`${base} (ela respondeu: ${answer})`, MAX_HISTORY_CHARS) : base;
+}
+
+/**
+ * Últimas rodadas da conversa, da mais antiga para a mais nova.
+ *
+ * `currentMessage` é o texto que vai em `payload.message`: se ele já foi
+ * apendado na conversa (o caminho do `send`), é descartado daqui para não
+ * aparecer duas vezes no prompt.
+ */
+export function buildHistory(
+  conversation: Pick<AgentConversation, 'messages'> | undefined,
+  currentMessage?: string,
+): HistoryTurn[] {
+  const messages = (conversation?.messages ?? []).filter(
+    (message) => message.role === 'user' || message.role === 'assistant',
+  );
+  const current = currentMessage?.trim();
+  const last = messages[messages.length - 1];
+  const withoutCurrent =
+    current && last?.role === 'user' && last.content.trim() === current ? messages.slice(0, -1) : messages;
+
+  return withoutCurrent
+    .slice(-MAX_HISTORY_TURNS)
+    .map((message) => ({
+      role: (message.role === 'user' ? 'user' : 'assistant') as HistoryTurn['role'],
+      content: renderTurn(message),
+    }))
+    .filter((turn) => turn.content);
 }

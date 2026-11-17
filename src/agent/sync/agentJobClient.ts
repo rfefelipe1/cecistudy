@@ -1,11 +1,14 @@
-// Contrato de consumo do Agent Gateway no mobile (SPEC-037 T012 / D11).
+// Contrato de consumo do Agent Gateway no mobile (SPEC-M-039 T001).
 //
-// Funções puras sobre uma fila local: nenhuma lê React, nenhuma guarda token no
-// bundle (o token chega por argumento, de config de runtime) e nenhuma lança —
-// erro é valor, como no workspace.
+// Funções puras sobre uma fila local: nenhuma lê React, nenhuma assina token
+// (o JWT chega por argumento, de `session.ts`) e nenhuma lança — erro é valor,
+// como no workspace.
 //
-// A regra da fila: **idempotência por `operationId`**. Reenviar o mesmo job não
-// cria outro no gateway; o gateway devolve o estado que já tinha.
+// Duas regras estruturais:
+//   - **idempotência por `operationId`**: o mesmo valor vai no header
+//     `Idempotency-Key`, então reenviar não cria outro job no gateway;
+//   - **renovação em 401**: se o JWT venceu, `renewToken` é chamado uma vez e a
+//     requisição é repetida. Sem isso, a sessão de 12 h morreria em silêncio.
 
 import type { AgentJob, AgentJobStatus, AgentMessageKind, AgentQuestion } from '@/types';
 
@@ -31,11 +34,10 @@ export type GatewayResult<T> = { ok: true; value: T } | { ok: false; error: Gate
 export interface GatewayConfig {
   /** Ex.: `https://gateway.exemplo` — sem barra final. */
   baseUrl: string;
-  /**
-   * Bearer de dispositivo. Vem de configuração de runtime
-   * (`VITE_AGENT_GATEWAY_TOKEN` / pareamento), nunca de constante no código.
-   */
+  /** JWT de sessão, emitido pelo gateway (`createGatewaySession`). */
   token: string;
+  /** Renova o JWT quando ele vence (401). Devolve `null` se não der. */
+  renewToken?: () => Promise<string | null>;
   /** `fetch` injetado — teste sem rede. */
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
@@ -130,28 +132,31 @@ function httpError(status: number): GatewayError {
   return { kind: 'server', message: `resposta inesperada (${status})` };
 }
 
-async function call<T>(
+async function request(
   config: GatewayConfig,
   path: string,
-  init: { method: 'GET' | 'POST'; body?: unknown },
-): Promise<GatewayResult<T>> {
+  init: { method: 'GET' | 'POST'; body?: unknown; idempotencyKey?: string },
+  token: string,
+): Promise<{ ok: true; response: Response } | { ok: false; error: GatewayError }> {
   const fetchImpl = config.fetchImpl ?? globalThis.fetch;
   if (!fetchImpl) return { ok: false, error: { kind: 'network', message: 'sem fetch disponível' } };
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), config.timeoutMs ?? DEFAULT_TIMEOUT_MS);
   try {
+    const headers: Record<string, string> = {
+      authorization: `Bearer ${token}`,
+      'content-type': 'application/json',
+    };
+    if (init.idempotencyKey) headers['idempotency-key'] = init.idempotencyKey;
+
     const response = await fetchImpl(`${config.baseUrl.replace(/\/$/, '')}${path}`, {
       method: init.method,
-      headers: {
-        authorization: `Bearer ${config.token}`,
-        'content-type': 'application/json',
-      },
+      headers,
       body: init.body === undefined ? undefined : JSON.stringify(init.body),
       signal: controller.signal,
     });
-    if (!response.ok) return { ok: false, error: httpError(response.status) };
-    return { ok: true, value: (await response.json()) as T };
+    return { ok: true, response };
   } catch (error) {
     const aborted = error instanceof Error && error.name === 'AbortError';
     return {
@@ -165,12 +170,36 @@ async function call<T>(
   }
 }
 
+async function call<T>(
+  config: GatewayConfig,
+  path: string,
+  init: { method: 'GET' | 'POST'; body?: unknown; idempotencyKey?: string },
+): Promise<GatewayResult<T>> {
+  const first = await request(config, path, init, config.token);
+  // `in` em vez de `first.ok`: o tsconfig roda sem `strict`, e ali o
+  // discriminante booleano não estreita o tipo.
+  if (!('response' in first)) return first;
+
+  let response = first.response;
+  if (response.status === 401 && config.renewToken) {
+    const fresh = await config.renewToken();
+    if (!fresh) return { ok: false, error: httpError(401) };
+    const retry = await request(config, path, init, fresh);
+    if (!('response' in retry)) return retry;
+    response = retry.response;
+  }
+
+  if (!response.ok) return { ok: false, error: httpError(response.status) };
+  return { ok: true, value: (await response.json()) as T };
+}
+
 export function submitJob(
   config: GatewayConfig,
   job: AgentJob,
 ): Promise<GatewayResult<{ operationId: string; status: AgentJobStatus }>> {
-  return call(config, '/jobs', {
+  return call(config, '/v1/agent/jobs', {
     method: 'POST',
+    idempotencyKey: job.operationId,
     body: {
       operationId: job.operationId,
       taskId: job.taskId,
@@ -181,7 +210,7 @@ export function submitJob(
 }
 
 export function fetchJob(config: GatewayConfig, operationId: string): Promise<GatewayResult<RemoteJob>> {
-  return call(config, `/jobs/${encodeURIComponent(operationId)}`, { method: 'GET' });
+  return call(config, `/v1/agent/jobs/${encodeURIComponent(operationId)}`, { method: 'GET' });
 }
 
 /** Erros que **não** melhoram tentando de novo sozinho. */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_CONTEXT_BYTES, buildMinimalContext } from '../context';
+import type { AgentMessage } from '@/types';
+import { MAX_CONTEXT_BYTES, MAX_HISTORY_TURNS, buildHistory, buildMinimalContext } from '../context';
 
 const base = {
   task: { title: 'Ler o capítulo 3 de Skinner', category: 'leitura' as const, priority: 'alta' as const },
@@ -59,5 +60,72 @@ describe('contexto mínimo', () => {
     if ('context' in result) return;
     expect(result.error.code).toBe('context_too_large');
     expect(MAX_CONTEXT_BYTES).toBe(4 * 1024);
+  });
+});
+
+describe('histórico da conversa', () => {
+  const message = (patch: Partial<AgentMessage> & Pick<AgentMessage, 'role' | 'content'>): AgentMessage => ({
+    id: `m-${Math.random().toString(36).slice(2, 7)}`,
+    kind: 'text',
+    createdAt: '2026-11-14T12:00:00.000Z',
+    ...patch,
+  });
+
+  it('descarta a mensagem atual, que já viaja em payload.message', () => {
+    const history = buildHistory(
+      {
+        messages: [
+          message({ role: 'user', content: 'preciso entregar o recorte' }),
+          message({ role: 'assistant', content: 'qual o prazo?' }),
+          message({ role: 'user', content: 'sexta' }),
+        ],
+      },
+      'sexta',
+    );
+
+    expect(history.map((turn) => turn.content)).toEqual([
+      'preciso entregar o recorte',
+      'qual o prazo?',
+    ]);
+  });
+
+  it('leva só os dois papéis da conversa', () => {
+    const history = buildHistory({
+      messages: [
+        message({ role: 'system', content: 'ignorar' }),
+        message({ role: 'tool', content: 'ignorar' }),
+        message({ role: 'assistant', content: 'oi' }),
+      ],
+    });
+
+    expect(history).toHaveLength(1);
+    expect(history[0]).toEqual({ role: 'assistant', content: 'oi' });
+  });
+
+  it('mostra a resposta da usuária junto da pergunta', () => {
+    const history = buildHistory({
+      messages: [
+        message({
+          role: 'assistant',
+          kind: 'question',
+          content: 'qual o prazo?',
+          question: { id: 'q1', text: 'qual o prazo?', answerKind: 'nao_sei' },
+        }),
+      ],
+    });
+
+    expect(history[0]?.content).toContain('não sei');
+  });
+
+  it('corta nas rodadas mais novas', () => {
+    const messages = Array.from({ length: 20 }, (_, index) =>
+      message({ role: index % 2 === 0 ? 'user' : 'assistant', content: `fala ${index}` }),
+    );
+
+    const history = buildHistory({ messages }, 'ignorada');
+
+    expect(history).toHaveLength(MAX_HISTORY_TURNS);
+    expect(history[history.length - 1]?.content).toBe('fala 19');
+    expect(history.some((turn) => turn.content === 'fala 11')).toBe(false);
   });
 });

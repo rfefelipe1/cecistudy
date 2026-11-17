@@ -5,10 +5,11 @@
 // para cada um.
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, Send } from 'lucide-react';
+import type { AgentMessage, AgentQuestion } from '@/types';
 import { useDataClientCourses } from '@/context/DataClientProvider';
 import { useMobileApp } from '@/context/mobileApp';
 import { useNavValue } from '@/context/shellNavContexts';
-import { CELEBRACAO, DICA, VAZIO, frase } from '@/lib/voice';
+import { CELEBRACAO, DICA, VAZIO, erro, frase } from '@/lib/voice';
 import { useCecinho } from '../useCecinho';
 import { planEffects } from '../domain/plan';
 import { CecinhoArtifactList } from './CecinhoArtifactList';
@@ -45,9 +46,30 @@ export const CecinhoTaskChat: React.FC<CecinhoTaskChatProps> = ({ taskId }) => {
   const title = task?.title ?? taskId;
 
   const send = () => {
-    if (!draft.trim() || !assisted) return;
-    cecinho.append(taskId, { role: 'user', kind: 'text', content: draft.trim() });
+    const text = draft.trim();
+    if (!text || !assisted || cecinho.asking) return;
+    cecinho.append(taskId, { role: 'user', kind: 'text', content: text });
     setDraft('');
+    // A resposta chega por polling; enquanto isso o rodapé mostra "sincronizando…".
+    void cecinho.ask(taskId, text).then((ok) => {
+      if (!ok) showToast(erro('acaoFalhou'));
+    });
+  };
+
+  // Responder não encerra a rodada: a resposta volta ao gateway como a fala
+  // seguinte da conversa, e o Cecinho continua dali (senão cada pergunta
+  // respondida ficaria sem continuação).
+  const reply = (
+    target: AgentMessage,
+    answer: string,
+    kind: NonNullable<AgentQuestion['answerKind']>,
+  ) => {
+    cecinho.answer(taskId, target.question?.id ?? '', answer, kind);
+    if (cecinho.asking) return;
+    const text = kind === 'texto' ? answer.trim() : kind === 'nao_sei' ? 'não sei' : 'depois';
+    void cecinho.ask(taskId, text).then((ok) => {
+      if (!ok) showToast(erro('acaoFalhou'));
+    });
   };
 
   const confirmPlan = () => {
@@ -104,9 +126,7 @@ export const CecinhoTaskChat: React.FC<CecinhoTaskChatProps> = ({ taskId }) => {
                 <CecinhoMessage
                   key={message.id}
                   message={message}
-                  onAnswer={(target, answer, kind) =>
-                    cecinho.answer(taskId, target.question?.id ?? '', answer, kind)
-                  }
+                  onAnswer={reply}
                   onOpenArtifact={() => undefined}
                 />
               ))
@@ -130,13 +150,19 @@ export const CecinhoTaskChat: React.FC<CecinhoTaskChatProps> = ({ taskId }) => {
             <button
               type="button"
               onClick={send}
-              disabled={!draft.trim()}
+              disabled={!draft.trim() || cecinho.asking}
               aria-label="enviar mensagem"
               className="w-11 h-11 shrink-0 rounded-xl bg-ceci-brand-strong text-ceci-on-brand flex items-center justify-center disabled:opacity-40 cursor-pointer"
             >
               <Send className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
+
+          {cecinho.asking && (
+            <p className="text-[11px] text-ceci-secondary px-1" role="status">
+              {frase(DICA, 'cecinhoStatusSincronizando')}
+            </p>
+          )}
 
           {plan ? (
             <CecinhoPlanReview
