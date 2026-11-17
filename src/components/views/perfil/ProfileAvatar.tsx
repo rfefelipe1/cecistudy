@@ -14,7 +14,9 @@ interface ProfileAvatarProps {
   /** Primeira letra (ou `C`) — já derivada no view model. */
   initials: string;
   onPickPhoto: () => void;
-  onRemovePhoto: () => void;
+  /** Abre o menu de ações da foto (trocar / remover) ao pressionar a imagem. */
+  onPress?: () => void;
+  onRemovePhoto?: () => void;
   size?: 'md' | 'lg';
 }
 
@@ -29,10 +31,11 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   name,
   initials,
   onPickPhoto,
+  onPress,
   onRemovePhoto,
   size = 'lg',
 }) => (
-  <div className="relative shrink-0">
+  <div className="relative shrink-0" onClick={onPress}>
     <div
       className={cn(
         'bg-surface-rose border-2 border-ceci-border-brand flex items-center justify-center font-display font-bold text-ceci-primary shadow-2xs overflow-hidden',
@@ -51,7 +54,10 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
         ganham área sem o avatar virar um alvo enorme. */}
     <button
       type="button"
-      onClick={onPickPhoto}
+      onClick={(e) => {
+        e.stopPropagation();
+        onPickPhoto();
+      }}
       aria-label="trocar foto de perfil"
       title="trocar foto"
       className="touch-target absolute -bottom-1 -right-1 cursor-pointer active:scale-95"
@@ -61,10 +67,13 @@ const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       </span>
     </button>
 
-    {photoUrl ? (
+    {photoUrl && onRemovePhoto ? (
       <button
         type="button"
-        onClick={onRemovePhoto}
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemovePhoto();
+        }}
         aria-label="remover foto de perfil"
         title="remover foto"
         className="touch-target absolute -top-1 -right-1 cursor-pointer active:scale-95"

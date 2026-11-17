@@ -160,6 +160,10 @@ function makeSnapshot(overrides: Partial<PersistedStateSnapshot> = {}): Persiste
         updatedAt: '2026-08-01T00:00:00.000Z',
       },
     ],
+    assistedTasks: [],
+    agentConversations: [],
+    agentPlans: [],
+    agentArtifacts: [],
     syncIndex: { stamps: {}, records: {}, tombstones: {} },
     ...overrides,
   };

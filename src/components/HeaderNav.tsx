@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Flame, Shield } from 'lucide-react';
 import { UserProfile, DynamicHeaderConfig } from '../types';
 import { CourseIcon } from './ui/CourseIcon';
 import { HeaderActionMenu } from './ui/HeaderActionMenu';
@@ -10,6 +10,7 @@ import { resolveScrolledState } from '../lib/headerScrollState';
 import { useMotionProfile } from '../components/motion/MotionProfileProvider';
 import { useDataClientApp } from '../context/DataClientProvider';
 import { useActiveTerm } from '../lib/termScope';
+import { useNavValue, useStudyActions } from '@/context/shellNavContexts';
 
 interface HeaderNavProps {
   profile: UserProfile;
@@ -31,7 +32,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
   // limiar repetidamente com a tela parada. A zona morta entre os dois
   // limiares garante que, parando em qualquer ponto, o estado não mude.
   const [scrolled, setScrolled] = useState(() => resolveScrolledState(false, window.scrollY));
+  // Durante a animação de altura o conteúdo é cortado; em repouso fica visível
+  // para o menu de ações (que abre abaixo do header) não ser recortado.
+  const [chromeSettled, setChromeSettled] = useState(true);
   const motionProfile = useMotionProfile();
+  const { openStreak } = useNavValue();
+  const { streakStats } = useStudyActions();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,32 +64,56 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
   return (
     <motion.header
-      initial={motionProfile.reduced ? { opacity: 0 } : { opacity: 0, y: -10 }}
+      initial={
+        motionProfile.reduced
+          ? { opacity: 0, height: 0 }
+          : { opacity: 0, y: -10, height: 0 }
+      }
       animate={
         motionProfile.reduced
-          ? { opacity: 1, transition: { duration: motionProfile.d.micro, ease: EASE.standard } }
+          ? {
+              opacity: 1,
+              height: 'auto',
+              transition: { duration: motionProfile.d.micro, ease: EASE.standard },
+            }
           : {
               opacity: 1,
               y: 0,
+              height: 'auto',
               transition: { duration: motionProfile.d.navBar, ease: EASE.standard },
             }
       }
       exit={
         motionProfile.reduced
-          ? { opacity: 0, transition: { duration: motionProfile.d.micro, ease: EASE.exit } }
+          ? {
+              opacity: 0,
+              height: 0,
+              transition: { duration: motionProfile.d.micro, ease: EASE.exit },
+            }
           : {
               opacity: 0,
               y: -10,
+              height: 0,
               transition: { duration: motionProfile.d.navBar, ease: EASE.exit },
             }
       }
-      className={`sticky top-0 z-40 liquid-glass-nav border-b border-b-[color:var(--color-glass-hairline)] px-3.5 sm:px-4 transition-[padding,box-shadow,background-color,border-color] duration-300 ease-in-out ${
-        scrolled
-          ? 'pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2 shadow-sm'
-          : 'pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:pt-[calc(0.875rem+env(safe-area-inset-top,0px))] pb-3 sm:pb-3.5'
+      onAnimationStart={() => setChromeSettled(false)}
+      onAnimationComplete={() => setChromeSettled(true)}
+      style={{ overflow: chromeSettled ? 'visible' : 'hidden' }}
+      // Sem padding no elemento animado: `height: 0` colapsa de verdade (com
+      // padding, a altura mínima fica presa no padding) e a tela de baixo sobe
+      // junto, em vez de pular quando o header desmonta.
+      className={`sticky top-0 z-40 liquid-glass-nav border-b border-b-[color:var(--color-glass-hairline)] transition-[box-shadow,background-color,border-color] duration-300 ease-in-out ${
+        scrolled ? 'shadow-sm' : ''
       }`}
     >
-      <div className="max-w-md sm:max-w-xl lg:max-w-none mx-auto flex items-center justify-between gap-2 sm:gap-3">
+      <div
+        className={`max-w-md sm:max-w-xl lg:max-w-none mx-auto px-3.5 sm:px-4 flex items-center justify-between gap-2 sm:gap-3 transition-[padding] duration-300 ease-in-out ${
+          scrolled
+            ? 'pt-[calc(0.5rem+env(safe-area-inset-top,0px))] pb-2'
+            : 'pt-[calc(0.75rem+env(safe-area-inset-top,0px))] sm:pt-[calc(0.875rem+env(safe-area-inset-top,0px))] pb-3 sm:pb-3.5'
+        }`}
+      >
         {/* Troca concorrente (popLayout): o header sai e entra JUNTOS, em tempo com o slide
             das telas — antes era mode="wait" (sequencial), que piscava fora de sincronia. */}
         <AnimatePresence mode="popLayout" initial={false} custom={direction}>
@@ -102,7 +132,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             >
               {/* Left Section: Back Button + Icon + Title & Code */}
               <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                {headerConfig.onBack && (
+                {headerConfig.onBack && !headerConfig.hideBackButton && (
                   <button
                     onClick={headerConfig.onBack}
                     className="w-9 h-9 rounded-2xl bg-surface-default border border-ceci-border-default hover:border-ceci-border-brand flex items-center justify-center text-ceci-primary shadow-2xs hover:bg-surface-rose tap-interactive cursor-pointer shrink-0 active:scale-95"
@@ -231,6 +261,41 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
                   )}
                 </div>
               </div>
+
+              {/* Badge de ofensiva — extremo direito do header */}
+              <button
+                onClick={openStreak}
+                aria-label="ver sua ofensiva de estudos"
+                className={`w-12 h-10 rounded-full flex items-center justify-center gap-1 shrink-0 tap-interactive cursor-pointer active:scale-95 shadow-2xs border transition-colors duration-200 ${
+                  streakStats.current > 0 && streakStats.alive
+                    ? 'bg-surface-rose border-ceci-border-brand'
+                    : 'bg-surface-muted border-ceci-border-subtle'
+                }`}
+                title="ver sua ofensiva de estudos"
+              >
+                <Flame
+                  className={`w-4 h-4 ${
+                    streakStats.current > 0 && streakStats.alive
+                      ? 'text-ceci-brand-strong'
+                      : 'text-ceci-secondary'
+                  }`}
+                />
+                <span
+                  className={`text-[10px] font-bold ${
+                    streakStats.current > 0 && streakStats.alive
+                      ? 'text-ceci-brand-strong'
+                      : 'text-ceci-secondary'
+                  }`}
+                >
+                  {streakStats.current}
+                </span>
+                {streakStats.alive && streakStats.current > 0 && !streakStats.protectionUsed && (
+                  <Shield
+                    className="w-3.5 h-3.5 text-ceci-brand-strong"
+                    aria-label="proteção de 1 dia disponível"
+                  />
+                )}
+              </button>
             </motion.div>
           )}
         </AnimatePresence>

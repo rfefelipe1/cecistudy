@@ -48,13 +48,16 @@ const KNOWN = [
   'src/components/ui/floating-action-menu.tsx',
   'src/components/ui/Modal.tsx',
   'src/components/ui/ProgressBar.tsx',
+  'src/components/ui/reorder-list.tsx',
   'src/components/ui/SegmentedControl.tsx',
+  // wheel-picker.tsx: importa `framer-motion` direto (animação física do wheel).
+  // Migrado de `motion/react` para `framer-motion` (gate de segundo runtime).
+  // Dívida pré-existente.
+  'src/components/ui/wheel-picker.tsx',
   'src/components/ui/SwipeableTabPanel.tsx',
   'src/components/ui/Toast.tsx',
   'src/components/ui/toggle-switch-glass.tsx',
-  'src/components/views/EstudosView.tsx',
   'src/components/views/home/AttentionSection.tsx',
-  'src/components/views/home/QuickActions.tsx',
   'src/components/views/home/rows.tsx',
   'src/components/views/OnboardingScreen.tsx',
   'src/components/views/StreakView.tsx',

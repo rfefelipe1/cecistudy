@@ -826,7 +826,15 @@ describe('TccView — lembretes do tcc (SPEC-024 D14/D16/D17)', () => {
     // jsdom não é nativo: o aviso de que só toca no app instalado aparece.
     expect(screen.getByText(/só no app instalado/)).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText('horário do aviso'), { target: { value: '07:30' } });
+    // O seletor virou wheel 3D (TimePickerSheet): abre, escolhe e confirma.
+    fireEvent.click(screen.getByRole('button', { name: '--:--' }));
+    const hora = await screen.findByRole('spinbutton', { name: 'Hora' });
+    fireEvent.keyDown(hora, { key: 'Home' });
+    for (let i = 0; i < 7; i += 1) fireEvent.keyDown(hora, { key: 'ArrowUp' });
+    const minuto = screen.getByRole('spinbutton', { name: 'Minuto' });
+    fireEvent.keyDown(minuto, { key: 'Home' });
+    for (let i = 0; i < 6; i += 1) fireEvent.keyDown(minuto, { key: 'PageUp' });
+    fireEvent.click(screen.getByRole('button', { name: /definir horário/i }));
     await waitFor(() => expect(storedPrefs().time).toBe('07:30'));
   });
 });

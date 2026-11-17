@@ -28,10 +28,11 @@ const KNOWN_INLINE: Record<string, number[]> = {
   // `data-phase` entraram acima dos literais — os números de linha do
   // ratchet acompanham (os literais em si não mudaram; o gate é o mesmo).
   'src/components/ui/floating-action-menu.tsx': [71, 72, 74, 75, 88, 99],
-  // A curva do `ease` foi tokenizada (`IOS_EASE`): o `duration` continua
-  // literal porque 0.18s não é `BASE_D.navBar` (0.24) nem `BASE_D.micro`
-  // (0.12) — trocar de token aqui mudaria a entrada da barra sem medição.
-  'src/components/ui/bottom-nav-bar.tsx': [32, 64, 87, 88],
+  // A curva do `ease` foi tokenizada (`IOS_EASE`). Os `duration`/springs
+  // continuam literais porque nenhum token bate (0.18 ≠ navBar 0.24 ≠ micro
+  // 0.12; as duas molas da pílula/rótulo não são `BASE_T.*`). O arrasto na
+  // navbar reescreveu o componente sem mudar essas animações — só as linhas.
+  'src/components/ui/bottom-nav-bar.tsx': [132, 174, 197, 198],
   'src/components/courses/detail/CourseCreateMenu.tsx': [78, 117],
   'src/components/flashcards/Card3D.tsx': [8, 102],
   'src/components/flashcards/CardBaúEnvelope.tsx': [34, 52],
@@ -51,7 +52,8 @@ const KNOWN_INLINE: Record<string, number[]> = {
   // os tokens do sistema — as duas entradas do `CourseDetailView` saíram do
   // ratchet porque o literal deixou de existir lá (ratchet só encolhe).
   'src/components/views/home/rows.tsx': [31],
-  'src/components/views/StreakView.tsx': [37, 129],
+  // StreakView saiu do ratchet: os literais de streak foram substituídos por
+  // tokens do sistema (ratchet só encolhe).
   // SPEC-M-028 F4: o seletor de grupos passou a usar `Reveal` e perdeu o
   // `motion.button` de entrada — o literal saiu junto (ratchet só encolhe).
   // SPEC-018 F5: os imports da voz entraram no topo do arquivo e os literais
@@ -68,9 +70,18 @@ const KNOWN_INLINE: Record<string, number[]> = {
   // do ratchet acompanha (o literal em si não mudou; o gate é o mesmo).
   'src/components/ui/ProgressBar.tsx': [36],
   'src/components/ui/SegmentedControl.tsx': [72],
+  // reorder-list.tsx: shim de compat (comentário nas linhas 8-10), CELL e INSTANT
+  // são constantes de transição internas, não animação de usuário. Dívida pré-existente.
+  'src/components/ui/reorder-list.tsx': [20, 21],
+  // wheel-picker.tsx: animações de física do wheel (goTo e flick) — literais de
+  // spring/duration próprios da biblioteca adaptada. Dívida pré-existente.
+  'src/components/ui/wheel-picker.tsx': [283, 388, 389],
   'src/components/views/NoteTransformWizard.tsx': [57],
   'src/components/wizards/FlashcardWizard.tsx': [197],
   'src/components/wizards/note/fieldsFor.tsx': [173],
+  // ThinkingLoader: as duas linhas são o CSS de `prefers-reduced-motion`
+  // (animation/transition-duration: 1ms), acessibilidade — não animação de usuário.
+  'src/agent/ui/ThinkingLoader.tsx': [175, 176],
 };
 
 // `duration: 0.3` | `stiffness: 400` | `damping: 36` | `mass: 0.9`

@@ -75,6 +75,28 @@ function installWebStorage(): void {
 
 installWebStorage();
 
+/**
+ * `matchMedia` não existe no jsdom. Vaul (drawer), `celebrate` e o perfil de
+ * movimento leem `window.matchMedia`; sem ele o componente quebra no mount.
+ * Quem precisa de outra resposta faz `vi.stubGlobal` por cima.
+ */
+if (typeof window !== 'undefined' && typeof window.matchMedia !== 'function') {
+  Object.defineProperty(window, 'matchMedia', {
+    configurable: true,
+    writable: true,
+    value: (query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => {},
+      removeListener: () => {},
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      dispatchEvent: () => false,
+    }),
+  });
+}
+
 afterEach(() => {
   cleanup();
 });

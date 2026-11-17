@@ -34,10 +34,10 @@ beforeEach(() => {
 
 describe('preloadScreenChunks (lista explícita, spec §3.1)', () => {
   it('só pede as chaves pedidas — nunca a varredura global', () => {
-    preloadScreenChunks(['home', 'estudos']);
+    preloadScreenChunks(['home', 'clinica']);
     expect(requestPrefetch).toHaveBeenCalledTimes(2);
     expect(requestPrefetch).toHaveBeenCalledWith('screen:home', expect.any(Function));
-    expect(requestPrefetch).toHaveBeenCalledWith('screen:estudos', expect.any(Function));
+    expect(requestPrefetch).toHaveBeenCalledWith('screen:clinica', expect.any(Function));
   });
 
   it('uma chave pedida = um pedido (2 de 27 loaders, não todos)', () => {

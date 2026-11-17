@@ -77,6 +77,10 @@ export function slideBaseKeyOf(screen: NavScreen, base: NavScreen | undefined): 
       return 'tcc';
     case 'calendar':
       return 'calendar';
+    case 'cecinhoCenter':
+      return 'cecinhoCenter';
+    case 'cecinhoTask':
+      return `cecinhoTask-${screen.taskId}`;
     case 'stickers':
       return 'stickers';
     case 'sync':

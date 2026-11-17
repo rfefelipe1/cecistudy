@@ -13,6 +13,7 @@ import { TagField } from '../ui/TagField';
 import { CourseSelect } from './CourseSelect';
 import { PRIORITIES, TASK_CATEGORIES } from './note/constants';
 import { CELEBRACAO, VAZIO, erro, frase } from '../../lib/voice';
+import { useCecinho } from '@/agent/useCecinho';
 
 interface TaskExamWizardProps {
   /** Quando definido, pula a escolha entre tarefa e prova (vindo do picker). */
@@ -28,6 +29,8 @@ interface TaskExamValues {
   taskDueDate: string;
   taskPriority: Task['priority'];
   addToAgenda: boolean;
+  /** Opcional (SPEC-037 D2): chama o Cecinho depois de guardar a tarefa. */
+  askCecinho: boolean;
   examTitle: string;
   examDate: string;
   examWeight: string;
@@ -48,6 +51,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
     closeWizard,
     showToast,
   } = useMobileApp();
+  const cecinho = useCecinho();
   const editingTask = editing?.kind === 'task' ? tasks.find((t) => t.id === editing.id) : undefined;
   const editingExam = editing?.kind === 'exam' ? exams.find((e) => e.id === editing.id) : undefined;
   const initialKind: 'task' | 'exam' | null =
@@ -64,6 +68,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
       taskDueDate: editingTask?.dueDate ?? wizardDate ?? '',
       taskPriority: editingTask?.priority ?? 'media',
       addToAgenda: false,
+      askCecinho: false,
       examTitle: editingExam?.title ?? '',
       examDate: editingExam?.date ?? wizardDate ?? '',
       examWeight: editingExam?.weight ?? '1,0',
@@ -78,6 +83,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
     taskDueDate,
     taskPriority,
     addToAgenda,
+    askCecinho,
     examTitle,
     examDate,
     examWeight,
@@ -97,6 +103,23 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
         checked={addToAgenda}
         onChange={() => patch({ addToAgenda: !addToAgenda })}
         label="adicionar ao Google Agenda"
+      />
+    </div>
+  );
+
+  /** D2: a ajuda é opcional e não aumenta os campos obrigatórios. */
+  const cecinhoRow = (
+    <div className="flex items-center justify-between gap-3 rounded-2xl border border-ceci-border-default bg-surface-default px-4 py-3">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-ceci-primary">quero que o cecinho me ajude</p>
+        <p className="text-[11px] text-ceci-secondary">
+          opcional — ele pergunta antes de fazer qualquer coisa
+        </p>
+      </div>
+      <Toggle
+        checked={askCecinho}
+        onChange={() => patch({ askCecinho: !askCecinho })}
+        label="pedir ajuda ao cecinho"
       />
     </div>
   );
@@ -227,7 +250,12 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
               { label: 'prioridade', value: taskPriority },
             ]}
           />
-          {!editing && agendaRow}
+          {!editing && (
+            <>
+              {cecinhoRow}
+              {agendaRow}
+            </>
+          )}
         </div>
       ),
     },
@@ -371,8 +399,9 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
       return;
     }
     if (kind === 'task') {
+      const taskId = 't-' + Date.now();
       handleAddTask({
-        id: 't-' + Date.now(),
+        id: taskId,
         title: taskTitle.trim(),
         disciplineId: courseId,
         category: taskCategory,
@@ -380,6 +409,7 @@ export const TaskExamWizard: React.FC<TaskExamWizardProps> = ({ preset, editing 
         completed: false,
         priority: taskPriority,
       });
+      if (askCecinho) cecinho.activate(taskId);
       if (addToAgenda && taskDueDate) {
         const ok = await createTaskCalendarEvent(taskTitle.trim(), courseName, taskDueDate);
         if (ok) {

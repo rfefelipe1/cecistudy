@@ -63,6 +63,7 @@ import type {
   AttendanceStatus,
 } from '../types';
 import type { StreakStats, WeekDayCell } from '../lib/streak';
+import type { MemoryCategory, SemesterMemory } from '../lib/semesterMemory';
 import type { DataClient } from '../lib/dataClient';
 import type { SyncPreview } from '../lib/sync/engine';
 import type { SyncManifest } from '../lib/sync/provider';
@@ -154,7 +155,7 @@ export interface AppContextValue {
   completeOnboarding: (profile: Partial<UserProfile>) => void;
   resetApp: () => void;
   exportData: () => void;
-  importData: (json: string) => void;
+  importData: (source: string | Blob | ArrayBuffer) => void;
 
   // streak de estudos
   streakData: StreakData;
@@ -322,6 +323,13 @@ export interface AppContextValue {
   calendarDay: string | undefined;
   openCalendar: (day?: string) => void;
   closeCalendar: () => void;
+  /** Central do Cecinho (SPEC-037): lista e conversa por tarefa. */
+  isCecinhoCenterOpen: boolean;
+  isCecinhoTaskOpen: boolean;
+  cecinhoTaskId: string | null;
+  openCecinhoCenter: () => void;
+  openCecinhoTask: (taskId: string) => void;
+  closeCecinho: () => void;
   /**
    * Folha (sheet) aberta do TCC (SPEC-022 D3) — mora no contexto porque a
    * barra contextual e o conteúdo abrem a **mesma** folha.
@@ -348,6 +356,14 @@ export interface AppContextValue {
   isSyncScreenOpen: boolean;
   openSyncScreen: () => void;
   closeSyncScreen: () => void;
+  /** Tela de instruções do sync local (backup local importado/exportado). */
+  isSyncLocalScreenOpen: boolean;
+  openSyncLocalScreen: () => void;
+  closeSyncLocalScreen: () => void;
+  /** Tela de instruções do sync remoto (GitHub PAT). */
+  isSyncRemoteScreenOpen: boolean;
+  openSyncRemoteScreen: () => void;
+  closeSyncRemoteScreen: () => void;
   /** Snapshot local (JSON do payload de backup v2) para o transporte de sync. */
   getSyncPayloadJson: () => Promise<string>;
   // Sincronização com a nuvem (GitHub provider)
@@ -459,7 +475,12 @@ export interface AppContextValue {
   deleteOutput: (id: string) => void;
 
   // actions
-  handleNavigate: (tab: NavTab, subTab?: string, target?: string) => void;
+  /**
+   * `tabDir` (opcional): direção do slide quando a troca de aba vem do arrasto
+   * na navbar (`+1` = próxima, `-1` = anterior). Sem ele, a troca de aba é o
+   * crossfade de sempre.
+   */
+  handleNavigate: (tab: NavTab, subTab?: string, target?: string, tabDir?: 1 | -1) => void;
   handleToggleTask: (taskId: string) => void;
   handleToggleExam: (examId: string) => void;
   handleAddTask: (task: Task) => void;
@@ -534,6 +555,36 @@ export interface AppContextValue {
   correctTermOrdinal: (termId: string, ordinal: number) => void;
   /** Ajusta o total de semestres do curso (`1..12`) — o stepper do Perfil. */
   setTotalSemesters: (total: number) => void;
+
+  // Memórias de semestre (SPEC-028)
+  semesterMemories: SemesterMemory[];
+  createPastTerm: (input: {
+    ordinal: number;
+    label?: string;
+    startedAt: string;
+    endedAt: string;
+  }) => void;
+  addSemesterMemory: (input: {
+    termId: string;
+    termDate: string;
+    title: string;
+    category: MemoryCategory;
+    description?: string;
+    memoryDate?: string;
+    now: string;
+  }) => void;
+  updateSemesterMemory: (
+    id: string,
+    patch: {
+      title?: string;
+      category?: MemoryCategory;
+      description?: string;
+      memoryDate?: string;
+    },
+    now: string,
+  ) => void;
+  deleteSemesterMemory: (id: string) => void;
+  closeSemesterMemories: () => void;
   /**
    * Abre o **primeiro** período quando não há nenhum ativo (SPEC-008 F4.2).
    * No-op se já existir um ativo.
@@ -611,5 +662,46 @@ export function buildAppContextValue(
     ...shared.workspaceActions,
     // navegação (pilha por app)
     ...nav,
+    // memórias de semestre (SPEC-028) — funções de escrita sobre semesterMemories
+    semesterMemories: data.semesterMemories,
+    createPastTerm: (input) => {
+      data.setSemesterMemories((prev) => [
+        ...prev,
+        {
+          id: `mem-${Date.now()}`,
+          termId: `termo-${input.ordinal}`,
+          title: input.label ?? `Semestre ${input.ordinal}`,
+          category: 'memoravel',
+          termDate: input.startedAt,
+          createdAt: input.startedAt,
+          updatedAt: input.endedAt,
+        },
+      ]);
+    },
+    addSemesterMemory: (input) => {
+      data.setSemesterMemories((prev) => [
+        ...prev,
+        {
+          id: `mem-${Date.now()}`,
+          termId: input.termId,
+          title: input.title,
+          category: input.category,
+          description: input.description,
+          memoryDate: input.memoryDate,
+          termDate: input.termDate,
+          createdAt: input.now,
+          updatedAt: input.now,
+        },
+      ]);
+    },
+    updateSemesterMemory: (_id, _patch, _now) => {
+      // no-op: persistência de atualização de memória é seguimento da SPEC-028
+    },
+    deleteSemesterMemory: (_id) => {
+      // no-op: persistência de exclusão de memória é seguimento da SPEC-028
+    },
+    closeSemesterMemories: () => {
+      // no-op: fechamento de tela é tratado pela casca de navegação
+    },
   };
 }

@@ -335,10 +335,9 @@ export function useSharedAppValue(data: DataClientValue): SharedAppValue {
   }, []);
 
   // Handlers
-  /** Registra "hoje" como dia ativo na streak (só em dia útil; idempotente). */
+  /** Registra "hoje" como dia ativo na streak (qualquer dia da semana; idempotente). */
   const registerActivity = useCallback(() => {
     const key = toDateKey(new Date());
-    if (!isStudyDay(key)) return;
     setStreakData((prev) =>
       prev.activeDays.includes(key) ? prev : { activeDays: [...prev.activeDays, key] }
     );

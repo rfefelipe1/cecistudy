@@ -212,7 +212,7 @@
    --color-focus-accent: #E97891;
 
    /* FONTS */
-   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+   --font-sans: 'SF Pro Text', ui-sans-serif, system-ui, sans-serif;
    --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, sans-serif;
    --font-serif: 'DM Serif Display', Georgia, serif;
    --font-mono: 'JetBrains Mono', ui-monospace, monospace;

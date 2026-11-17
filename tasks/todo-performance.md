@@ -454,6 +454,15 @@ regressão.
 
 ---
 
+## Baseline de bundle atualizado (2026-11-17)
+
+A entrada crítica saiu de 1.004.863 B para 1.182.502 B (+17,7%), acima do limite
+de +10% da spec §10. Mudança **intencional**: o chunk de entrada carrega o
+Cecinho Agent (SPEC-037) e o chat visual dele. O baseline
+(`artifacts/bundle-report.json`) foi regravado por `npm run bundle:report` sobre
+o build novo; é esta a justificativa exigida pelo próprio script. Se o chunk de
+entrada voltar a crescer sem feature equivalente, é regressão, não baseline.
+
 ## Decisões em aberto (para a dona do produto — agente não fecha)
 
 | # | Pergunta | Afeta | Marca |

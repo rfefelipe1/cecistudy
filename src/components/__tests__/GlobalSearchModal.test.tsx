@@ -106,6 +106,7 @@ function renderModal(
   over: {
     onClose?: Mock;
     onNavigate?: Mock;
+    onOpenStudy?: Mock;
     onOpenNoteDetail?: Mock;
     onOpenCourseDetail?: Mock;
     onOpenTccScreen?: Mock;
@@ -114,12 +115,14 @@ function renderModal(
   const handlers: {
     onClose: Mock;
     onNavigate: Mock;
+    onOpenStudy: Mock;
     onOpenNoteDetail: Mock;
     onOpenCourseDetail: Mock;
     onOpenTccScreen: Mock;
   } = {
     onClose: vi.fn(),
     onNavigate: vi.fn(),
+    onOpenStudy: vi.fn(),
     onOpenNoteDetail: vi.fn(),
     onOpenCourseDetail: vi.fn(),
     onOpenTccScreen: vi.fn(),

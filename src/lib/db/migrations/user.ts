@@ -14,7 +14,7 @@
  */
 
 /** Versão de schema da base da usuária (espelha `data/schema.ts`). */
-export const USER_SCHEMA_VERSION = 4;
+export const USER_SCHEMA_VERSION = 5;
 
 /** Nome lógico do banco da usuária (sem extensão). */
 export const USER_DB_NAME = 'cecistudy_user';
@@ -463,4 +463,47 @@ CREATE TABLE thesis_writing_log (
 );
 CREATE INDEX IF NOT EXISTS idx_thesis_writing_log_thesis ON thesis_writing_log(thesis_id);
 CREATE INDEX IF NOT EXISTS idx_thesis_writing_log_date ON thesis_writing_log(date);
+`.trim();
+
+/**
+ * Passo 5 — Cecinho Agent (SPEC-037).
+ *
+ * Quatro coleções novas de estado leve. `IF NOT EXISTS` em todas: reaplicar em
+ * base nova é no-op; o conteúdo pesado (conversa completa, artefatos, versões)
+ * não mora no SQLite — mora no workspace de arquivos.
+ */
+export const AGENT_TABLES_SQL = `
+CREATE TABLE IF NOT EXISTS assisted_task (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  assistance_state TEXT,
+  status TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_assisted_task_task ON assisted_task(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_conversation (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  updated_at TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_conversation_task ON agent_conversation(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_plan (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  status TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_plan_task ON agent_plan(task_id);
+
+CREATE TABLE IF NOT EXISTS agent_artifact (
+  id TEXT PRIMARY KEY,
+  task_id TEXT,
+  path TEXT,
+  mime_type TEXT,
+  data_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_agent_artifact_task ON agent_artifact(task_id);
 `.trim();

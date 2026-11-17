@@ -8,6 +8,56 @@ releases do GitHub. Deste ponto em diante o `release-please` cuida da versão e
 do tag, e este arquivo é escrito à mão — por isso ele está no `skip-changelog`
 do `release-please-config.json` e nenhuma automação reescreve o texto abaixo.
 
+## 1.4.0 — 2026-11-17
+
+O Cecinho deixou de ser um atalho e virou conversa. Ele olha a tarefa, sugere um
+caminho, mostra o plano antes de agir e só mexe no calendário depois de um "pode
+ir". A conversa tem tela própria, com a mesma cara do app, e a resposta aparece
+enquanto é escrita.
+
+> As versões 1.2.0 a 1.3.1 saíram sem entrada neste arquivo; esta retoma o
+> changelog a partir do estado real do código.
+
+### Cecinho conversa
+
+- Assistência por tarefa: o Cecinho sugere, e a usuária aceita ou ignora. Cada
+  tarefa guarda o estado da assistência (`suggested`, `accepted`, `ignored`…) em
+  vez de um booleano solto.
+- O plano é mostrado passo a passo **antes** de qualquer escrita; aprovar é o que
+  dispara a ação.
+- O trabalho acontece no gateway de agente: o app manda só o contexto mínimo da
+  tarefa e recebe plano, artefatos e mensagens.
+- A URL e a chave pública do gateway vêm de `vars` do GitHub no build, não de
+  segredo — o valor sai no APK de qualquer jeito, então não é segredo.
+- O gateway responde CORS ao app rodando fora do `node`, então a conversa
+  funciona também no navegador.
+
+### Chat do Cecinho
+
+- Tela de conversa com cara de app nativo: sem a barra de navegação, resposta em
+  bolha e campo fixo embaixo.
+- "pensando…" com fases em português e loader de raios; a resposta chega
+  streamada, com markdown.
+- Quando falta informação, o Cecinho pergunta num sheet, uma pergunta por vez, e
+  dá para reabrir e responder de novo a partir da mensagem.
+- Todas as frases moram em `src/lib/voice.ts`; o componente não escreve texto
+  inline.
+
+### Correções
+
+- O dreno do TCC no boot voltou a rodar: o bump do schema para 23 fazia o dreno
+  aplicar a migração errada e os capítulos sumiam da tela.
+- O seletor de horário grava `07:30`, com zero à esquerda — antes gravava `7:30`.
+- O CI gera o catálogo antes de `db:verify`; o `.db` não é versionado e o job
+  falhava num clone limpo.
+- O gate de tokens de movimento voltou ao verde (token no shell, ratchet
+  atualizado).
+
+### Testes
+
+- A suíte de UI foi enxugada: os testes de apresentação pura saíram, e a lógica
+  pura deixou de rodar no gate jsdom (`SPEC-038`).
+
 ## 1.1.1 — 2026-10-27 (em desenvolvimento)
 
 Movimento em todo o app: o card vira a tela (container transform) ao abrir
