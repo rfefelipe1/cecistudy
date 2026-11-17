@@ -43,6 +43,10 @@ import type {
   ReadingSession,
   ReadingHighlight,
   ReadingBookmark,
+  AssistedTask,
+  AgentConversation,
+  AgentPlan,
+  AgentArtifact,
 } from '@/types';
 
 /** Tipo do banco persistido completo (fonte única de verdade). */
@@ -75,6 +79,11 @@ export interface PersistedStateSnapshot {
   thesisMeetings: ThesisMeeting[];
   thesisTasks: ThesisTask[];
   thesisWritingLogs: ThesisWritingLog[];
+  /** SPEC-037: estado leve do Cecinho Agent. */
+  assistedTasks: AssistedTask[];
+  agentConversations: AgentConversation[];
+  agentPlans: AgentPlan[];
+  agentArtifacts: AgentArtifact[];
   stickers: Sticker[];
   sessions: StudySession[];
   streakData: StreakData;
@@ -133,6 +142,10 @@ export function readDatabaseFromState(state: PersistedStateSnapshot): PersistedD
     thesisMeetings: state.thesisMeetings ?? [],
     thesisTasks: state.thesisTasks ?? [],
     thesisWritingLogs: state.thesisWritingLogs ?? [],
+    assistedTasks: state.assistedTasks ?? [],
+    agentConversations: state.agentConversations ?? [],
+    agentPlans: state.agentPlans ?? [],
+    agentArtifacts: state.agentArtifacts ?? [],
     onboarding: state.onboarding,
     syncIndex: state.syncIndex ?? emptyDatabase().syncIndex,
   };

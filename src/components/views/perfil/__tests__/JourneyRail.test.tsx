@@ -49,7 +49,7 @@ const base = (over: Partial<ProfileViewModelInput> = {}): ProfileViewModelInput 
   flashcards: [],
   sessions: [],
   stickers: [],
-  streak: { current: 0, longest: 0, total: 0, alive: false },
+  streak: { current: 0, longest: 0, total: 0, alive: false, protectionUsed: false },
   themePref: 'rosa-claro',
   reminderSettings: { enabled: false, time: '20:00' },
   reminderSupported: true,

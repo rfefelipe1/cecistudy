@@ -411,6 +411,50 @@ const thesisWritingLogSchema = passthrough({
   createdAt: z.string(),
 });
 
+// SPEC-037: estado leve do Cecinho Agent. Forma mínima validada; campos
+// adicionais passam (`passthrough`) — o workspace guarda o conteúdo pesado.
+const assistedTaskSchema = passthrough({
+  id: z.string(),
+  taskId: z.string(),
+  conversationId: z.string(),
+  assistanceState: z.enum(['none', 'suggested', 'accepted', 'ignored', 'active', 'completed']),
+  status: z.enum(['queued_local', 'queued_remote', 'processing', 'done', 'failed']),
+  unreadOutput: z.number(),
+  pendingQuestion: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const agentConversationSchema = passthrough({
+  id: z.string(),
+  taskId: z.string(),
+  messages: z.array(passthrough({ id: z.string(), role: z.string(), kind: z.string() })),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const agentPlanSchema = passthrough({
+  id: z.string(),
+  taskId: z.string(),
+  objective: z.string(),
+  steps: z.array(passthrough({ id: z.string(), title: z.string(), status: z.string() })),
+  status: z.enum(['draft', 'reviewing', 'confirmed', 'rejected', 'completed']),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const agentArtifactSchema = passthrough({
+  id: z.string(),
+  taskId: z.string(),
+  path: z.string(),
+  name: z.string(),
+  mimeType: z.string(),
+  source: z.enum(['agent', 'user', 'derived']),
+  currentVersionId: z.string(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
 // ---------------------------------------------------------------------------
 // Banco completo (coleções opcionais — ausência recebe default; presença valida)
 // ---------------------------------------------------------------------------
@@ -450,6 +494,10 @@ export const backupDataSchema = z
     thesisMeetings: z.array(thesisMeetingSchema),
     thesisTasks: z.array(thesisTaskSchema),
     thesisWritingLogs: z.array(thesisWritingLogSchema),
+    assistedTasks: z.array(assistedTaskSchema),
+    agentConversations: z.array(agentConversationSchema),
+    agentPlans: z.array(agentPlanSchema),
+    agentArtifacts: z.array(agentArtifactSchema),
     onboarding: onboardingSchema,
     syncIndex: syncIndexSchema.optional(),
   })

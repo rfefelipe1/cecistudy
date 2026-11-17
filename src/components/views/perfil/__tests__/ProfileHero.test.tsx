@@ -9,6 +9,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import ProfileHero from '../ProfileHero';
 import ProfileEditSheet from '../ProfileEditSheet';
 import type { ProfileIdentity } from '../../../../lib/profileViewModel';
+import type { CeciComboboxOption } from '../../../ui/ceci/CeciCombobox';
 
 const identity = (over: Partial<ProfileIdentity> = {}): ProfileIdentity => ({
   displayName: 'ceci',
@@ -18,6 +19,8 @@ const identity = (over: Partial<ProfileIdentity> = {}): ProfileIdentity => ({
   initials: 'C',
   level: 4,
   title: 'caminhante',
+  approach: 'clinica',
+  university: 'USP',
   ...over,
 });
 
@@ -93,17 +96,24 @@ describe('ProfileHero', () => {
 });
 
 describe('ProfileEditSheet', () => {
+  const approachOptions: CeciComboboxOption[] = [
+    { value: 'psicanalise', label: 'psicanálise' },
+    { value: 'tcc', label: 'terapia cognitivo-comportamental' },
+    { value: 'gestalt', label: 'gestalt-terapia' },
+  ];
+
   const initial = {
     name: 'ceci',
     university: 'USP',
     dailyQuote: 'um passo por vez',
+    targetCareer: 'clinica',
     // `SPEC-C-014 D8`: o interruptor viaja com a edição de identidade.
     nomeAutorizado: false,
   };
 
   it('só habilita guardar quando algo mudou e o nome está preenchido', () => {
     const onSave = vi.fn();
-    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} onSave={onSave} />);
+    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} approachOptions={approachOptions} onSave={onSave} />);
     const save = screen.getByRole('button', { name: 'guardar perfil' }) as HTMLButtonElement;
     expect(save.disabled).toBe(true);
 
@@ -115,12 +125,13 @@ describe('ProfileEditSheet', () => {
       name: 'maria',
       university: 'USP',
       dailyQuote: 'um passo por vez',
+      targetCareer: 'clinica',
       nomeAutorizado: false,
     });
   });
 
   it('nome vazio bloqueia o salvar e mostra o convite no lugar do erro frio', () => {
-    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} onSave={vi.fn()} />);
+    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} approachOptions={approachOptions} onSave={vi.fn()} />);
     fireEvent.change(screen.getByLabelText('seu nome'), { target: { value: '   ' } });
     const save = screen.getByRole('button', { name: 'guardar perfil' }) as HTMLButtonElement;
     expect(save.disabled).toBe(true);
@@ -129,7 +140,7 @@ describe('ProfileEditSheet', () => {
 
   it('fechar com alterações pendentes pede confirmação antes de descartar', () => {
     const onClose = vi.fn();
-    render(<ProfileEditSheet open onClose={onClose} initial={initial} onSave={vi.fn()} />);
+    render(<ProfileEditSheet open onClose={onClose} initial={initial} approachOptions={approachOptions} onSave={vi.fn()} />);
     fireEvent.change(screen.getByLabelText('seu nome'), { target: { value: 'maria' } });
 
     fireEvent.click(screen.getByRole('button', { name: 'cancelar' }));
@@ -144,7 +155,7 @@ describe('ProfileEditSheet', () => {
   // `SPEC-C-014` D8 — o interruptor do tratamento por nome
   // -------------------------------------------------------------------------
   it('o interruptor do nome começa desligado e a explicação usa o nome digitado', () => {
-    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} onSave={vi.fn()} />);
+    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} approachOptions={approachOptions} onSave={vi.fn()} />);
     // Fechado por padrão: a voz chama de "você" até ela autorizar.
     const toggle = screen.getByRole('switch', { name: 'me chamar pelo nome' });
     expect(toggle.getAttribute('aria-checked')).toBe('false');
@@ -154,7 +165,7 @@ describe('ProfileEditSheet', () => {
 
   it('ligar o interruptor suja o rascunho e grava a autorização', () => {
     const onSave = vi.fn();
-    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} onSave={onSave} />);
+    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} approachOptions={approachOptions} onSave={onSave} />);
     fireEvent.click(screen.getByRole('switch', { name: 'me chamar pelo nome' }));
     // Só o interruptor já é mudança: guardar não pode exigir que ela redigite o nome.
     const save = screen.getByRole('button', { name: 'guardar perfil' }) as HTMLButtonElement;
@@ -167,7 +178,7 @@ describe('ProfileEditSheet', () => {
 
   it('nome vazio nunca salva autorização, mesmo com o interruptor ligado', () => {
     const onSave = vi.fn();
-    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} onSave={onSave} />);
+    render(<ProfileEditSheet open onClose={vi.fn()} initial={initial} approachOptions={approachOptions} onSave={onSave} />);
     fireEvent.change(screen.getByLabelText('seu nome'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('switch', { name: 'me chamar pelo nome' }));
     const save = screen.getByRole('button', { name: 'guardar perfil' }) as HTMLButtonElement;
@@ -177,7 +188,7 @@ describe('ProfileEditSheet', () => {
 
   it('sem alterações, fechar é imediato', () => {
     const onClose = vi.fn();
-    render(<ProfileEditSheet open onClose={onClose} initial={initial} onSave={vi.fn()} />);
+    render(<ProfileEditSheet open onClose={onClose} initial={initial} approachOptions={approachOptions} onSave={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'cancelar' }));
     expect(onClose).toHaveBeenCalledTimes(1);
   });

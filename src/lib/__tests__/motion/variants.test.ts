@@ -69,6 +69,17 @@ describe('tab / replace: sem slide', () => {
     }
   });
 
+  it('tab COM direção (arrasto na navbar) não vira página: a que sai esmaece, a que entra sobe', () => {
+    const enter = t.enter(intent({ kind: 'tab', dir: 1 }));
+    expect(enter.x).toBe(0);
+    expect(enter.y).toBe(8);
+    expect(enter.opacity).toBe(0);
+    const exit = t.exit(intent({ kind: 'tab', dir: 1 }));
+    expect(exit.x).toBe(0);
+    expect(exit.y).toBe(0);
+    expect(exit.opacity).toBe(0);
+  });
+
   it('none não move nada (atualização de payload, não navegação)', () => {
     const out = t.enter(intent({ kind: 'none', dir: 0 }));
     expect(out.x).toBe(0);

@@ -15,7 +15,7 @@ import { Button } from '../ui/button';
 
 interface BackupViewProps {
   exportData?: () => Promise<void>;
-  importData?: (json: string) => void;
+  importData?: (source: string | Blob | ArrayBuffer) => void;
 }
 
 export function BackupView(props: BackupViewProps = {}) {
@@ -37,8 +37,8 @@ export function BackupView(props: BackupViewProps = {}) {
     if (!file) return;
     setImporting(true);
     try {
-      const text = await file.text();
-      await importData(text);
+      // O provider decide entre ZIP e JSON v2 lendo o conteúdo.
+      await importData(file);
     } catch {
       console.error('backup: falha ao importar');
     } finally {
@@ -69,7 +69,7 @@ export function BackupView(props: BackupViewProps = {}) {
             </Button>
             <input
               type="file"
-              accept=".json"
+              accept=".zip,.json"
               disabled={importing}
               onChange={handleImport}
               className="sr-only"

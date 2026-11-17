@@ -543,7 +543,6 @@ export function useDataActions(deps: DataActionsDeps): DataActions & DataActionG
   const handleReviewFlashcard = useCallback(
     (id: string, quality: 0 | 1 | 2 | 3) => {
       hapticTap();
-      registerActivity();
       setFlashcards((prev) =>
         prev.map((c) => {
           if (c.id !== id) return c;

@@ -411,7 +411,7 @@ export function scheduleIdlePrefetch(timeoutMs = 4000): void {
   ric(
     () => {
       requestPrefetch('screen:biblioteca', () => import('../components/views/BibliotecaView'));
-      requestPrefetch('screen:estudos', () => import('../components/views/EstudosView'));
+      requestPrefetch('screen:clinica', () => import('../components/views/InternshipDiaryView'));
     },
     { timeout: timeoutMs },
   );

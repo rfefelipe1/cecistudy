@@ -355,7 +355,7 @@ function textoDe(frase: unknown): string {
  * espalhado em regex solto.
  */
 const VERBO_DE_ACAO =
-  /(tenta|volta|confere|abre|espera|recarrega|sincroniza|começa|desfaz|deixa|coloca|escreve|escolhe|diz|guarda|anota|registra|afrouxa|cria|cola)/;
+  /(tenta|volta|confere|siga|abre|espera|recarrega|sincroniza|começa|desfaz|deixa|coloca|escreve|escolhe|diz|guarda|anota|registra|afrouxa|cria|cola)/;
 
 describe('D5 · o erro tem duas frases, nesta ordem', () => {
   const codigos = Object.keys(ERRO);
@@ -475,31 +475,34 @@ describe('D17 · erroDeSync traduz o código e esconde o diagnóstico', () => {
 
 describe('D12 · toda chave de voz tem consumidor em produção', () => {
   const raiz = path.resolve(__dirname, '../..');
-  const fonteDe = (rel: string): string => fs.readFileSync(path.join(raiz, rel), 'utf-8');
 
   /**
    * Arquivos de produção que podem consumir voz (fora do próprio catálogo).
    *
-   * A varredura cobre as camadas de **apresentação** — `components`,
-   * `shells` e `overlays`. A casca (`shells`) é onde o chrome do app mora, e
-   * é tão produção quanto os componentes: a barra contextual, por exemplo,
-   * avisa a falha da ação dali (SPEC-022 D10).
+   * A varredura cobre **todo o `src`**, não só uma lista de camadas: consumidor
+   * de voz mora em `components`, `shells`, `overlays`, `context` e `agent/ui`.
+   * A lista fixa deixava chave viva passar por morta — a varredura de `src`
+   * não tem como ficar desatualizada quando aparece uma camada nova.
    */
   const consumo = (() => {
     const arquivos: string[] = [];
+    const catalogo = path.join(raiz, 'lib/voice.ts');
     const andar = (dir: string) => {
       for (const entrada of fs.readdirSync(dir, { withFileTypes: true })) {
         const cheio = path.join(dir, entrada.name);
         if (entrada.isDirectory()) andar(cheio);
-        else if (/\.tsx?$/.test(entrada.name) && !/\.test\.tsx?$/.test(entrada.name)) {
+        else if (
+          cheio !== catalogo &&
+          /\.tsx?$/.test(entrada.name) &&
+          !/\.test\.tsx?$/.test(entrada.name)
+        ) {
+          // O próprio catálogo não conta: `ERRO_POR_KIND_SYNC` cita as chaves
+          // em literal, e isso faria toda chave do mapa parecer consumida.
           arquivos.push(cheio);
         }
       }
     };
-    for (const camada of ['components', 'shells', 'overlays']) {
-      const alvo = path.join(raiz, camada);
-      if (fs.existsSync(alvo)) andar(alvo);
-    }
+    andar(raiz);
     return arquivos.map((a) => ({
       arquivo: path.relative(raiz, a),
       texto: fs.readFileSync(a, 'utf-8'),

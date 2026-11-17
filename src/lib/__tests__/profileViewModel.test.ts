@@ -72,7 +72,13 @@ const sticker = (over: Partial<Sticker> = {}): Sticker => ({
   ...over,
 });
 
-const streak: StreakStats = { current: 4, longest: 9, total: 20, alive: true };
+const streak: StreakStats = {
+  current: 4,
+  longest: 9,
+  total: 20,
+  alive: true,
+  protectionUsed: false,
+};
 
 const base = (over: Partial<ProfileViewModelInput> = {}): ProfileViewModelInput => ({
   profile: profile(),

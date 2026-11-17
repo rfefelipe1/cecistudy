@@ -4,6 +4,7 @@ import {
   EDGE_WIDTH,
   ENGAGE_THRESHOLD,
   MAX_DRAG_FRACTION,
+  NAV_DRAG_ENGAGE_PX,
   SWIPE_TAB_THRESHOLD,
   SWIPE_TAB_VELOCITY,
   TAB_SWIPE_EDGE_MARGIN,
@@ -12,6 +13,7 @@ import {
   isEngaged,
   isHorizontalPan,
   maxDragDistance,
+  navbarIndexFromX,
   shouldCommit,
   shouldIgnorePanTarget,
   shouldIgnoreTarget,
@@ -226,5 +228,33 @@ describe('swipe — swipeTabDelta', () => {
     expect(swipeTabDelta(-SWIPE_TAB_THRESHOLD + 1)).toBe(0);
     expect(swipeTabDelta(SWIPE_TAB_THRESHOLD + 1, SWIPE_TAB_VELOCITY - 1)).toBe(-1);
     expect(swipeTabDelta(-(ENGAGE_THRESHOLD - 1), SWIPE_TAB_VELOCITY)).toBe(0);
+  });
+});
+
+describe('swipe — navbarIndexFromX', () => {
+  // Barra de 200px com 4 abas → fatias de 50px cada.
+  const LEFT = 10;
+  const WIDTH = 200;
+  const COUNT = 4;
+
+  it('expõe o limiar de engajamento da navbar', () => {
+    expect(NAV_DRAG_ENGAGE_PX).toBe(10);
+  });
+
+  it('mapeia cada fatia para a sua aba', () => {
+    expect(navbarIndexFromX(LEFT + 1, LEFT, WIDTH, COUNT)).toBe(0);
+    expect(navbarIndexFromX(LEFT + 60, LEFT, WIDTH, COUNT)).toBe(1);
+    expect(navbarIndexFromX(LEFT + 110, LEFT, WIDTH, COUNT)).toBe(2);
+    expect(navbarIndexFromX(LEFT + 160, LEFT, WIDTH, COUNT)).toBe(3);
+  });
+
+  it('clampa nas pontas', () => {
+    expect(navbarIndexFromX(LEFT - 50, LEFT, WIDTH, COUNT)).toBe(0);
+    expect(navbarIndexFromX(LEFT + WIDTH + 50, LEFT, WIDTH, COUNT)).toBe(COUNT - 1);
+  });
+
+  it('não divide por zero e nunca devolve índice negativo', () => {
+    expect(navbarIndexFromX(50, LEFT, 0, COUNT)).toBe(0);
+    expect(navbarIndexFromX(50, LEFT, WIDTH, 0)).toBe(0);
   });
 });

@@ -32,6 +32,7 @@ import { useActiveTerm } from '../../lib/termScope';
 import { StickersView } from './StickersView';
 import ProfilePage from './perfil/ProfilePage';
 import type { ProfileEditValues } from './perfil/ProfileEditSheet';
+import { ABORDAGENS_PERFIL } from '../../data/abordagensPerfil';
 
 export type PerfilViewMode = 'profile' | 'stickers';
 
@@ -64,6 +65,8 @@ const PerfilProfileRoute: React.FC = () => {
     motionPref,
     setMotionPref,
     academicTerms,
+    cecinhoHelpEnabled,
+    setCecinhoHelpEnabled,
   } = useDataClientApp();
   // Períodos letivos (SPEC-005) — a fonte de verdade do "em que semestre estou".
   const activeTerm = useActiveTerm(academicTerms);
@@ -79,9 +82,13 @@ const PerfilProfileRoute: React.FC = () => {
     openWizard,
     openTermHistory,
     openSyncScreen,
+    openStudy,
   } = useNavValue();
 
   const [editOpen, setEditOpen] = useState(false);
+
+  /** Botão de voltar do cabeçalho do perfil — sempre leva à Home. */
+  const handleVoltar = () => handleNavigate('home');
 
   // Uma única derivação memoizada (SPEC-013 D2). `native` entra como **dado**
   // do VM (via o wrapper `isNativePlatform` de `src/lib/storage`) e o componente
@@ -116,6 +123,7 @@ const PerfilProfileRoute: React.FC = () => {
       name: values.name,
       university: values.university,
       dailyQuote: values.dailyQuote,
+      targetCareer: values.targetCareer,
       photoUrl: profile.photoUrl,
       // `SPEC-C-014 D8`: a autorização viaja com o perfil. Opcional no tipo, então
       // não exige backfill — quem nunca mexeu continua com "você".
@@ -136,11 +144,6 @@ const PerfilProfileRoute: React.FC = () => {
     }
   };
 
-  const handleRemovePhoto = () => {
-    handleUpdateProfile({ photoUrl: '' });
-    showToast(frase(CELEBRACAO, 'fotoRemovida'));
-  };
-
   return (
     <ProfilePage
       vm={vm}
@@ -150,32 +153,36 @@ const PerfilProfileRoute: React.FC = () => {
         name: profile.name,
         university: profile.university,
         dailyQuote: profile.dailyQuote,
+        targetCareer: profile.targetCareer,
         nomeAutorizado: profile.nomeAutorizado === true,
       }}
       editOpen={editOpen}
       onEditOpen={() => setEditOpen(true)}
       onEditClose={() => setEditOpen(false)}
       onEditSave={handleEditSave}
+      onVoltar={handleVoltar}
+      approachOptions={ABORDAGENS_PERFIL}
       onPickPhoto={handlePickPhoto}
-      onRemovePhoto={handleRemovePhoto}
       onCorrectOrdinal={correctTermOrdinal}
       onSetTotalSemesters={setTotalSemesters}
       onOpenSemesterWizard={() => openWizard('semester')}
       onOpenTermHistory={() => openTermHistory()}
       onShowToast={showToast}
-      onOpenSessions={() => handleNavigate('estudos', 'sessoes')}
-      onOpenReadings={() => handleNavigate('estudos', 'leituras')}
+      onOpenSessions={() => openStudy('historico')}
+      onOpenReadings={() => openStudy('leituras')}
       onOpenTasks={() => handleNavigate('home')}
       onOpenExams={() => handleNavigate('faculdade')}
       onOpenStickers={openStickersScreen}
       onOpenStreak={openStreak}
       onUpdateReminder={updateReminder}
       onSetGcalEnabled={(enabled) => void setGcalEnabled(enabled)}
+      cecinhoHelpEnabled={cecinhoHelpEnabled}
+      onSetCecinhoHelp={setCecinhoHelpEnabled}
       onThemeSelect={setThemePref}
       onMotionPrefSelect={setMotionPref}
       onOpenSync={openSyncScreen}
       onExport={() => exportData()}
-      onImport={(json) => importData(json)}
+      onImport={(source) => importData(source)}
       onReset={resetApp}
     />
   );

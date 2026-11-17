@@ -39,6 +39,7 @@ import {
   Exam,
   LooseNote,
   NavTab,
+  StudyScreen,
   ThesisChapter,
   ThesisReference,
   ThesisTask,
@@ -62,6 +63,8 @@ interface GlobalSearchModalProps {
   thesisReferences: ThesisReference[];
   thesisTasks: ThesisTask[];
   onNavigate: (tab: NavTab, subTab?: string, targetId?: string) => void;
+  /** Telas de estudo são **legado** (sem entrada na navegação): a busca ainda abre. */
+  onOpenStudy: (screen: StudyScreen) => void;
   onOpenNoteDetail: (noteId: string) => void;
   onOpenCourseDetail: (courseId: string) => void;
   /** Abre a tela do TCC na aba/foco certos (mesmo caminho da notificação, Q10). */
@@ -125,6 +128,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   thesisReferences,
   thesisTasks,
   onNavigate,
+  onOpenStudy,
   onOpenNoteDetail,
   onOpenCourseDetail,
   onOpenTccScreen,
@@ -216,7 +220,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
         subtitle: `${r.author ? `por ${r.author} • ` : ''}${
           r.status === 'concluido' ? 'concluído' : 'em leitura'
         }`,
-        go: () => onNavigate('estudos', 'leituras', r.id),
+        go: () => onOpenStudy('leituras'),
       }),
     );
     approaches.forEach((app) =>

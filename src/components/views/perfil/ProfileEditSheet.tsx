@@ -8,12 +8,16 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../../ui/Modal';
 import { Toggle } from '../../ui/Toggle';
-import { ONBOARDING, frase } from '../../../lib/voice';
+import { CeciCombobox } from '../../ui/ceci/CeciCombobox';
+import type { CeciComboboxOption } from '../../ui/ceci/CeciCombobox';
+import { ONBOARDING, VAZIO, frase } from '../../../lib/voice';
 
 export interface ProfileEditValues {
   name: string;
   university: string;
   dailyQuote: string;
+  /** Abordagem escolhida pela usuária ("como quer seguir na psicologia?"). */
+  targetCareer: string;
   /**
    * Autorização do tratamento por nome (`SPEC-C-014` D8). Viaja junto da edição
    * de identidade porque é decisão **dela**, feita onde ela escreve o nome.
@@ -21,21 +25,24 @@ export interface ProfileEditValues {
   nomeAutorizado: boolean;
 }
 
-interface ProfileEditSheetProps {
+export interface ProfileEditSheetProps {
   open: boolean;
   onClose: () => void;
   /** Valores atuais do perfil; o rascunho reinicia a cada abertura. */
   initial: ProfileEditValues;
   onSave: (values: ProfileEditValues) => void;
+  /** Lista própria de abordagens para a escolha de meta do perfil. */
+  approachOptions: CeciComboboxOption[];
 }
 
 const hasChanges = (a: ProfileEditValues, b: ProfileEditValues): boolean =>
   a.name !== b.name ||
   a.university !== b.university ||
   a.dailyQuote !== b.dailyQuote ||
+  a.targetCareer !== b.targetCareer ||
   a.nomeAutorizado !== b.nomeAutorizado;
 
-const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, initial, onSave }) => {
+const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, initial, onSave, approachOptions }) => {
   const [draft, setDraft] = useState<ProfileEditValues>(initial);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
 
@@ -66,7 +73,8 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
     onSave({
       name: draft.name.trim(),
       university: draft.university.trim(),
-      dailyQuote: draft.dailyQuote.trim(),
+      dailyQuote: (draft.dailyQuote ?? '').trim(),
+      targetCareer: (draft.targetCareer ?? '').trim(),
       // Sem nome não há tratamento: ligar o interruptor com o campo vazio é a
       // ordem invertida, e a voz falaria "de " com espaço a mais.
       nomeAutorizado: draft.name.trim().length > 0 && draft.nomeAutorizado,
@@ -87,6 +95,8 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
           editar perfil
         </h2>
 
+        {/* Grupo: você */}
+        <span className="text-[10px] uppercase tracking-wider text-ceci-muted mb-2 block">você</span>
         <div>
           <label
             htmlFor="perfil-edit-nome"
@@ -110,6 +120,32 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
           ) : null}
         </div>
 
+        {/* Grupo: como quer seguir na psicologia */}
+        <span className="text-[10px] uppercase tracking-wider text-ceci-muted mb-2 block mt-4">
+          como quer seguir na psicologia
+        </span>
+        <div>
+          <label
+            htmlFor="perfil-edit-abordagem"
+            className="block text-xs font-medium text-ceci-secondary mb-1"
+          >
+            abordagem
+          </label>
+          <CeciCombobox
+            label="como você quer seguir na psicologia?"
+            value={
+              approachOptions.find((o) => o.label === draft.targetCareer)?.value ??
+              null
+            }
+            onChange={(value) => {
+              const option = approachOptions.find((o) => o.value === value);
+              setDraft((d) => ({ ...d, targetCareer: option?.label ?? value }));
+            }}
+            options={approachOptions}
+            placeholder="escolher uma abordagem"
+            description={frase(VAZIO, 'perfilAbordagemAjuda')}
+          />
+        </div>
         <div>
           <label
             htmlFor="perfil-edit-universidade"
@@ -126,6 +162,10 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
           />
         </div>
 
+        {/* Grupo: frase de entrada */}
+        <span className="text-[10px] uppercase tracking-wider text-ceci-muted mb-2 block mt-4">
+          frase de entrada
+        </span>
         <div>
           <label
             htmlFor="perfil-edit-frase"
@@ -142,12 +182,10 @@ const ProfileEditSheet: React.FC<ProfileEditSheetProps> = ({ open, onClose, init
           />
         </div>
 
-        {/**
-         * `SPEC-C-014 D8` — o interruptor do nome mora **aqui**, colado no campo
-         * onde ela o escreve: autorizar sem ver o nome é aceitar no escuro. É a
-         * última coisa antes dos botões porque é a decisão mais fácil de deixar
-         * para depois — e a frase da voz diz exatamente o que muda.
-         */}
+        {/* Grupo: tratamento por nome */}
+        <span className="text-[10px] uppercase tracking-wider text-ceci-muted mb-2 block mt-4">
+          tratamento por nome
+        </span>
         <div className="flex items-start justify-between gap-3 rounded-2xl bg-surface-muted border border-ceci-border-subtle px-3.5 py-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold text-ceci-primary">

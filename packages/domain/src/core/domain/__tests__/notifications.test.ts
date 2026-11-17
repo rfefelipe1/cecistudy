@@ -56,7 +56,7 @@ describe('planExamReminders (D4)', () => {
   });
 
   it('no dia, usa a hora da prova menos 60 min e mantém o dia no alvo', () => {
-    const plan = planExamReminders([{ ...exam, time: '08:00' }], prefs, '2026-10-01');
+    const plan = planExamReminders([{ ...exam, time: '08:00' }], prefs, '2026-10-01', now);
     const day0 = plan.find((p) => p.meta?.dias === 0)!;
     expect(day0.when.getHours()).toBe(7);
     expect(day0.when.getMinutes()).toBe(0);

@@ -17,11 +17,14 @@ export interface ProfileCareColumnProps {
   motionPref: MotionPref;
   onUpdateReminder: (settings: ReminderSettings) => void;
   onSetGcalEnabled: (enabled: boolean) => void;
+  /** Ajuda global do Cecinho (SPEC-037 T013). */
+  cecinhoHelpEnabled: boolean;
+  onSetCecinhoHelp: (enabled: boolean) => void;
   onThemeSelect: (id: ThemeId) => void;
   onMotionPrefSelect: (pref: MotionPref) => void;
   onOpenSync: () => void;
   onExport: () => void;
-  onImport: (json: string) => void;
+  onImport: (source: string | File) => void;
   onReset: () => void;
 }
 
@@ -31,6 +34,8 @@ export const ProfileCareColumn: React.FC<ProfileCareColumnProps> = ({
   motionPref,
   onUpdateReminder,
   onSetGcalEnabled,
+  cecinhoHelpEnabled,
+  onSetCecinhoHelp,
   onThemeSelect,
   onMotionPrefSelect,
   onOpenSync,
@@ -45,6 +50,8 @@ export const ProfileCareColumn: React.FC<ProfileCareColumnProps> = ({
       motionPref={motionPref}
       onUpdateReminder={onUpdateReminder}
       onSetGcalEnabled={onSetGcalEnabled}
+      cecinhoHelpEnabled={cecinhoHelpEnabled}
+      onSetCecinhoHelp={onSetCecinhoHelp}
       onThemeSelect={onThemeSelect}
       onMotionPrefSelect={onMotionPrefSelect}
     />

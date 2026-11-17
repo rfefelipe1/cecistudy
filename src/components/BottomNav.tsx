@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import {
   Home,
   GraduationCap,
-  Brain,
   Library,
   FileText,
   BookOpen,
@@ -17,7 +16,12 @@ import { TAB_LABELS } from '@/lib/motion';
 
 interface BottomNavProps {
   activeTab: NavTab;
-  onChangeTab: (tab: NavTab) => void;
+  /** Toque ou commit de arrasto: navega de verdade, com direção do slide. */
+  onChangeTab: (tab: NavTab, dir?: 1 | -1) => void;
+  /** Preview ao vivo durante o arrasto: mostra a tela sem navegar. */
+  onTabPreview?: (tab: NavTab) => void;
+  /** Commit do arrasto: navega de verdade com direção do slide. */
+  onTabCommit?: (tab: NavTab, dir: 1 | -1) => void;
   onOpenWizard?: (type: WizardFlow) => void;
   onOpenTaskExamWizard?: () => void;
   onOpenCompose?: () => void;
@@ -30,13 +34,12 @@ interface BottomNavProps {
 const TABS: (NavItem & { id: NavTab })[] = [
   { id: 'home', label: TAB_LABELS.home, icon: Home },
   { id: 'faculdade', label: TAB_LABELS.faculdade, icon: GraduationCap },
-  { id: 'estudos', label: TAB_LABELS.estudos, icon: Brain },
+  { id: 'clinica', label: TAB_LABELS.clinica, icon: HeartHandshake },
   { id: 'biblioteca', label: TAB_LABELS.biblioteca, icon: Library },
 ];
 
 // Ícones dos itens do menu FAB (JSX estático no módulo).
 const MENU_ICON_STAGE = <HeartHandshake className="w-4 h-4 text-ceci-border-brand" />;
-const MENU_ICON_CARD = <Brain className="w-4 h-4 text-ceci-border-brand" />;
 const MENU_ICON_EVENT = <Check className="w-4 h-4 text-ceci-border-brand" />;
 const MENU_ICON_READ = <BookOpen className="w-4 h-4 text-ceci-border-brand" />;
 const MENU_ICON_NOTE = <FileText className="w-4 h-4 text-ceci-border-brand" />;
@@ -44,6 +47,8 @@ const MENU_ICON_NOTE = <FileText className="w-4 h-4 text-ceci-border-brand" />;
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   onChangeTab,
+  onTabPreview,
+  onTabCommit,
   onOpenWizard,
   onOpenTaskExamWizard,
   onOpenCompose,
@@ -66,11 +71,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         label: 'Novo estágio',
         Icon: MENU_ICON_STAGE,
         onClick: () => onOpenWizard?.('internship'),
-      },
-      {
-        label: 'Novo flashcard',
-        Icon: MENU_ICON_CARD,
-        onClick: () => onOpenWizard?.('flashcard'),
       },
       {
         label: 'Nova prova / atividade',
@@ -98,10 +98,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <BottomNavBar
             items={TABS}
             activeIndex={activeIndex >= 0 ? activeIndex : 0}
-            onChange={(index) => {
-              if (TABS[index]) {
-                onChangeTab(TABS[index].id);
-              }
+            onChange={(index, dir) => {
+              const tab = TABS[index];
+              if (tab) onChangeTab(tab.id, dir);
+            }}
+            onDragPreview={(index) => {
+              const tab = TABS[index];
+              if (tab) onTabPreview?.(tab.id);
+            }}
+            onDragCommit={(index, direction) => {
+              const tab = TABS[index];
+              if (tab) onTabCommit?.(tab.id, direction);
             }}
           />
         </div>

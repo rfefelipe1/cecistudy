@@ -16,6 +16,8 @@ const heroProps = {
   greeting: 'oi',
   name: 'Ceci',
   dayMessage: 'x',
+  fraseMotivacao: 'um passo por vez',
+  fraseCarcinho: null,
   mascote: 'books-cozy' as const,
 };
 
