@@ -661,6 +661,66 @@ export async function saveCollection(
             ]),
         );
         break;
+      // SPEC-037: estado leve do Cecinho Agent. O conteúdo pesado fica no
+      // workspace de arquivos — aqui só o que a Agenda/Central consultam.
+      case 'assistedTasks':
+        await driver.run('DELETE FROM assisted_task');
+        await insertRows(
+          driver,
+          'INSERT INTO assisted_task (id, task_id, assistance_state, status, data_json) VALUES (?, ?, ?, ?, ?)',
+          () =>
+            asArray(value).map((a) => [
+              String(a.id),
+              str(a.taskId),
+              str(a.assistanceState),
+              str(a.status),
+              json(a),
+            ]),
+        );
+        break;
+      case 'agentConversations':
+        await driver.run('DELETE FROM agent_conversation');
+        await insertRows(
+          driver,
+          'INSERT INTO agent_conversation (id, task_id, updated_at, data_json) VALUES (?, ?, ?, ?)',
+          () =>
+            asArray(value).map((c) => [
+              String(c.id),
+              str(c.taskId),
+              str(c.updatedAt),
+              json(c),
+            ]),
+        );
+        break;
+      case 'agentPlans':
+        await driver.run('DELETE FROM agent_plan');
+        await insertRows(
+          driver,
+          'INSERT INTO agent_plan (id, task_id, status, data_json) VALUES (?, ?, ?, ?)',
+          () =>
+            asArray(value).map((p) => [
+              String(p.id),
+              str(p.taskId),
+              str(p.status),
+              json(p),
+            ]),
+        );
+        break;
+      case 'agentArtifacts':
+        await driver.run('DELETE FROM agent_artifact');
+        await insertRows(
+          driver,
+          'INSERT INTO agent_artifact (id, task_id, path, mime_type, data_json) VALUES (?, ?, ?, ?, ?)',
+          () =>
+            asArray(value).map((a) => [
+              String(a.id),
+              str(a.taskId),
+              str(a.path),
+              str(a.mimeType),
+              json(a),
+            ]),
+        );
+        break;
       default: {
         // Rede de segurança: uma coleção nova no registry sem caso aqui
         // **não** falharia — o `switch` sairia calado e a coleção simplesmente

@@ -124,6 +124,11 @@ describe('registry de coleções (T0.3)', () => {
       'thesisMeetings',
       'thesisTasks',
       'thesisWritingLogs',
+      // SPEC-037: estado leve do Cecinho Agent, no fim.
+      'assistedTasks',
+      'agentConversations',
+      'agentPlans',
+      'agentArtifacts',
     ]);
   });
 

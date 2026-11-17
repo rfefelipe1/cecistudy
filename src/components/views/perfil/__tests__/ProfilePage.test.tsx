@@ -50,7 +50,7 @@ const vmInput = (over: Partial<ProfileViewModelInput> = {}): ProfileViewModelInp
   flashcards: [],
   sessions: [],
   stickers: [],
-  streak: { current: 0, longest: 0, total: 0, alive: false },
+  streak: { current: 0, longest: 0, total: 0, alive: false, protectionUsed: false },
   themePref: 'rosa-claro',
   reminderSettings: { enabled: false, time: '20:00' },
   reminderSupported: true,
@@ -62,6 +62,8 @@ const vmInput = (over: Partial<ProfileViewModelInput> = {}): ProfileViewModelInp
 
 const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
   const handlers = {
+    onPickPhoto: vi.fn(),
+    onShowToast: vi.fn(),
     onEditClose: vi.fn(),
     onEditSave: vi.fn(),
     onCorrectOrdinal: vi.fn(),
@@ -76,6 +78,8 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
     onOpenStreak: vi.fn(),
     onUpdateReminder: vi.fn(),
     onSetGcalEnabled: vi.fn(),
+    cecinhoHelpEnabled: false,
+    onSetCecinhoHelp: vi.fn(),
     onThemeSelect: vi.fn(),
     onMotionPrefSelect: vi.fn(),
     onOpenSync: vi.fn(),
@@ -99,58 +103,60 @@ const renderPage = (input: Partial<ProfileViewModelInput> = {}) => {
           name: rawProfile.name,
           university: rawProfile.university,
           dailyQuote: rawProfile.dailyQuote,
+          targetCareer: rawProfile.targetCareer,
           nomeAutorizado: false,
         }}
         editOpen={editOpen}
         onEditOpen={() => setEditOpen(true)}
         onEditClose={() => setEditOpen(false)}
         onEditSave={handlers.onEditSave}
-        onPickPhoto={vi.fn()}
-        onRemovePhoto={vi.fn()}
-        onShowToast={vi.fn()}
+        onVoltar={vi.fn()}
+        onPickPhoto={handlers.onPickPhoto}
+        approachOptions={[]}
         {...handlers}
       />
     );
   };
 
   render(<Harness />);
-  return handlers;
+  return { ...handlers, onPickPhoto: handlers.onPickPhoto };
 };
 
 describe('ProfilePage — cabeçalho (Twitter/X Profile Header)', () => {
-  it('renderiza o banner de capa (data-testid="perfil-banner")', () => {
+  it('renderiza o retângulo de capa (data-testid="perfil-capa")', () => {
     renderPage();
-    expect(screen.getByTestId('perfil-banner')).toBeTruthy();
+    expect(screen.getByTestId('perfil-capa')).toBeTruthy();
   });
 
-  it('tem um único h1 (o nome) abaixo do banner', () => {
+  it('tem um único h1 (o nome) abaixo da capa', () => {
     renderPage();
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('ceci');
   });
 
-  it('renderiza o avatar sobreposto com iniciais e botão de câmera', () => {
+  it('renderiza o avatar sobreposto com iniciais e o botão de opções no topo', () => {
     renderPage();
     expect(screen.getByText('C')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'trocar foto de perfil' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'opções de perfil' })).toBeTruthy();
   });
 
-  it('o botão editar perfil abre o sheet de edição e salvar devolve os valores', () => {
+  it('clicar na foto/avatar chama onPickPhoto (coloca ou troca a foto)', () => {
+    const { onPickPhoto } = renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'foto de perfil' }));
+    expect(onPickPhoto).toHaveBeenCalledTimes(1);
+  });
+
+  it('o botão de opções abre o sheet de edição e salvar devolve os valores', () => {
     const h = renderPage();
-    fireEvent.click(screen.getByRole('button', { name: 'editar perfil', hidden: false }));
+    fireEvent.click(screen.getByRole('button', { name: 'opções de perfil' }));
     fireEvent.change(screen.getByLabelText('seu nome'), { target: { value: 'maria' } });
     fireEvent.click(screen.getByRole('button', { name: 'guardar perfil' }));
     expect(h.onEditSave).toHaveBeenCalledWith({
       name: 'maria',
       university: 'USP',
       dailyQuote: '',
+      targetCareer: 'Psicologia',
       nomeAutorizado: false,
     });
-  });
-
-  it('o botão mais opções também abre o sheet de edição', () => {
-    renderPage();
-    expect(screen.getByRole('button', { name: 'opções de perfil' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'opções de perfil' }));
   });
 });

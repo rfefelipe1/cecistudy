@@ -36,8 +36,11 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  // Seções do "explorar" — abertas por padrão; a usuária pode colapsar.
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+  // Prateleiras do "explorar": só a primeira aberta. Abrir todas no mount
+  // construía o acervo inteiro (centenas de cards) durante a troca de aba.
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    repertorio: true,
+  });
 
   const hasActiveFilters =
     activeCategory !== 'todos' ||
@@ -46,7 +49,8 @@ export function useLibraryFilters({ library, savedBookIds, readingProgress }: Li
     searchTerm.trim() !== '';
 
   const toggleSection = (id: string) => setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  const isOpen = (id: string) => hasActiveFilters || openSections[id] !== false;
+  // Filtro ativo abre tudo (a usuária precisa ver o resultado da busca).
+  const isOpen = (id: string) => hasActiveFilters || openSections[id] === true;
 
   const resetAllFilters = () => {
     setActiveCategory('todos');

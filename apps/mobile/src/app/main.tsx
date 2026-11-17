@@ -1,9 +1,5 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import '@fontsource/inter/400.css';
-import '@fontsource/inter/500.css';
-import '@fontsource/inter/600.css';
-import '@fontsource/inter/700.css';
 import '@fontsource/plus-jakarta-sans/400.css';
 import '@fontsource/plus-jakarta-sans/500.css';
 import '@fontsource/plus-jakarta-sans/600.css';
@@ -18,8 +14,10 @@ import { BootSplash } from '@/components/ui/BootSplash';
 import { MobileAppShell } from '@/shells/MobileAppShell';
 import { MobileOverlays } from '@/overlays/MobileOverlays';
 import { MotionPreferenceGate } from '@/components/motion/MotionPreferenceGate';
+import { GlimmThemeAnimationProvider } from '@/components/ui/glimm-theme-animation-provider';
 import { MobileAppProvider } from '../MobileAppProvider';
 import { mark } from '@/lib/performance/perfMarks';
+import '@/assets/fonts/sf-pro/sf-pro-text.css';
 import '@/index.css';
 
 mark('app-entry-start');
@@ -35,13 +33,15 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <MotionConfig reducedMotion="user">
       <ErrorBoundary>
-        <MobileAppProvider>
-          <MotionPreferenceGate>
-            <BootSplash />
-            <MobileAppShell />
-            <MobileOverlays />
-          </MotionPreferenceGate>
-        </MobileAppProvider>
+        <GlimmThemeAnimationProvider>
+          <MobileAppProvider>
+            <MotionPreferenceGate>
+              <BootSplash />
+              <MobileAppShell />
+              <MobileOverlays />
+            </MotionPreferenceGate>
+          </MobileAppProvider>
+        </GlimmThemeAnimationProvider>
       </ErrorBoundary>
     </MotionConfig>
   </StrictMode>,

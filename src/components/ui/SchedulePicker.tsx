@@ -2,7 +2,7 @@ import React from 'react';
 import { Plus, Trash2, Clock } from 'lucide-react';
 import type { CourseScheduleSlot } from '../../types';
 import { WEEKDAY_LABELS } from '../../data/constants';
-import { TimeInput } from '../wizards/wizardFields';
+import { TimePickerSheet } from '../ui/time-picker-sheet';
 
 interface SchedulePickerProps {
   value: CourseScheduleSlot[];
@@ -70,13 +70,21 @@ export const SchedulePicker: React.FC<SchedulePickerProps> = ({ value, onChange 
               <span className="block text-[10px] font-semibold text-ceci-tertiary mb-1">
                 início
               </span>
-              <TimeInput value={slot.start} onChange={(e) => setStart(idx, e.target.value)} />
+              <TimePickerSheet
+                value={slot.start}
+                onChange={(v) => setStart(idx, v)}
+                placeholder="--:--"
+              />
             </div>
             <div>
               <span className="block text-[10px] font-semibold text-ceci-tertiary mb-1">
                 término
               </span>
-              <TimeInput value={slot.end ?? ''} onChange={(e) => setEnd(idx, e.target.value)} />
+              <TimePickerSheet
+                value={slot.end ?? ''}
+                onChange={(v) => setEnd(idx, v)}
+                placeholder="--:--"
+              />
             </div>
           </div>
         </div>

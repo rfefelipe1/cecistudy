@@ -11,8 +11,10 @@ import { TAB_LABELS, screenAnnouncement, tabLabel } from '../../../lib/motion/sc
 
 describe('tabLabel', () => {
   it('nomeia as quatro abas raiz', () => {
-    expect(Object.keys(TAB_LABELS)).toEqual(['home', 'faculdade', 'estudos', 'biblioteca']);
-    for (const tab of Object.keys(TAB_LABELS)) {
+    expect(Object.keys(TAB_LABELS)).toEqual(['home', 'faculdade', 'clinica', 'biblioteca']);
+    // `clinica` é a única que não é o id cru: o rótulo é a palavra acentuada.
+    expect(tabLabel('clinica')).toBe('clínica');
+    for (const tab of ['home', 'faculdade', 'biblioteca']) {
       expect(tabLabel(tab)).toBe(tab);
     }
   });
@@ -30,7 +32,7 @@ describe('screenAnnouncement', () => {
   });
 
   it('cai no nome da aba quando não há título (raiz de aba)', () => {
-    expect(screenAnnouncement('estudos', undefined)).toBe('estudos');
+    expect(screenAnnouncement('clinica', undefined)).toBe('clínica');
   });
 
   it('ignora título vazio ou só com espaços', () => {

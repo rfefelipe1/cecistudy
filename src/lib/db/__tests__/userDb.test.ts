@@ -482,9 +482,9 @@ describe('SPEC-012 — passo 4: base v3 com tcc legado atualiza sem perder nada'
     await saveCollection(d, 'tcc', legacyTcc);
     expect(await getAppliedVersion(d)).toBe(3);
 
-    // Atualização para o build SPEC-012: só o passo 4 falta.
+    // Base v3: aplicam-se o passo 4 (TCC) e o 5 (Cecinho Agent).
     await runUserMigrations(d);
-    expect(await getAppliedVersion(d)).toBe(4);
+    expect(await getAppliedVersion(d)).toBe(5);
 
     // A fonte da verdade atravessou o DROP intacta — é dela que o dreno extrai.
     expect(await loadCollection(d, 'tcc')).toEqual(legacyTcc);

@@ -24,7 +24,7 @@
 export const TAB_LABELS = {
   home: 'home',
   faculdade: 'faculdade',
-  estudos: 'estudos',
+  clinica: 'clínica',
   biblioteca: 'biblioteca',
 } as const;
 

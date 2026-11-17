@@ -13,6 +13,7 @@ import {
   DECK_TABLES_SQL,
   READING_TABLES_SQL,
   THESIS_TABLES_SQL,
+  AGENT_TABLES_SQL,
 } from './migrations/user.ts';
 import type { SqlDriver, SqlRow } from './driver.ts';
 import { isNativePlatform } from '../storage.ts';
@@ -32,6 +33,8 @@ const MIGRATIONS: MigrationStep[] = [
   // SPEC-012: TCC como coleções (recria as projeções do singleton com id +
   // data_json e cria as 3 tabelas novas).
   { version: 4, up: THESIS_TABLES_SQL },
+  // SPEC-037: Cecinho Agent — 4 tabelas de estado leve.
+  { version: 5, up: AGENT_TABLES_SQL },
 ];
 
 /** Última versão conhecida deste código (independente do banco aberto). */

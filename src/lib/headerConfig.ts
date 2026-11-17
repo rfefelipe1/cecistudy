@@ -149,6 +149,9 @@ export function buildHeaderConfig(input: HeaderConfigInput): DynamicHeaderConfig
       icon: 'Flame',
       color: '#D85F79',
       onBack,
+      // A tela de ofensiva não tem pop: a usuária sai pelo botão de ofensiva da
+      // home ou fecha a aba. Sem botão de voltar no header.
+      hideBackButton: true,
     };
   } else if (currentScreen.kind === 'internshipDiary') {
     headerConfig = {

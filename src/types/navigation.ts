@@ -39,6 +39,8 @@ export interface DynamicHeaderConfig {
   icon?: CourseIconName | string;
   color?: string;
   onBack?: () => void;
+  /** Oculta o botão de voltar do header (usado em telas que não devem ter pop). */
+  hideBackButton?: boolean;
   isBookmarked?: boolean;
   onToggleBookmark?: () => void;
   rightActions?: ReactNode;

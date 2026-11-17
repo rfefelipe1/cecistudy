@@ -3,6 +3,8 @@
 
 export * from './entity';
 export * from './navigation';
+// SPEC-037: domínio da assistência do Cecinho (ao lado da `Task`, nunca dentro).
+export * from './agent';
 export * from './quiz';
 export * from './internship';
 export type { InternshipWizardSeed } from './internshipSeed';

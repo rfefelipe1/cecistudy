@@ -131,3 +131,28 @@ export function swipeTabDelta(dx: number, velocityX = 0): -1 | 0 | 1 {
   if (!byDistance && !byFlick) return 0;
   return dx < 0 ? 1 : -1;
 }
+
+/* ==================================================================== */
+/* Navbar (arrastar pelos ícones troca de aba)                          */
+/* ==================================================================== */
+
+/** Movimento horizontal (px) que separa um arrasto de um toque na navbar. */
+export const NAV_DRAG_ENGAGE_PX = 10;
+
+/**
+ * Índice da aba sob o dedo na navbar, por fatias iguais (0-based, clampado).
+ *
+ * `left`/`width` são medidos **uma vez** no `pointerdown` e congelados durante o
+ * gesto: quando o rótulo ativo expande, a barra muda de largura e uma medição ao
+ * vivo faria o índice oscilar perto das fronteiras.
+ */
+export function navbarIndexFromX(
+  clientX: number,
+  left: number,
+  width: number,
+  count: number,
+): number {
+  if (count <= 0 || width <= 0) return 0;
+  const raw = Math.floor((clientX - left) / (width / count));
+  return Math.max(0, Math.min(count - 1, raw));
+}

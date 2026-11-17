@@ -6,6 +6,7 @@ export * from './calendar';
 export * from './projects';
 export * from './marketing';
 export * from './capabilities';
+export * from './biblioteca';
 export * from './term';
 export * from './internship';
 export * from './thesis';

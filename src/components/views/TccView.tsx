@@ -26,6 +26,7 @@ import { SectionTitle } from '../ui/SectionTitle';
 import { TagChip } from '../ui/TagChip';
 import { PillGroup } from '../ui/PillGroup';
 import { ToggleRow } from '../ui/ToggleRow';
+import { TimePickerSheet } from '../ui/time-picker-sheet';
 import {
   dateKeyOrdinal,
   daysBetween,
@@ -564,13 +565,12 @@ export const TccView: React.FC = () => {
 
         <label className="block space-y-1">
           <span className="text-[11px] font-semibold text-ceci-secondary">horário do aviso</span>
-          <input
-            type="time"
+          <TimePickerSheet
             value={reminderPrefs.time}
-            onChange={(e) => {
-              if (e.target.value) updateReminders({ time: e.target.value });
+            onChange={(v) => {
+              if (v) updateReminders({ time: v });
             }}
-            className="block px-3 py-2 rounded-xl border border-ceci-border-default bg-surface-default text-sm text-ceci-primary outline-none focus:border-ceci-border-brand"
+            placeholder="--:--"
           />
         </label>
 
