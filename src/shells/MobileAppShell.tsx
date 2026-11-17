@@ -349,7 +349,7 @@ const MobileAppShellInner: React.FC = () => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.12, ease: EASE.standard }}
+              transition={{ duration: chrome.d.micro, ease: EASE.standard }}
             >
               <SlideScreen key={app.slideKey} intent={app.navIntent}>
                 <SlideContent activeTabOverride={dragPreviewTab} />
