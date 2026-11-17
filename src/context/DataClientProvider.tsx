@@ -651,7 +651,10 @@ export function useDataClient(): DataClientValue {
   useEffect(() => {
     const legacy = tcc as unknown as { chapters?: unknown };
     if (!Array.isArray(legacy.chapters)) return;
-    const migrated = migrateDatabase(SCHEMA_VERSION - 1, {
+    // 21 é a versão anterior à migração 22 (TCC). Fixo de propósito: derivar de
+    // `SCHEMA_VERSION` fez o dreno rodar a migração errada quando a 23 (Cecinho
+    // Agent) entrou — o `tcc` legado ficava sem drenar e os capítulos sumiam.
+    const migrated = migrateDatabase(21, {
       profile,
       readings,
       tcc: tcc as unknown as Record<string, unknown>,

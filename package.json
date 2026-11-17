@@ -44,6 +44,7 @@
     "content:ensure": "tsx scripts/ensure-catalog.mjs",
     "predev": "npm run content:ensure",
     "prebuild": "npm run content:ensure",
+    "predb:verify": "npm run content:ensure",
     "preverify": "npm run content:ensure",
     "content:check": "tsx content/check-content.mjs",
     "content:report": "tsx content/report-content.mjs",

@@ -50,7 +50,9 @@ export interface WheelColumn {
 
 const range = (count: number, format: (i: number) => string) =>
   Array.from({ length: count }, (_, i) => ({
-    value: String(i),
+    // O valor acompanha o label (com zero à esquerda): o sheet grava HH:MM, e
+    // "7:30" quebraria o formato. O wheel só é usado no TimePickerSheet.
+    value: format(i),
     label: format(i),
   }));
 
