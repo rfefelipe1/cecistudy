@@ -87,7 +87,7 @@ jobs:
         run: npm run typecheck
 
       - name: test
-        run: npm run test
+        run: npm run test:ci
 
       - name: boundary check (mobile/desktop/packages)
         run: node .github/scripts/check-boundaries.mjs
