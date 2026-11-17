@@ -107,6 +107,12 @@ O app mobile não consegue usar o Agent Gateway do `ceciagent.zip` porque:
 **Alternativa rejeitada:** sessão com estado no provedor (memória do processo) — o Render Free dorme e recicla; a conversa morreria em silêncio.  
 **Consequência:** o mobile é o dono único do histórico; o custo por job cresce com a conversa, limitado pelo teto de 8 × 400 caracteres (abaixo do `MAX_CONTEXT_BYTES` e do `maxBodyBytes` do gateway). O histórico é allowlist de papel: `system` e `tool` não atravessam.
 
+**D10** (Decidido) — O app embarca **configuração pública, nunca segredo**. `VITE_AGENT_GATEWAY_URL` e `VITE_AGENT_GATEWAY_APP_KEY` entram no bundle em tempo de build e, no build nativo, vêm de **GitHub Actions `vars`** (não `secrets`); em desenvolvimento, de `.env.local` (gitignored). Os valores sensíveis — `NIM_API_KEYS`, `GATEWAY_SESSION_SECRET`, `ADMIN_PASSWORD` e o `AGENT_APP_KEY` do lado servidor — vivem só no ambiente do gateway (Render).  
+**Alternativa rejeitada:** buscar a chave num endpoint público do gateway no primeiro uso — a chave é a mesma que qualquer pessoa extrai do APK, então o endpoint só acrescenta uma ida de rede na abertura e mais um lugar para desincronizar.  
+**Alternativa rejeitada:** guardar a chave no Keychain/keystore do aparelho — protegeria um valor que não é segredo e não impede a extração do pacote.  
+**Alternativa rejeitada:** `secrets` do Actions para as duas `VITE_*` — o valor vai para o bundle de qualquer forma; `vars` deixa explícito que é público e evita tratar rotação como incidente.  
+**Consequência:** um build nativo sem as duas vars funciona 100% local — `readGatewayRuntime()` devolve `null` e nenhuma tela quebra — e não avisa ninguém. O gate que impede o pacote "mudo" é a esteira de release passar as duas (`release.yml`, job `prepare`). A cota continua protegida pelo JWT por aparelho, pela revogação em `/admin` e pelo rate limit, não pelo sigilo da chave.
+
 ## Contrato
 
 ### Mobile → Gateway

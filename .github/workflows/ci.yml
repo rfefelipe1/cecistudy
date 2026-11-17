@@ -88,8 +88,14 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:web
+        env:
+          VITE_AGENT_GATEWAY_URL: ${{ vars.VITE_AGENT_GATEWAY_URL }}
+          VITE_AGENT_GATEWAY_APP_KEY: ${{ vars.VITE_AGENT_GATEWAY_APP_KEY }}
       - run: npm run bundle:report
       - run: npm run build:mobile
+        env:
+          VITE_AGENT_GATEWAY_URL: ${{ vars.VITE_AGENT_GATEWAY_URL }}
+          VITE_AGENT_GATEWAY_APP_KEY: ${{ vars.VITE_AGENT_GATEWAY_APP_KEY }}
 
   # camada 2c — contrato de banco, catálogo de conteúdo e auditoria de deps
   gate-conteudo:
@@ -140,6 +146,9 @@ jobs:
         run: npm ci
       - if: steps.f.outputs.android == 'true'
         run: npm run build
+        env:
+          VITE_AGENT_GATEWAY_URL: ${{ vars.VITE_AGENT_GATEWAY_URL }}
+          VITE_AGENT_GATEWAY_APP_KEY: ${{ vars.VITE_AGENT_GATEWAY_APP_KEY }}
       - if: steps.f.outputs.android == 'true'
         run: npx cap sync android
       - if: steps.f.outputs.android == 'true'

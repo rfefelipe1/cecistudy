@@ -270,10 +270,10 @@ export const VAZIO: Catalogo = {
 
   // --- Cecinho Agent (SPEC-037)
   cecinhoSemConversas:
-    'nenhuma tarefa com o cecinho por aqui ainda — quando quiser ajuda, é só chamar numa tarefa ♡',
+    'nenhuma tarefa comigo por aqui ainda — quando quiser ajuda, é só chamar numa tarefa ♡',
   cecinhoSemMensagens: 'a conversa começa quando você contar o que precisa ♡',
-  cecinhoSemPlano: 'ainda não tem plano por aqui — o cecinho monta um quando você pedir',
-  cecinhoSemArtefatos: 'os arquivos que o cecinho criar aparecem aqui ♡',
+  cecinhoSemPlano: 'ainda não tem plano por aqui — eu monto um quando você pedir',
+  cecinhoSemArtefatos: 'os arquivos que eu criar aparecem aqui ♡',
 };
 /**
  * As variantes do motor único (`D7`). Toda frase é **literal** — o gate lê o
@@ -339,9 +339,9 @@ export const DICA: Catalogo = {
   semTituloAinda: 'ainda sem título',
 
   // --- Cecinho Agent (SPEC-037). Estados e ajudas da Central.
-  cecinhoCentralAjuda: 'aqui ficam as tarefas em que o cecinho está te ajudando',
+  cecinhoCentralAjuda: 'aqui ficam as tarefas em que eu estou te ajudando',
   cecinhoAjudaGlobal:
-    'o cecinho sugere ajuda nas tarefas de processo longo — ele pergunta antes de fazer qualquer coisa',
+    'eu sugiro ajuda nas tarefas de processo longo — e pergunto antes de fazer qualquer coisa',
   cecinhoPlanoAjuda: 'nada é criado antes de você confirmar — pode editar ou tirar etapas',
   cecinhoPerguntaAjuda: 'pode responder "não sei" ou "depois" — o plano segue mesmo assim',
   cecinhoStatusAnalisando: 'analisando a tarefa…',
@@ -353,11 +353,33 @@ export const DICA: Catalogo = {
   cecinhoStatusOcioso: 'sem novidades',
   cecinhoBoasVindas:
     'pode me contar o que você precisa nesta tarefa. eu pergunto antes de mexer em qualquer coisa ♡',
-  cecinhoAgendaNovidades: (p) => `o cecinho tem ${p.n} novidade${Number(p.n) !== 1 ? 's' : ''} para você`,
-  cecinhoAgendaAcompanhar: 'acompanhe aqui as tarefas em que o cecinho está te ajudando',
+  cecinhoAgendaNovidades: (p) => `tenho ${p.n} novidade${Number(p.n) !== 1 ? 's' : ''} para você`,
+  cecinhoAgendaAcompanhar: 'acompanhe aqui as tarefas em que eu estou te ajudando',
   cecinhoAgendaSugestao: (p) =>
-    `o cecinho pode ajudar em "${p.titulo}" — quer chamar?`,
+    `posso ajudar em "${p.titulo}" — quer chamar?`,
+
+  // --- Cecinho visual (SPEC-M-040). Loader, sheet e estados do chat.
+  cecinhoPensando: 'pensando…',
+  cecinhoPensandoPronto: 'prontinho ♡',
+  cecinhoSheetTitulo: 'só preciso de algumas respostas',
+  cecinhoSheetProgresso: (p) => `${p.atual} de ${p.total}`,
+  cecinhoSheetPlaceholder: 'escreve aqui',
+  cecinhoSheetProxima: 'próxima',
+  cecinhoSheetRevisar: 'confere o que você respondeu',
+  cecinhoSheetConfirmar: 'já pode enviar',
+  cecinhoPerguntaResponder: 'responder',
 };
+
+/**
+ * Fases do thinking loader (`SPEC-M-040` D5) — minúsculas, na voz dele.
+ * Fica fora do catálogo porque é uma **sequência**, não uma frase por chave.
+ */
+export const CECINHO_PENSANDO_FASES: readonly string[] = [
+  'analisando a tarefa',
+  'organizando as ideias',
+  'montando o plano',
+  'escrevendo a resposta',
+];
 
 // ---------------------------------------------------------------------------
 // D7 · o motor único de frase
@@ -680,7 +702,7 @@ export const CELEBRACAO: Catalogo = {
   sessaoDeQuizGuardada: 'sessão de quiz guardada ♡',
 
   // --- Cecinho Agent (SPEC-037)
-  cecinhoAtivado: 'cecinho chamado ♡',
+  cecinhoAtivado: 'cheguei ♡',
   cecinhoPlanoConfirmado: 'plano confirmado ♡',
   cecinhoPlanoRecusado: 'plano recusado',
   cecinhoRespostaEnviada: 'resposta enviada ♡',
@@ -769,10 +791,10 @@ export const NOTIFICACAO: Catalogo = {
   alarmeDepois: 'agora não',
 
   // --- Cecinho Agent (SPEC-037): sem conteúdo sensível no corpo.
-  cecinhoTitulo: 'cecistudy ♡ cecinho',
-  cecinhoPergunta: 'o cecinho tem uma pergunta para você',
+  cecinhoTitulo: 'cecistudy ♡ recado',
+  cecinhoPergunta: 'tenho uma pergunta para você',
   cecinhoPlanoPronto: 'o plano da tarefa está pronto para revisar',
-  cecinhoArquivoPronto: 'o cecinho terminou um arquivo',
+  cecinhoArquivoPronto: 'terminei um arquivo',
 };
 export const ONBOARDING: Catalogo = {
   /**
@@ -960,16 +982,6 @@ export const ERRO: Record<string, ErroVoz> = {
     oQueAconteceu: 'não achei nada publicado no outro dispositivo',
     oQuePodeFazer: 'começa pela sincronização daqui pra criar o primeiro pacote',
   },
-  /** O pareamento não achou o outro dispositivo a tempo. */
-  syncPar: {
-    oQueAconteceu: 'o outro dispositivo não apareceu pra mim',
-    oQuePodeFazer: 'confere que o código é o mesmo e tenta de novo',
-  },
-  /** O pareamento estourou o tempo. */
-  syncTimeout: {
-    oQueAconteceu: 'a conexão demorou demais',
-    oQuePodeFazer: 'tenta de novo em um instante',
-  },
 
   /** O link colado não tinha URL válida (`SPEC-012 §8.6`). */
   linkInvalido: {
@@ -983,29 +995,9 @@ export const ERRO: Record<string, ErroVoz> = {
   },
 
   // --- Cecinho Agent (SPEC-037)
-  cecinhoAtivar: {
-    oQueAconteceu: 'não consegui chamar o cecinho nesta tarefa',
-    oQuePodeFazer: 'tenta de novo daqui a pouco',
-  },
-  cecinhoResponder: {
-    oQueAconteceu: 'não consegui guardar sua resposta',
-    oQuePodeFazer: 'tenta enviar de novo',
-  },
-  cecinhoPlano: {
-    oQueAconteceu: 'não consegui guardar o plano',
-    oQuePodeFazer: 'tenta de novo em um instante',
-  },
   cecinhoArquivo: {
     oQueAconteceu: 'não consegui abrir esse arquivo',
     oQuePodeFazer: 'confere se ele ainda está no aparelho e tenta de novo',
-  },
-  cecinhoSync: {
-    oQueAconteceu: 'o cecinho não conseguiu falar com o servidor agora',
-    oQuePodeFazer: 'a tarefa fica na fila e ele tenta de novo quando a conexão voltar',
-  },
-  cecinhoContextoGrande: {
-    oQueAconteceu: 'essa tarefa tem contexto demais para o cecinho analisar de uma vez',
-    oQuePodeFazer: 'divide em partes menores e chama de novo',
   },
 
   /** Código desconhecido — nunca vaza a mensagem original. */

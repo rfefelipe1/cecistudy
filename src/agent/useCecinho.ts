@@ -91,12 +91,8 @@ export interface CecinhoApi {
   remove: (taskId: string) => void;
   markRead: (taskId: string) => void;
   append: (taskId: string, input: AppendMessageInput) => void;
-  answer: (
-    taskId: string,
-    questionId: string,
-    answer: string,
-    kind?: NonNullable<AgentQuestion['answerKind']>,
-  ) => void;
+  /** Responde a rodada inteira do sheet em **uma** escrita. */
+  answerRound: (taskId: string, answers: { questionId: string; answer: string }[]) => void;
   confirmPlan: (taskId: string) => void;
   rejectPlan: (taskId: string) => void;
   editStep: (
@@ -277,9 +273,12 @@ export function useCecinho(): CecinhoApi {
 
   const append = useCallback(
     (taskId: string, input: AppendMessageInput) => {
+      // O ref enxerga a escrita que acabou de acontecer no mesmo handler (sheet
+      // responde e já manda a fala para o gateway).
+      const current = collectionsRef.current;
       const at = nowIso();
       const existing =
-        conversationForTask(collections, taskId) ?? createConversation(taskId, at);
+        conversationForTask(current, taskId) ?? createConversation(taskId, at);
       const message: AgentMessage = {
         id: messageId(),
         role: input.role,
@@ -292,11 +291,11 @@ export function useCecinho(): CecinhoApi {
       };
       const conversation = appendMessage(existing, message);
       const withConversation: AgentCollections =
-        collections.agentConversations.some((c) => c.id === conversation.id)
-          ? collections
+        current.agentConversations.some((c) => c.id === conversation.id)
+          ? current
           : {
-              ...collections,
-              agentConversations: [...collections.agentConversations, conversation],
+              ...current,
+              agentConversations: [...current.agentConversations, conversation],
             };
       let next = saveConversation(withConversation, conversation);
       if (input.kind === 'question' && input.question) {
@@ -309,27 +308,28 @@ export function useCecinho(): CecinhoApi {
       }
       apply(next);
     },
-    [collections, apply],
+    [apply],
   );
 
-  const answer = useCallback(
-    (taskId: string, questionId: string, text: string, kind: 'texto' | 'nao_sei' | 'depois' = 'texto') => {
+  const answerRound = useCallback(
+    (taskId: string, answers: { questionId: string; answer: string }[]) => {
+      const current = collectionsRef.current;
       const at = nowIso();
-      const conversation = conversationForTask(collections, taskId);
+      const conversation = conversationForTask(current, taskId);
       if (!conversation) return;
-      const nextConversation = answerQuestion(conversation, questionId, text, kind, at);
-      const assisted = collections.assistedTasks.find((a) => a.taskId === taskId);
-      const withQuestionClosed = assisted
-        ? {
-            ...collections,
-            assistedTasks: collections.assistedTasks.map((a) =>
-              a.taskId === taskId ? markPendingQuestion(a, false, at) : a,
-            ),
-          }
-        : collections;
+      const nextConversation = answers.reduce(
+        (open, item) => answerQuestion(open, item.questionId, item.answer, 'texto', at),
+        conversation,
+      );
+      const withQuestionClosed = {
+        ...current,
+        assistedTasks: current.assistedTasks.map((a) =>
+          a.taskId === taskId ? markPendingQuestion(a, false, at) : a,
+        ),
+      };
       apply(saveConversation(withQuestionClosed, nextConversation));
     },
-    [collections, apply],
+    [apply],
   );
 
   const withPlan = useCallback(
@@ -472,7 +472,7 @@ export function useCecinho(): CecinhoApi {
     remove,
     markRead: markTaskRead,
     append,
-    answer,
+    answerRound,
     confirmPlan,
     rejectPlan,
     editStep,

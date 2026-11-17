@@ -242,6 +242,7 @@ const MobileAppShellInner: React.FC = () => {
   }, [app]);
 
   const isAuxFlow =
+    app.isCecinhoTaskOpen ||
     app.isComposeScreenOpen ||
     app.isComposeDetailsOpen ||
     app.isWizardOpen ||
