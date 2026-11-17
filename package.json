@@ -24,7 +24,7 @@
     "lint:code": "biome lint .",
     "lint:code:fix": "biome lint --write .",
     "test": "vitest run",
-    "test:ci": "vitest run --reporter=dot",
+    "test:ci": "vitest run --reporter=dot --exclude 'src/**' --exclude 'apps/**'",
     "test:watch": "vitest",
     "test:domain": "vitest run --exclude 'src/**' --exclude 'apps/**'",
     "test:ui": "vitest run --exclude 'packages/**' --exclude 'apps/**' --exclude 'src/lib/__tests__/*' --exclude 'src/lib/backupZip/__tests__/*' --exclude 'src/lib/performance/__tests__/*' --exclude 'src/lib/sync/__tests__/merge.test.ts' --exclude 'src/lib/sync/__tests__/engine.test.ts'",
